@@ -12,7 +12,7 @@ Far West Masters email and web templates and scripts
 ### Draft content: Other pages
 Either make a duplicate of the page and edit it, then copy into the main page, or swap out the pages.
 
-### Backup content for future referenve
+### Backup content for future reference
 Add to the backups folder in github
 Options:
 1. Take a screenshot and add it to the backups folder in github
