@@ -36,12 +36,26 @@
         border-bottom: 1px solid #e0e0e0;
       }
 
-      tr:nth-child(even) {
+      tr:nth-child(even):not(.subheader) {
         background-color: #f2f2f2;
       }
 
-      tr:hover {
+      tr:hover:not(.subheader) {
         background-color: #e0e0db;
+      }
+
+      /* Subheader row styling */
+      .subheader {
+        background-color: #4a90e2 !important;
+        color: white !important;
+        font-weight: bold;
+        text-align: center;
+        font-size: 16px;
+      }
+
+      .subheader td {
+        padding: 12px 15px;
+        border-bottom: 2px solid #357abd;
       }
 
       .title-cell {
@@ -91,11 +105,16 @@
           </tr>
         </thead>
         <tbody>
+          <!-- SUBHEADER 1 -->
+          <tr class="subheader">
+            <td colspan="4">2024-2025 Season/td>
+          </tr>
+          
           <!-- RACE 1-->
           <tr>
             <td class="title-cell">
               <!-- RACE 1 Name -->
-              Annual Financial Report and Comprehensive Analysis 2024
+             Race 1
             </td>
             <td class="download-cell">
               <!-- RACE 1 Class Link-->
@@ -132,7 +151,7 @@
           <tr>
             <td class="title-cell">
               <!-- RACE 2 Name -->
-              Annual Financial Report and Comprehensive Analysis 2024
+              Race 2
             </td>
             <td class="download-cell">
               <!-- RACE 2 Class Link-->
@@ -169,7 +188,7 @@
           <tr>
             <td class="title-cell">
               <!-- RACE 3 Name -->
-              Annual Financial Report and Comprehensive Analysis 2024
+              Race 3
             </td>
             <td class="download-cell">
               <!-- RACE 3 Class Link-->
@@ -202,11 +221,17 @@
               </a>
             </td>
           </tr>
+
+          <!-- SUBHEADER 2 -->
+          <tr class="subheader">
+            <td colspan="4">2023-2024 Season</td>
+          </tr>
+
           <!-- RACE 4-->
           <tr>
             <td class="title-cell">
               <!-- RACE 4 Name -->
-              Annual Financial Report and Comprehensive Analysis 2024
+              Race 4
             </td>
             <td class="download-cell">
               <!-- RACE 4 Class Link-->
@@ -243,7 +268,7 @@
           <tr>
             <td class="title-cell">
               <!-- RACE 5 Name -->
-              Annual Financial Report and Comprehensive Analysis 2024
+              Race 5
             </td>
             <td class="download-cell">
               <!-- RACE 5 Class Link-->
@@ -276,11 +301,17 @@
               </a>
             </td>
           </tr>
+
+          <!-- SUBHEADER 3 -->
+          <tr class="subheader">
+            <td colspan="4">2022-2023 Season</td>
+          </tr>
+
           <!-- RACE 6-->
           <tr>
             <td class="title-cell">
               <!-- RACE 6 Name -->
-              Annual Financial Report and Comprehensive Analysis 2024
+              Race 6
             </td>
             <td class="download-cell">
               <!-- RACE 6 Class Link-->
@@ -317,7 +348,7 @@
           <tr>
             <td class="title-cell">
               <!-- RACE 7 Name -->
-              Annual Financial Report and Comprehensive Analysis 2024
+              Race 7
             </td>
             <td class="download-cell">
               <!-- RACE 7 Class Link-->
@@ -354,7 +385,7 @@
           <tr>
             <td class="title-cell">
               <!-- RACE 8 Name -->
-              Annual Financial Report and Comprehensive Analysis 2024
+              Race 8
             </td>
             <td class="download-cell">
               <!-- RACE 8 Class Link-->
