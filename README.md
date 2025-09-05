@@ -1,5 +1,14 @@
 # far-west-masters
-Far West Masters email and web templates and scripts
+Far West Masters email and web templates and scripts.
+
+## Email templates
+Folder to keep email templates for use with the HTML email editor for FWM news and race announcements.
+
+## HTML table templates
+Sample table templates for use with Squarespace.
+
+## Screenshots
+Screenshots of email templates and table templates, and other useful info.
 
 
 ## Squarespace process notes
