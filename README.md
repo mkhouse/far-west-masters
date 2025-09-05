@@ -23,6 +23,7 @@ Either make a duplicate of the page and edit it, then copy into the main page, o
 
 ### Backup content for future reference
 Add to the backups folder in github
+
 Options:
 1. Take a screenshot and add it to the backups folder in github
 2. Start a new text file in the backups folder in github and paste content in
