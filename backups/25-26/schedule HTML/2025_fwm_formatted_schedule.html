@@ -57,7 +57,7 @@
   .date-cell .day-info {
     font-weight: normal;
     font-size: 0.9em;
-    color: #333;
+    color: #666;
   }
 
   .location-cell {
@@ -124,6 +124,128 @@
     margin-bottom: 30px;
     font-size: 2.2em;
   }
+
+  /* Mobile responsive styles */
+  @media screen and (max-width: 768px) {
+    body {
+      margin: 10px;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      min-width: 700px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 8px 6px;
+    }
+
+    .date-cell {
+      min-width: 100px;
+      font-size: 0.9em;
+    }
+
+    .location-cell {
+      max-width: 150px;
+      font-size: 0.9em;
+    }
+
+    .title-cell {
+      max-width: 200px;
+      font-size: 0.9em;
+    }
+
+    .disciplines-cell {
+      max-width: 120px;
+      font-size: 0.9em;
+    }
+
+    .download-cell {
+      width: 60px;
+    }
+
+    .download-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .download-link {
+      padding: 6px;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    body {
+      margin: 5px;
+    }
+
+    .table-container {
+      border-radius: 4px;
+    }
+
+    table {
+      min-width: 600px;
+      font-size: 12px;
+    }
+
+    th,
+    td {
+      padding: 6px 4px;
+    }
+
+    .date-cell {
+      min-width: 85px;
+      font-size: 0.8em;
+    }
+
+    .location-cell {
+      max-width: 120px;
+      font-size: 0.8em;
+    }
+
+    .title-cell {
+      max-width: 150px;
+      font-size: 0.8em;
+    }
+
+    .disciplines-cell {
+      max-width: 100px;
+      font-size: 0.8em;
+    }
+
+    .download-cell {
+      width: 50px;
+    }
+
+    .download-icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    .download-link {
+      padding: 4px;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+    }
+
+    .date-cell .day-info {
+      font-size: 0.8em;
+    }
+  }
 </style>
 <div class="table-container">
   <table>
@@ -149,19 +271,16 @@
         <td class="disciplines-cell">GS and SL</td>
         <td class="download-cell">
           <!-- RACE 1 Info Link-->
-          <!--
-          <<a href="race-info.pdf" class="download-link" title="Race Info PDF">
+          <a href="race-info.pdf" class="download-link" title="Race Info PDF">
             <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
               <path
                 d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
               />
             </svg>
           </a>
-          -->
         </td>
         <td class="download-cell">
           <!-- RACE 1 Registration Link-->
-          <!--
           <a
             href="https://registration-link.com"
             class="download-link"
@@ -173,11 +292,9 @@
               />
             </svg>
           </a>
-          -->
         </td>
         <td class="download-cell">
           <!-- RACE 1 Results Link-->
-          <!--
           <a href="results.html" class="download-link" title="Results">
             <svg class="download-icon results-icon" viewBox="0 0 24 24">
               <path
@@ -186,7 +303,6 @@
             </svg>
           </a>
         </td>
-        -->
       </tr>
       <!-- RACE 2-->
       <tr>
