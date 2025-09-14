@@ -1,0 +1,1314 @@
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px;
+    background-color: #f5f5f5;
+  }
+
+  .table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    background-color: #253551;
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    border-right: 1px solid #e0e0e0;
+  }
+
+  th:last-child {
+    border-right: none;
+  }
+
+  td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+  }
+
+  td:last-child {
+    border-right: none;
+  }
+
+  tr:nth-child(even):not(.subheader) {
+    background-color: #f2f2f2;
+  }
+
+  tr:hover:not(.subheader) {
+    background-color: #e0e0db;
+  }
+
+  /* Subheader row styling */
+  .subheader {
+    background-color: #4a90e2 !important;
+    color: white !important;
+    font-weight: bold;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  .subheader td {
+    padding: 12px 15px;
+    border-bottom: 2px solid #357abd;
+    border-right: 1px solid #357abd;
+  }
+
+  .subheader td:last-child {
+    border-right: none;
+  }
+
+  .title-cell {
+    font-weight: 500;
+    color: #333;
+    max-width: 300px;
+  }
+
+  .date-cell {
+    font-weight: 600;
+    color: #253551;
+    min-width: 120px;
+  }
+
+  .location-cell {
+    color: #666;
+    max-width: 200px;
+  }
+
+  .discipline-cell {
+    font-weight: 500;
+    color: #333;
+    text-align: center;
+    width: 100px;
+  }
+
+  .download-cell {
+    text-align: center;
+    width: 80px;
+  }
+
+  .download-link {
+    display: inline-block;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .download-link:hover {
+    background-color: #e3f2fd;
+    transform: scale(1.1);
+  }
+
+  .download-icon {
+    width: 20px;
+    height: 20px;
+    fill: #253551;
+  }
+
+  .download-link:hover .download-icon {
+    fill: #1a2740;
+  }
+
+  h1 {
+    text-align: center;
+    color: #253551;
+    margin-bottom: 30px;
+    font-size: 2.2em;
+  }
+
+  /* Mobile responsive styles */
+  @media screen and (max-width: 768px) {
+    body {
+      margin: 10px;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      min-width: 600px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 8px 6px;
+    }
+
+    .date-cell {
+      min-width: 100px;
+      font-size: 0.9em;
+    }
+
+    .location-cell {
+      max-width: 150px;
+      font-size: 0.9em;
+    }
+
+    .title-cell {
+      max-width: 200px;
+      font-size: 0.9em;
+    }
+
+    .discipline-cell {
+      width: 80px;
+      font-size: 0.9em;
+    }
+
+    .download-cell {
+      width: 60px;
+    }
+
+    .download-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .download-link {
+      padding: 6px;
+    }
+
+    .subheader {
+      font-size: 14px;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    body {
+      margin: 5px;
+    }
+
+    .table-container {
+      border-radius: 4px;
+    }
+
+    table {
+      min-width: 500px;
+      font-size: 12px;
+    }
+
+    th,
+    td {
+      padding: 6px 4px;
+    }
+
+    .date-cell {
+      min-width: 85px;
+      font-size: 0.8em;
+    }
+
+    .location-cell {
+      max-width: 120px;
+      font-size: 0.8em;
+    }
+
+    .title-cell {
+      max-width: 150px;
+      font-size: 0.8em;
+    }
+
+    .discipline-cell {
+      width: 70px;
+      font-size: 0.8em;
+    }
+
+    .download-cell {
+      width: 50px;
+    }
+
+    .download-icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    .download-link {
+      padding: 4px;
+    }
+
+    .subheader {
+      font-size: 12px;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+    }
+  }
+</style>
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Location</th>
+        <th>Discipline</th>
+        <th>By class</th>
+        <th>By gender</th>
+        <th>Overall</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- SUBHEADER 2 -->
+      <tr class="subheader">
+        <td colspan="6">Mammoth Mountain Races</td>
+      </tr>
+
+      <!-- RACE 2a - Dec 6 GS-->
+      <tr>
+        <td class="date-cell">December 6</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">GS</td>
+        <td class="download-cell">
+          <!-- RACE 2a Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 2a Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 2a Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 2b - Dec 7 GS-->
+      <tr>
+        <td class="date-cell">December 7</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">GS</td>
+        <td class="download-cell">
+          <!-- RACE 2b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 2b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 2b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- SUBHEADER 3 -->
+      <tr class="subheader">
+        <td colspan="6">Sugar Bowl Races</td>
+      </tr>
+
+      <!-- RACE 3a - Jan 10 SL-->
+      <tr>
+        <td class="date-cell">January 10</td>
+        <td class="location-cell">Sugar Bowl, CA</td>
+        <td class="discipline-cell">SL</td>
+        <td class="download-cell">
+          <!-- RACE 3a Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 3a Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 3a Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 3b - Jan 11 SL-->
+      <tr>
+        <td class="date-cell">January 11</td>
+        <td class="location-cell">Sugar Bowl, CA</td>
+        <td class="discipline-cell">SL</td>
+        <td class="download-cell">
+          <!-- RACE 3b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 3b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 3b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- SUBHEADER 4 -->
+      <tr class="subheader">
+        <td colspan="6">Mammoth Speed Races</td>
+      </tr>
+
+      <!-- RACE 4a - Jan 23 SG-->
+      <tr>
+        <td class="date-cell">January 23</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">SG</td>
+        <td class="download-cell">
+          <!-- RACE 4a Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 4a Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 4a Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 4b - Jan 23 SG-->
+      <tr>
+        <td class="date-cell">January 23</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">SG</td>
+        <td class="download-cell">
+          <!-- RACE 4b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 4b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 4b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 4c - Jan 24 SG-->
+      <tr>
+        <td class="date-cell">January 24</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">SG</td>
+        <td class="download-cell">
+          <!-- RACE 4b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 4b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 4b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 4d - Jan 24 SG-->
+      <tr>
+        <td class="date-cell">January 24</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">SG</td>
+        <td class="download-cell">
+          <!-- RACE 4b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 4b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 4b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- SUBHEADER 5 -->
+      <tr class="subheader">
+        <td colspan="6">FIS Masters Cup / Western Region Championships</td>
+      </tr>
+
+      <!-- RACE 5a - Feb 6 SG-->
+      <tr>
+        <td class="date-cell">February 6</td>
+        <td class="location-cell">Beaver Creek, CO</td>
+        <td class="discipline-cell">SG</td>
+        <td class="download-cell">
+          <!-- RACE 5a Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5a Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5a Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 5b - Feb 6 SG-->
+      <tr>
+        <td class="date-cell">February 6</td>
+        <td class="location-cell">Beaver Creek, CO</td>
+        <td class="discipline-cell">SG</td>
+        <td class="download-cell">
+          <!-- RACE 5a Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5a Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5a Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 5c - Feb 7 GS-->
+      <tr>
+        <td class="date-cell">February 7</td>
+        <td class="location-cell">Beaver Creek, CO</td>
+        <td class="discipline-cell">GS (1-run)</td>
+        <td class="download-cell">
+          <!-- RACE 5b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 5c - Feb 7 GS-->
+      <tr>
+        <td class="date-cell">February 7</td>
+        <td class="location-cell">Beaver Creek, CO</td>
+        <td class="discipline-cell">GS (1-run)</td>
+        <td class="download-cell">
+          <!-- RACE 5b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 5e - Feb 8 SL-->
+      <tr>
+        <td class="date-cell">February 8</td>
+        <td class="location-cell">Beaver Creek, CO</td>
+        <td class="discipline-cell">SL</td>
+        <td class="download-cell">
+          <!-- RACE 5c Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5c Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 5c Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- SUBHEADER 6 -->
+      <tr class="subheader">
+        <td colspan="6">Northstar Speed Series</td>
+      </tr>
+
+      <!-- RACE 6a - Feb 27 SG-->
+      <tr>
+        <td class="date-cell">February 27</td>
+        <td class="location-cell">Northstar, CA</td>
+        <td class="discipline-cell">SG (NSS)</td>
+        <td class="download-cell">
+          <!-- RACE 6 Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 6 Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 6 Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 6b - Feb 27 SG-->
+      <tr>
+        <td class="date-cell">February 27</td>
+        <td class="location-cell">Northstar, CA</td>
+        <td class="discipline-cell">SG (NSS)</td>
+        <td class="download-cell">
+          <!-- RACE 6 Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 6 Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 6 Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- SUBHEADER 7 -->
+      <tr class="subheader">
+        <td colspan="6">Viva Italia</td>
+      </tr>
+
+      <!-- RACE 7a - Feb 28 SL-->
+      <tr>
+        <td class="date-cell">February 28</td>
+        <td class="location-cell">Diamond Peak, NV</td>
+        <td class="discipline-cell">SL</td>
+        <td class="download-cell">
+          <!-- RACE 7a Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 7a Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 7a Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 7b - Mar 1 SL-->
+      <tr>
+        <td class="date-cell">March 1</td>
+        <td class="location-cell">Diamond Peak, NV</td>
+        <td class="discipline-cell">SL</td>
+        <td class="download-cell">
+          <!-- RACE 7b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 7b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 7b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- SUBHEADER 8 -->
+      <tr class="subheader">
+        <td colspan="6">Palisades Tahoe (Alpine Meadows) Races</td>
+      </tr>
+
+      <!-- RACE 8a - Mar 6 SL-->
+      <tr>
+        <td class="date-cell">March 6</td>
+        <td class="location-cell">Alpine Meadows</td>
+        <td class="discipline-cell">SL</td>
+        <td class="download-cell">
+          <!-- RACE 8 Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 8 Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 8 Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 8b - Mar 6 SL-->
+      <tr>
+        <td class="date-cell">March 6</td>
+        <td class="location-cell">Alpine Meadows</td>
+        <td class="discipline-cell">SL</td>
+        <td class="download-cell">
+          <!-- RACE 8 Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 8 Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 8 Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- SUBHEADER 9 -->
+      <tr class="subheader">
+        <td colspan="6">Bernard Cup</td>
+      </tr>
+
+      <!-- RACE 9a - Mar 7 GS-->
+      <tr>
+        <td class="date-cell">March 7</td>
+        <td class="location-cell">Palisades Tahoe, CA (Olympic Valley)</td>
+        <td class="discipline-cell">GS</td>
+        <td class="download-cell">
+          <!-- RACE 9a Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 9a Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 9a Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 9b - Mar 8 GS-->
+      <tr>
+        <td class="date-cell">March 8</td>
+        <td class="location-cell">Palisades Tahoe, CA (Olympic Valley)</td>
+        <td class="discipline-cell">GS</td>
+        <td class="download-cell">
+          <!-- RACE 9b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 9b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 9b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- SUBHEADER 10 -->
+      <tr class="subheader">
+        <td colspan="6">Masters National Championships</td>
+      </tr>
+
+      <!-- RACE 10a - Mar 23 DH-->
+      <tr>
+        <td class="date-cell">March 23</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">DH</td>
+        <td class="download-cell">
+          <!-- RACE 10a Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 10a Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 10a Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 10b - Mar 24 SG-->
+      <tr>
+        <td class="date-cell">March 24</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">SG</td>
+        <td class="download-cell">
+          <!-- RACE 10b Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 10b Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 10b Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 10c - Mar 25 GS-->
+      <tr>
+        <td class="date-cell">March 25</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">GS</td>
+        <td class="download-cell">
+          <!-- RACE 10c Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 10c Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 10c Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+
+      <!-- RACE 10d - Mar 26 SL-->
+      <tr>
+        <td class="date-cell">March 26</td>
+        <td class="location-cell">Mammoth Mountain, CA</td>
+        <td class="discipline-cell">SL</td>
+        <td class="download-cell">
+          <!-- RACE 10d Class Link
+              <a href="#" class="download-link" title="Class">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 10d Gender Link
+              <a href="#" class="download-link" title="Gender">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+        <td class="download-cell">
+          <!-- RACE 10d Overall Link
+              <a href="#" class="download-link" title="Overall">
+                <svg class="download-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                  />
+                </svg>
+              </a>
+              -->
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
