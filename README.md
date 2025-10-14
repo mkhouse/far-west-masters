@@ -1,7 +1,7 @@
 # far-west-masters
 Far West Masters email and web templates and scripts.
 
-## Airtable scripts
+## Airtable results
 Scripts used to import and calculate race and overall points for a season using Airtable. See the repository's README file for additional info.
 
 ## Email templates
