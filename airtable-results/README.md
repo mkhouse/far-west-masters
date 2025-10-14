@@ -5,6 +5,7 @@
   * you may need to unlock the field in the class list to do this, but be sure to lock it again
 3. Rename the race tables to match the new season, deleting or adding new tables as needed
 4. Rename and relink the link, lookup and rollup fields for each race in the Overall Standings table so there's a set of fields for each race
+5. Edit the Class points field in the Overall Standings table to add together the Class points fields for each of the races
 
 # Importing a race
 ** Details coming soon **
