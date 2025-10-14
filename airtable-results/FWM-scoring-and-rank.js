@@ -4,15 +4,15 @@ const raceTable = config.raceTable.toString()
 const raceResultsTable = await base.getTable(raceTable)
   .selectRecordsAsync({
     fields: [
-      'Rank',
+      'Class rank',
       'Competitor',
       'Class',
       'Race points',
-      'Combined'
+      'Final'
     ],
     sorts: [
       {field: 'Class', direction: 'desc'},
-      {field: 'Combined', direction: 'asc'}
+      {field: 'Final', direction: 'asc'}
     ]
 })
 
@@ -36,7 +36,7 @@ const createRanks =
         if (similar.length > 0) {
           similar.forEach (result => {
             //console.log('result', result, result.id, similar.indexOf(result)+1)
-            if (result.getCellValueAsString('Combined') != 0) {
+            if (result.getCellValueAsString('Final') != 0) {
             item.push({id: result.id, fields:{'Class rank': item.length+1}})
             }
           })
