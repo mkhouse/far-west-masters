@@ -10,11 +10,11 @@
 # Test race
 - You can use the Test race table to test importing and overall standings
 - For overall standings, temporarily add link, lookup and rollup fields for the test race to the Overall Standings table
- - Be sure to add these fields to Overall Standings before you import the test race, otherwise the overall rankings won't update properly
+  - Be sure to add these fields to Overall Standings before you import the test race, otherwise the overall rankings won't update properly
 - To run the test results
- - Paste sample results into the Import table
- - Fill in Test race as the race in the first row of the import table
- - Check Import table now to start the import
+  - Paste sample results into the Import table
+  - Fill in Test race as the race in the first row of the import table
+  - Check Import table now to start the import
 
 # Importing a race
 ** Details coming soon **
