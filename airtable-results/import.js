@@ -21,7 +21,7 @@ const importTable = await base.getTable('Import')
     ]
   })
 
-const racersTable = await base.getTable('2024 - 2025 Overall')
+const racersTable = await base.getTable('2024 - 2025 Overall Standings')
   .selectRecordsAsync({
     fields: [
       'Name',
@@ -85,14 +85,14 @@ for (let result of handleImport) {
     createResult.push(
       {fields:{
         'Competitor': result.racerName,
-        'First run': result.runOne,
-        'Second run': result.runTwo,
+        'First run time': result.runOne,
+        'Second run time': result.runTwo,
         'First run DNF / DSQ': result.oneDNF,
         'Second run DNF / DSQ': result.twoDNF,
         'Class': {name: result.racerClass},
         '2024 - 2025 Racers': [{id: newRacerRecord}],
         'Race points': result.racePoints,
-        'Combined': result.combined
+        'Final': result.combined
       }
     })
   } else {
@@ -100,14 +100,14 @@ for (let result of handleImport) {
     createResult.push(
       {fields:{ 
         'Competitor': result.racerName,
-        'First run': result.runOne,
-        'Second run': result.runTwo,
+        'First run time': result.runOne,
+        'Second run time': result.runTwo,
         'First run DNF / DSQ': result.oneDNF,
         'Second run DNF / DSQ': result.twoDNF,
         'Class': result.racerClass,
         '2024 - 2025 Racers': [{id: result.racersTableId}],
         'Race points': result.racePoints,
-        'Combined': result.combined
+        'Final': result.combined
       }
     })
   }
