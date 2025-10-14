@@ -46,7 +46,6 @@ const createRanks =
               // update the rank of the previous item to have a (t) and also push this item with a t
               if (JSON.stringify(item[item.length-1].fields).includes(lastRank) && 
                 !JSON.stringify(item[item.length-1].fields).includes('t')) {
-                //arr[arr.length - 1].id = 99
                 let oldID = item[item.length-1].id
                 item[item.length-1] = {id: oldID, fields:{'Class rank': newRank.toString() + '(t)'}}
                 item.push({id: result.id, fields:{'Class rank': newRank.toString() + '(t)'}})
