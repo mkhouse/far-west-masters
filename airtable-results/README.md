@@ -7,10 +7,13 @@
 4. Rename and relink the link, lookup and rollup fields for each race in the Overall Standings table so there's a set of fields for each race
 5. Edit the Class points field in the Overall Standings table to add together the Class points fields for each of the races
 6. Edit the starts and finishes columns to adjust for the current year races, with these patterns, where you add together the result of eaxh line (the last line doesn't end with a +):
+
+
     Starts:
     IF(AND({Mammoth GS 12/7}, 
        NOT(FIND('DNS', {Mammoth GS 12/7}))
      ), 1) +
+
 
     Finishes:
     IF(AND({Mammoth GS 12/7}, 
