@@ -9,15 +9,15 @@
 6. Edit the starts and finishes columns to adjust for the current year races, with these patterns, where you add together the result of eaxh line (the last line doesn't end with a +):
 
 
-    Starts:
-    IF(AND({Mammoth GS 12/7}, 
-       NOT(FIND('DNS', {Mammoth GS 12/7}))
-     ), 1) +
+    Starts:<br />
+    IF(AND({Mammoth GS 12/7}, <br />
+       NOT(FIND('DNS', {Mammoth GS 12/7}))<br />
+     ), 1) +<br />
 
 
-    Finishes:
-    IF(AND({Mammoth GS 12/7}, 
-      NOT(FIND('D', {Mammoth GS 12/7}))
+    Finishes:<br />
+    IF(AND({Mammoth GS 12/7}, <br />
+      NOT(FIND('D', {Mammoth GS 12/7}))<br />
     ), 1) +
 
 # Test race
