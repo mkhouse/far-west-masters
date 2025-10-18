@@ -21,7 +21,7 @@ const importTable = await base.getTable('Import')
     ]
   })
 
-const racersTable = await base.getTable('2024 - 2025 Overall Standings')
+const racersTable = await base.getTable('Overall Standings')
   .selectRecordsAsync({
     fields: [
       'Name',
@@ -77,9 +77,9 @@ let createResult = []
 for (let result of handleImport) {
   //create racer record if needed
   if(result.racersTableId == null){
-    let newRacerRecord = await base.getTable('2024 - 2025 Racers').createRecordAsync({
+    let newRacerRecord = await base.getTable('Overall Standings').createRecordAsync({
       'Name': result.racerName,
-      'Class': result.racerClass
+      'Class': {name: result.racerClass}
     })
     // add to import queue with new racer record
     createResult.push(
@@ -104,7 +104,7 @@ for (let result of handleImport) {
         'Second run time': result.runTwo,
         'First run DNF / DSQ': result.oneDNF,
         'Second run DNF / DSQ': result.twoDNF,
-        'Class': result.racerClass,
+        'Class': {name: result.racerClass},
         '2024 - 2025 Racers': [{id: result.racersTableId}],
         'Race points': result.racePoints,
         'Final': result.combined
