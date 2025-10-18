@@ -1,425 +1,383 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>File Download Table</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 20px;
-        background-color: #f5f5f5;
-      }
-
-      .table-container {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th {
-        background-color: #253551;
-        color: white;
-        padding: 15px;
-        text-align: left;
-        font-weight: 600;
-      }
-
-      td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #e0e0e0;
-      }
-
-      tr:nth-child(even):not(.subheader) {
-        background-color: #f2f2f2;
-      }
-
-      tr:hover:not(.subheader) {
-        background-color: #e0e0db;
-      }
-
-      /* Subheader row styling */
-      .subheader {
-        background-color: #4a90e2 !important;
-        color: white !important;
-        font-weight: bold;
-        text-align: center;
-        font-size: 16px;
-      }
-
-      .subheader td {
-        padding: 12px 15px;
-        border-bottom: 2px solid #357abd;
-      }
-
-      .title-cell {
-        font-weight: 500;
-        color: #333;
-        max-width: 400px;
-      }
-
-      .download-cell {
-        text-align: center;
-        width: 80px;
-      }
-
-      .download-link {
-        display: inline-block;
-        padding: 8px;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-        text-decoration: none;
-      }
-
-      .download-link:hover {
-        background-color: #e3f2fd;
-        transform: scale(1.1);
-      }
-
-      .download-icon {
-        width: 20px;
-        height: 20px;
-        fill: #253551;
-      }
-
-      .download-link:hover .download-icon {
-        fill: #1a2740;
-      }
-    </style>
-  </head>
-  <body>
     <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Race Results</th>
-            <th>By class</th>
-            <th>By gender</th>
-            <th>Overall</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- SUBHEADER 1 -->
-          <tr class="subheader">
-            <td colspan="4">2024-2025 Season</td>
-          </tr>
-          
-          <!-- RACE 1-->
-          <tr>
-            <td class="title-cell">
-              <!-- RACE 1 Name -->
-             Race 1
-            </td>
-            <td class="download-cell">
-              <!-- RACE 1 Class Link-->
-              <a href="#" class="download-link" title="Class">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 1 Gender Link-->
-              <a href="#" class="download-link" title="Gender">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 1 Overall Link-->
-              <a href="#" class="download-link" title="Overall">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-          </tr>
-          <!-- RACE 2-->
-          <tr>
-            <td class="title-cell">
-              <!-- RACE 2 Name -->
-              Race 2
-            </td>
-            <td class="download-cell">
-              <!-- RACE 2 Class Link-->
-              <a href="#" class="download-link" title="Class">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 2 Gender Link-->
-              <a href="#" class="download-link" title="Gender">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 2 Overall Link-->
-              <a href="#" class="download-link" title="Overall">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-          </tr>
-          <!-- RACE 3-->
-          <tr>
-            <td class="title-cell">
-              <!-- RACE 3 Name -->
-              Race 3
-            </td>
-            <td class="download-cell">
-              <!-- RACE 3 Class Link-->
-              <a href="#" class="download-link" title="Class">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 3 Gender Link-->
-              <a href="#" class="download-link" title="Gender">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 3 Overall Link-->
-              <a href="#" class="download-link" title="Overall">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-          </tr>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Discipline</th>
+                    <th>Results</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="subheader">
+                    <td colspan="4">Mammoth Mountain Races</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">December 6</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>GS</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">December 7</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>GS</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
 
-          <!-- SUBHEADER 2 -->
-          <tr class="subheader">
-            <td colspan="4">2023-2024 Season</td>
-          </tr>
+                <tr class="subheader">
+                    <td colspan="4">Sugar Bowl Races</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">January 10</td>
+                    <td>Sugar Bowl, CA</td>
+                    <td>SL</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">January 11</td>
+                    <td>Sugar Bowl, CA</td>
+                    <td>SL</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
 
-          <!-- RACE 4-->
-          <tr>
-            <td class="title-cell">
-              <!-- RACE 4 Name -->
-              Race 4
-            </td>
-            <td class="download-cell">
-              <!-- RACE 4 Class Link-->
-              <a href="#" class="download-link" title="Class">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 4 Gender Link-->
-              <a href="#" class="download-link" title="Gender">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 4 Overall Link-->
-              <a href="#" class="download-link" title="Overall">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-          </tr>
-          <!-- RACE 5-->
-          <tr>
-            <td class="title-cell">
-              <!-- RACE 5 Name -->
-              Race 5
-            </td>
-            <td class="download-cell">
-              <!-- RACE 5 Class Link-->
-              <a href="#" class="download-link" title="Class">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 5 Gender Link-->
-              <a href="#" class="download-link" title="Gender">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 5 Overall Link-->
-              <a href="#" class="download-link" title="Overall">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-          </tr>
+                <tr class="subheader">
+                    <td colspan="4">Mammoth Speed Races</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">January 23</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>SG</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">January 23</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>SG</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">January 24</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>SG</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">January 24</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>SG</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
 
-          <!-- SUBHEADER 3 -->
-          <tr class="subheader">
-            <td colspan="4">2022-2023 Season</td>
-          </tr>
+                <tr class="subheader">
+                    <td colspan="4">FIS Masters Cup / Western Region Championships</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">February 6</td>
+                    <td>Beaver Creek, CO</td>
+                    <td>SG</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">February 6</td>
+                    <td>Beaver Creek, CO</td>
+                    <td>SG</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">February 7</td>
+                    <td>Beaver Creek, CO</td>
+                    <td>GS (1-run)</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">February 7</td>
+                    <td>Beaver Creek, CO</td>
+                    <td>GS (1-run)</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="date-cell">February 8</td>
+                    <td>Beaver Creek, CO</td>
+                    <td>SL</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
 
-          <!-- RACE 6-->
-          <tr>
-            <td class="title-cell">
-              <!-- RACE 6 Name -->
-              Race 6
-            </td>
-            <td class="download-cell">
-              <!-- RACE 6 Class Link-->
-              <a href="#" class="download-link" title="Class">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 6 Gender Link-->
-              <a href="#" class="download-link" title="Gender">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 6 Overall Link-->
-              <a href="#" class="download-link" title="Overall">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-          </tr>
-          <!-- RACE 7-->
-          <tr>
-            <td class="title-cell">
-              <!-- RACE 7 Name -->
-              Race 7
-            </td>
-            <td class="download-cell">
-              <!-- RACE 7 Class Link-->
-              <a href="#" class="download-link" title="Class">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 7 Gender Link-->
-              <a href="#" class="download-link" title="Gender">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 7 Overall Link-->
-              <a href="#" class="download-link" title="Overall">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-          </tr>
-          <!-- RACE 8-->
-          <tr>
-            <td class="title-cell">
-              <!-- RACE 8 Name -->
-              Race 8
-            </td>
-            <td class="download-cell">
-              <!-- RACE 8 Class Link-->
-              <a href="#" class="download-link" title="Class">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 8 Gender Link-->
-              <a href="#" class="download-link" title="Gender">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-            <td class="download-cell">
-              <!-- RACE 8 Overall Link-->
-              <a href="#" class="download-link" title="Overall">
-                <svg class="download-icon" viewBox="0 0 24 24">
-                  <path
-                    d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-                  />
-                </svg>
-              </a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                <tr class="subheader">
+                    <td colspan="4">Northstar Speed Series</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">February 27</td>
+                    <td>Northstar, CA</td>
+                    <td>SG (NSS)</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">February 27</td>
+                    <td>Northstar, CA</td>
+                    <td>SG (NSS)</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+
+                <tr class="subheader">
+                    <td colspan="4">Viva Italia</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">February 28</td>
+                    <td>Diamond Peak, NV</td>
+                    <td>SL</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 1</td>
+                    <td>Diamond Peak, NV</td>
+                    <td>SL</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+
+                <tr class="subheader">
+                    <td colspan="4">Palisades Tahoe (Alpine Meadows) Races</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 6</td>
+                    <td>Alpine Meadows</td>
+                    <td>SL</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 6</td>
+                    <td>Alpine Meadows</td>
+                    <td>SL</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+
+                <tr class="subheader">
+                    <td colspan="4">Bernard Cup</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 7</td>
+                    <td>Palisades Tahoe, CA (Olympic Valley)</td>
+                    <td>GS</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 8</td>
+                    <td>Palisades Tahoe, CA (Olympic Valley)</td>
+                    <td>GS</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+
+                <tr class="subheader">
+                    <td colspan="4">Masters National Championships</td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 23</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>DH</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 24</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>SG</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 25</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>GS</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="date-cell">March 26</td>
+                    <td>Mammoth Mountain, CA</td>
+                    <td>SL</td>
+                    <td>
+                        <!--
+                        <a href="#" class="download-link" title="Results" target="_blank" rel="noopener noreferrer">
+                          <svg class="download-icon results-icon" viewBox="0 0 24 24">
+                            <path d="M9,5V9H21V7.5L16,12L21,16.5V15H9V19H7V5M2,3V5H7V3M2,7V9H7V7M2,11V13H7V11M2,15V17H7V15M2,19V21H7V19H2Z"/>
+                          </svg>
+                        </a>
+                        -->
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-  </body>
-</html>
