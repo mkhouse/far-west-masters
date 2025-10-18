@@ -1,5 +1,5 @@
 // after each race is imported, recalculate and update overall standings
-const overallStandingsTable = await base.getTable('2024 - 2025 Overall Standings')
+const overallStandingsTable = await base.getTable('Overall Standings')
   .selectRecordsAsync({
     fields: [
       'Name',
@@ -79,6 +79,6 @@ console.log(ranks)
 
 // write the ranks to the Airable table with the results for this race
 while (ranks.length > 0) {
-    await base.getTable('2024 - 2025 Overall Standings').updateRecordsAsync(ranks.slice(0, 50))
+    await base.getTable('Overall Standings').updateRecordsAsync(ranks.slice(0, 50))
     ranks = ranks.slice(50)
 }
