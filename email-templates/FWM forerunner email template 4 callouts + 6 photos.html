@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Email Template</title>
     <!--[if mso]>
       <noscript>
@@ -13,6 +14,162 @@
         </xml>
       </noscript>
     <![endif]-->
+    <style type="text/css">
+      /* Client-specific Styles */
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        -webkit-text-size-adjust: 100% !important;
+        -ms-text-size-adjust: 100% !important;
+        -webkit-font-smoothing: antialiased !important;
+      }
+      
+      /* Prevent Webkit and Windows Mobile platforms from changing default font sizes */
+      body,
+      table,
+      td,
+      a {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      
+      /* Remove spacing around tables in Outlook */
+      table,
+      td {
+        mso-table-lspace: 0pt !important;
+        mso-table-rspace: 0pt !important;
+      }
+      
+      /* Force Outlook to provide a "view in browser" message */
+      #outlook a {
+        padding: 0;
+      }
+      
+      /* Force Hotmail to display emails at full width */
+      .ExternalClass {
+        width: 100%;
+      }
+      
+      /* Force Hotmail to display normal line spacing */
+      .ExternalClass,
+      .ExternalClass p,
+      .ExternalClass span,
+      .ExternalClass font,
+      .ExternalClass td,
+      .ExternalClass div {
+        line-height: 100%;
+      }
+      
+      /* Prevent WebKit and Windows mobile changing default text sizes */
+      body,
+      table,
+      td,
+      p,
+      a,
+      li,
+      blockquote {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      
+      /* Remove spacing between tables in Outlook */
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      
+      /* Allow smoother rendering of resized image in Internet Explorer */
+      img {
+        -ms-interpolation-mode: bicubic;
+        border: 0;
+        height: auto;
+        line-height: 100%;
+        outline: none;
+        text-decoration: none;
+      }
+      
+      /* MOBILE STYLES */
+      @media only screen and (max-width: 600px) {
+        /* Force table to full width */
+        .wrapper {
+          width: 100% !important;
+          min-width: 100% !important;
+        }
+        
+        /* Force container to full width with padding */
+        .container {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        
+        /* Adjust padding for mobile */
+        .mobile-padding {
+          padding: 20px 20px !important;
+        }
+        
+        .mobile-padding-small {
+          padding: 15px 20px !important;
+        }
+        
+        /* Stack columns on mobile */
+        .stack-column {
+          display: block !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          direction: ltr !important;
+          padding-right: 0 !important;
+          padding-left: 0 !important;
+        }
+        
+        /* Add spacing between stacked items */
+        .stack-column-spacing {
+          padding-bottom: 20px !important;
+        }
+        
+        /* Make images responsive */
+        .mobile-image {
+          width: 100% !important;
+          max-width: 280px !important;
+          height: auto !important;
+        }
+        
+        /* Adjust font sizes for mobile */
+        .mobile-heading {
+          font-size: 24px !important;
+        }
+        
+        .mobile-subheading {
+          font-size: 18px !important;
+        }
+        
+        /* Hide elements on mobile if needed */
+        .hide-mobile {
+          display: none !important;
+        }
+        
+        /* Center content on mobile */
+        .mobile-center {
+          text-align: center !important;
+        }
+        
+        /* Button adjustments */
+        .button-td {
+          padding: 10px 18px !important;
+          font-size: 15px !important;
+        }
+      }
+      
+      /* Prevent blue links on iOS */
+      a[x-apple-data-detectors] {
+        color: inherit !important;
+        text-decoration: none !important;
+        font-size: inherit !important;
+        font-family: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+      }
+    </style>
   </head>
   <body
     style="
@@ -30,10 +187,16 @@
       border="0"
       width="100%"
       style="background-color: #f4f4f4"
+      class="wrapper"
     >
       <tr>
         <td align="center" style="padding: 20px 0">
           <!-- Main container -->
+          <!--[if mso]>
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="width:600px;">
+          <tr>
+          <td style="padding:0;">
+          <![endif]-->
           <table
             role="presentation"
             cellspacing="0"
@@ -41,11 +204,12 @@
             border="0"
             width="600"
             style="
+              width: 600px;
               max-width: 600px;
               background-color: #ffffff;
               border: 3px solid #003366;
-              border-radius: 8px;
             "
+            class="container"
           >
             <!-- Header -->
             <tr>
@@ -54,9 +218,22 @@
                   padding: 30px 40px 20px 40px;
                   text-align: center;
                   background-color: #ffffff;
-                  border-radius: 8px 8px 0 0;
                 "
+                class="mobile-padding"
               >
+                <img
+                  src="https://images.squarespace-cdn.com/content/68b31728d76c116689325921/035a96dc-76e8-4c72-bb95-cb64d82beb74/FWM+Logo+Horiz+2c.jpg?content-type=image%2Fjpeg"
+                  alt="Far West Masters"
+                  width="150"
+                  height="85"
+                  style="
+                    width: 150px;
+                    max-width: 150px;
+                    height: auto;
+                    display: block;
+                    margin: 0 auto 15px auto;
+                  "
+                />
                 <h1
                   style="
                     margin: 0;
@@ -65,23 +242,36 @@
                     color: #003366;
                     font-family: Arial, sans-serif;
                   "
+                  class="mobile-heading"
                 >
-                  Your Company Name
+                  Far West Masters
                 </h1>
-                <div
-                  style="
-                    width: 50px;
-                    height: 3px;
-                    background-color: #8b0000;
-                    margin: 10px auto 0;
-                  "
-                ></div>
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  style="margin: 10px auto 0"
+                >
+                  <tr>
+                    <td
+                      style="
+                        width: 50px;
+                        height: 3px;
+                        background-color: #8b0000;
+                      "
+                    ></td>
+                  </tr>
+                </table>
               </td>
             </tr>
 
             <!-- Main Content -->
             <tr>
-              <td style="padding: 20px 40px; background-color: #ffffff">
+              <td
+                style="padding: 20px 40px; background-color: #ffffff"
+                class="mobile-padding"
+              >
                 <h2
                   style="
                     margin: 0 0 20px 0;
@@ -90,6 +280,7 @@
                     color: #003366;
                     font-family: Arial, sans-serif;
                   "
+                  class="mobile-subheading"
                 >
                   Newsletter Title
                 </h2>
@@ -117,7 +308,7 @@
                   "
                 >
                   This template is designed to work across all email clients,
-                  including older ones like Outlook 2003 and AOL Mail.
+                  including older ones like Outlook 2007-2019 and mobile devices.
                 </p>
 
                 <!-- Call-to-action button -->
@@ -138,6 +329,7 @@
                     >
                       <a
                         href="#"
+                        class="button-td"
                         style="
                           display: inline-block;
                           padding: 12px 24px;
@@ -170,9 +362,12 @@
               </td>
             </tr>
 
-            <!-- Features Section -->
+            <!-- Features Section (4 callouts) -->
             <tr>
-              <td style="padding: 20px 40px; background-color: #f8fafc">
+              <td
+                style="padding: 20px 40px; background-color: #f8fafc"
+                class="mobile-padding-small"
+              >
                 <!-- First row of features -->
                 <table
                   role="presentation"
@@ -183,84 +378,119 @@
                 >
                   <tr>
                     <!-- Feature One -->
-                    <td
-                      width="48%"
-                      style="vertical-align: top; padding-right: 2%"
+                    <th
+                      width="50%"
+                      class="stack-column stack-column-spacing"
+                      style="
+                        vertical-align: top;
+                        padding-right: 10px;
+                        font-weight: normal;
+                      "
                     >
-                      <h3
-                        style="
-                          margin: 0 0 12px 0;
-                          font-size: 18px;
-                          font-weight: bold;
-                          color: #003366;
-                          font-family: Arial, sans-serif;
-                        "
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                        border="0"
+                        width="100%"
                       >
-                        Feature One
-                      </h3>
-                      <p
-                        style="
-                          margin: 0 0 8px 0;
-                          font-size: 14px;
-                          line-height: 1.5;
-                          color: #666666;
-                          font-family: Arial, sans-serif;
-                        "
-                      >
-                        Brief description of your first feature or announcement.
-                      </p>
-                      <a
-                        href="#"
-                        style="
-                          color: #8b0000;
-                          text-decoration: none;
-                          font-weight: bold;
-                          font-size: 14px;
-                          font-family: Arial, sans-serif;
-                        "
-                        >Learn More →</a
-                      >
-                    </td>
+                        <tr>
+                          <td style="padding-bottom: 0">
+                            <h3
+                              style="
+                                margin: 0 0 12px 0;
+                                font-size: 18px;
+                                font-weight: bold;
+                                color: #003366;
+                                font-family: Arial, sans-serif;
+                              "
+                            >
+                              Feature One
+                            </h3>
+                            <p
+                              style="
+                                margin: 0 0 8px 0;
+                                font-size: 14px;
+                                line-height: 1.5;
+                                color: #666666;
+                                font-family: Arial, sans-serif;
+                              "
+                            >
+                              Brief description of your first feature or
+                              announcement.
+                            </p>
+                            <a
+                              href="#"
+                              style="
+                                color: #8b0000;
+                                text-decoration: none;
+                                font-weight: bold;
+                                font-size: 14px;
+                                font-family: Arial, sans-serif;
+                              "
+                              >Learn More →</a
+                            >
+                          </td>
+                        </tr>
+                      </table>
+                    </th>
                     <!-- Feature Two -->
-                    <td
-                      width="48%"
-                      style="vertical-align: top; padding-left: 2%"
+                    <th
+                      width="50%"
+                      class="stack-column"
+                      style="
+                        vertical-align: top;
+                        padding-left: 10px;
+                        font-weight: normal;
+                      "
                     >
-                      <h3
-                        style="
-                          margin: 0 0 12px 0;
-                          font-size: 18px;
-                          font-weight: bold;
-                          color: #003366;
-                          font-family: Arial, sans-serif;
-                        "
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                        border="0"
+                        width="100%"
                       >
-                        Feature Two
-                      </h3>
-                      <p
-                        style="
-                          margin: 0 0 8px 0;
-                          font-size: 14px;
-                          line-height: 1.5;
-                          color: #666666;
-                          font-family: Arial, sans-serif;
-                        "
-                      >
-                        Brief description of your second feature or
-                        announcement.
-                      </p>
-                      <a
-                        href="#"
-                        style="
-                          color: #8b0000;
-                          text-decoration: none;
-                          font-weight: bold;
-                          font-size: 14px;
-                          font-family: Arial, sans-serif;
-                        "
-                        >Learn More →</a
-                      >
-                    </td>
+                        <tr>
+                          <td style="padding-bottom: 0">
+                            <h3
+                              style="
+                                margin: 0 0 12px 0;
+                                font-size: 18px;
+                                font-weight: bold;
+                                color: #003366;
+                                font-family: Arial, sans-serif;
+                              "
+                            >
+                              Feature Two
+                            </h3>
+                            <p
+                              style="
+                                margin: 0 0 8px 0;
+                                font-size: 14px;
+                                line-height: 1.5;
+                                color: #666666;
+                                font-family: Arial, sans-serif;
+                              "
+                            >
+                              Brief description of your second feature or
+                              announcement.
+                            </p>
+                            <a
+                              href="#"
+                              style="
+                                color: #8b0000;
+                                text-decoration: none;
+                                font-weight: bold;
+                                font-size: 14px;
+                                font-family: Arial, sans-serif;
+                              "
+                              >Learn More →</a
+                            >
+                          </td>
+                        </tr>
+                      </table>
+                    </th>
                   </tr>
                 </table>
 
@@ -273,7 +503,9 @@
                   width="100%"
                 >
                   <tr>
-                    <td style="height: 25px; line-height: 25px">&nbsp;</td>
+                    <td style="height: 20px; line-height: 20px; font-size: 20px">
+                      &nbsp;
+                    </td>
                   </tr>
                 </table>
 
@@ -287,93 +519,129 @@
                 >
                   <tr>
                     <!-- Feature Three -->
-                    <td
-                      width="48%"
-                      style="vertical-align: top; padding-right: 2%"
+                    <th
+                      width="50%"
+                      class="stack-column stack-column-spacing"
+                      style="
+                        vertical-align: top;
+                        padding-right: 10px;
+                        font-weight: normal;
+                      "
                     >
-                      <h3
-                        style="
-                          margin: 0 0 12px 0;
-                          font-size: 18px;
-                          font-weight: bold;
-                          color: #003366;
-                          font-family: Arial, sans-serif;
-                        "
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                        border="0"
+                        width="100%"
                       >
-                        Feature Three
-                      </h3>
-                      <p
-                        style="
-                          margin: 0 0 8px 0;
-                          font-size: 14px;
-                          line-height: 1.5;
-                          color: #666666;
-                          font-family: Arial, sans-serif;
-                        "
-                      >
-                        Brief description of your third feature or announcement.
-                      </p>
-                      <a
-                        href="#"
-                        style="
-                          color: #8b0000;
-                          text-decoration: none;
-                          font-weight: bold;
-                          font-size: 14px;
-                          font-family: Arial, sans-serif;
-                        "
-                        >Learn More →</a
-                      >
-                    </td>
+                        <tr>
+                          <td style="padding-bottom: 0">
+                            <h3
+                              style="
+                                margin: 0 0 12px 0;
+                                font-size: 18px;
+                                font-weight: bold;
+                                color: #003366;
+                                font-family: Arial, sans-serif;
+                              "
+                            >
+                              Feature Three
+                            </h3>
+                            <p
+                              style="
+                                margin: 0 0 8px 0;
+                                font-size: 14px;
+                                line-height: 1.5;
+                                color: #666666;
+                                font-family: Arial, sans-serif;
+                              "
+                            >
+                              Brief description of your third feature or
+                              announcement.
+                            </p>
+                            <a
+                              href="#"
+                              style="
+                                color: #8b0000;
+                                text-decoration: none;
+                                font-weight: bold;
+                                font-size: 14px;
+                                font-family: Arial, sans-serif;
+                              "
+                              >Learn More →</a
+                            >
+                          </td>
+                        </tr>
+                      </table>
+                    </th>
                     <!-- Feature Four -->
-                    <td
-                      width="48%"
-                      style="vertical-align: top; padding-left: 2%"
+                    <th
+                      width="50%"
+                      class="stack-column"
+                      style="
+                        vertical-align: top;
+                        padding-left: 10px;
+                        font-weight: normal;
+                      "
                     >
-                      <h3
-                        style="
-                          margin: 0 0 12px 0;
-                          font-size: 18px;
-                          font-weight: bold;
-                          color: #003366;
-                          font-family: Arial, sans-serif;
-                        "
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                        border="0"
+                        width="100%"
                       >
-                        Feature Four
-                      </h3>
-                      <p
-                        style="
-                          margin: 0 0 8px 0;
-                          font-size: 14px;
-                          line-height: 1.5;
-                          color: #666666;
-                          font-family: Arial, sans-serif;
-                        "
-                      >
-                        Brief description of your fourth feature or
-                        announcement.
-                      </p>
-                      <a
-                        href="#"
-                        style="
-                          color: #8b0000;
-                          text-decoration: none;
-                          font-weight: bold;
-                          font-size: 14px;
-                          font-family: Arial, sans-serif;
-                        "
-                        >Learn More →</a
-                      >
-                    </td>
+                        <tr>
+                          <td style="padding-bottom: 0">
+                            <h3
+                              style="
+                                margin: 0 0 12px 0;
+                                font-size: 18px;
+                                font-weight: bold;
+                                color: #003366;
+                                font-family: Arial, sans-serif;
+                              "
+                            >
+                              Feature Four
+                            </h3>
+                            <p
+                              style="
+                                margin: 0 0 8px 0;
+                                font-size: 14px;
+                                line-height: 1.5;
+                                color: #666666;
+                                font-family: Arial, sans-serif;
+                              "
+                            >
+                              Brief description of your fourth feature or
+                              announcement.
+                            </p>
+                            <a
+                              href="#"
+                              style="
+                                color: #8b0000;
+                                text-decoration: none;
+                                font-weight: bold;
+                                font-size: 14px;
+                                font-family: Arial, sans-serif;
+                              "
+                              >Learn More →</a
+                            >
+                          </td>
+                        </tr>
+                      </table>
+                    </th>
                   </tr>
                 </table>
               </td>
             </tr>
 
-            <!-- Photos Section -->
+            <!-- Photo Gallery Section (6 photos) -->
             <tr>
               <td
-                style="padding: 30px 40px 20px 40px; background-color: #ffffff"
+                style="padding: 30px 40px; background-color: #ffffff"
+                class="mobile-padding"
               >
                 <h2
                   style="
@@ -384,19 +652,12 @@
                     text-align: center;
                     font-family: Arial, sans-serif;
                   "
+                  class="mobile-subheading"
                 >
                   Photo Gallery
                 </h2>
-                <div
-                  style="
-                    width: 50px;
-                    height: 3px;
-                    background-color: #8b0000;
-                    margin: 0 auto 25px;
-                  "
-                ></div>
 
-                <!-- Photo Grid -->
+                <!-- First row of photos (3 columns) -->
                 <table
                   role="presentation"
                   cellspacing="0"
@@ -406,9 +667,10 @@
                 >
                   <tr>
                     <!-- Photo 1 -->
-                    <td
-                      width="32%"
-                      style="vertical-align: top; padding-right: 2%"
+                    <th
+                      width="33.33%"
+                      class="stack-column stack-column-spacing"
+                      style="vertical-align: top; font-weight: normal"
                     >
                       <table
                         role="presentation"
@@ -418,7 +680,7 @@
                         width="100%"
                       >
                         <tr>
-                          <td style="text-align: center">
+                          <td align="center" style="padding: 0 5px">
                             <img
                               src="https://via.placeholder.com/160x120/003366/ffffff?text=Photo+1"
                               alt="Photo 1"
@@ -429,9 +691,9 @@
                                 max-width: 160px;
                                 height: auto;
                                 border: 2px solid #003366;
-                                border-radius: 4px;
                                 display: block;
                               "
+                              class="mobile-image"
                             />
                             <p
                               style="
@@ -447,9 +709,13 @@
                           </td>
                         </tr>
                       </table>
-                    </td>
+                    </th>
                     <!-- Photo 2 -->
-                    <td width="32%" style="vertical-align: top; padding: 0 1%">
+                    <th
+                      width="33.33%"
+                      class="stack-column stack-column-spacing"
+                      style="vertical-align: top; font-weight: normal"
+                    >
                       <table
                         role="presentation"
                         cellspacing="0"
@@ -458,7 +724,7 @@
                         width="100%"
                       >
                         <tr>
-                          <td style="text-align: center">
+                          <td align="center" style="padding: 0 5px">
                             <img
                               src="https://via.placeholder.com/160x120/8B0000/ffffff?text=Photo+2"
                               alt="Photo 2"
@@ -469,9 +735,9 @@
                                 max-width: 160px;
                                 height: auto;
                                 border: 2px solid #003366;
-                                border-radius: 4px;
                                 display: block;
                               "
+                              class="mobile-image"
                             />
                             <p
                               style="
@@ -487,11 +753,12 @@
                           </td>
                         </tr>
                       </table>
-                    </td>
+                    </th>
                     <!-- Photo 3 -->
-                    <td
-                      width="32%"
-                      style="vertical-align: top; padding-left: 2%"
+                    <th
+                      width="33.33%"
+                      class="stack-column"
+                      style="vertical-align: top; font-weight: normal"
                     >
                       <table
                         role="presentation"
@@ -501,7 +768,7 @@
                         width="100%"
                       >
                         <tr>
-                          <td style="text-align: center">
+                          <td align="center" style="padding: 0 5px">
                             <img
                               src="https://via.placeholder.com/160x120/003366/ffffff?text=Photo+3"
                               alt="Photo 3"
@@ -512,9 +779,9 @@
                                 max-width: 160px;
                                 height: auto;
                                 border: 2px solid #003366;
-                                border-radius: 4px;
                                 display: block;
                               "
+                              class="mobile-image"
                             />
                             <p
                               style="
@@ -530,7 +797,7 @@
                           </td>
                         </tr>
                       </table>
-                    </td>
+                    </th>
                   </tr>
                 </table>
 
@@ -543,7 +810,9 @@
                   width="100%"
                 >
                   <tr>
-                    <td style="height: 20px; line-height: 20px">&nbsp;</td>
+                    <td style="height: 20px; line-height: 20px; font-size: 20px">
+                      &nbsp;
+                    </td>
                   </tr>
                 </table>
 
@@ -557,9 +826,10 @@
                 >
                   <tr>
                     <!-- Photo 4 -->
-                    <td
-                      width="32%"
-                      style="vertical-align: top; padding-right: 2%"
+                    <th
+                      width="33.33%"
+                      class="stack-column stack-column-spacing"
+                      style="vertical-align: top; font-weight: normal"
                     >
                       <table
                         role="presentation"
@@ -569,7 +839,7 @@
                         width="100%"
                       >
                         <tr>
-                          <td style="text-align: center">
+                          <td align="center" style="padding: 0 5px">
                             <img
                               src="https://via.placeholder.com/160x120/8B0000/ffffff?text=Photo+4"
                               alt="Photo 4"
@@ -580,9 +850,9 @@
                                 max-width: 160px;
                                 height: auto;
                                 border: 2px solid #003366;
-                                border-radius: 4px;
                                 display: block;
                               "
+                              class="mobile-image"
                             />
                             <p
                               style="
@@ -598,9 +868,13 @@
                           </td>
                         </tr>
                       </table>
-                    </td>
+                    </th>
                     <!-- Photo 5 -->
-                    <td width="32%" style="vertical-align: top; padding: 0 1%">
+                    <th
+                      width="33.33%"
+                      class="stack-column stack-column-spacing"
+                      style="vertical-align: top; font-weight: normal"
+                    >
                       <table
                         role="presentation"
                         cellspacing="0"
@@ -609,7 +883,7 @@
                         width="100%"
                       >
                         <tr>
-                          <td style="text-align: center">
+                          <td align="center" style="padding: 0 5px">
                             <img
                               src="https://via.placeholder.com/160x120/003366/ffffff?text=Photo+5"
                               alt="Photo 5"
@@ -620,9 +894,9 @@
                                 max-width: 160px;
                                 height: auto;
                                 border: 2px solid #003366;
-                                border-radius: 4px;
                                 display: block;
                               "
+                              class="mobile-image"
                             />
                             <p
                               style="
@@ -638,11 +912,12 @@
                           </td>
                         </tr>
                       </table>
-                    </td>
+                    </th>
                     <!-- Photo 6 -->
-                    <td
-                      width="32%"
-                      style="vertical-align: top; padding-left: 2%"
+                    <th
+                      width="33.33%"
+                      class="stack-column"
+                      style="vertical-align: top; font-weight: normal"
                     >
                       <table
                         role="presentation"
@@ -652,7 +927,7 @@
                         width="100%"
                       >
                         <tr>
-                          <td style="text-align: center">
+                          <td align="center" style="padding: 0 5px">
                             <img
                               src="https://via.placeholder.com/160x120/8B0000/ffffff?text=Photo+6"
                               alt="Photo 6"
@@ -663,9 +938,9 @@
                                 max-width: 160px;
                                 height: auto;
                                 border: 2px solid #003366;
-                                border-radius: 4px;
                                 display: block;
                               "
+                              class="mobile-image"
                             />
                             <p
                               style="
@@ -681,7 +956,7 @@
                           </td>
                         </tr>
                       </table>
-                    </td>
+                    </th>
                   </tr>
                 </table>
 
@@ -714,9 +989,9 @@
                 style="
                   padding: 30px 40px;
                   background-color: #003366;
-                  border-radius: 0 0 8px 8px;
                   border-top: 3px solid #8b0000;
                 "
+                class="mobile-padding"
               >
                 <table
                   role="presentation"
@@ -726,7 +1001,7 @@
                   width="100%"
                 >
                   <tr>
-                    <td style="text-align: center">
+                    <td align="center">
                       <p
                         style="
                           margin: 0 0 10px 0;
@@ -735,7 +1010,7 @@
                           font-family: Arial, sans-serif;
                         "
                       >
-                        © 2025 Your Company Name. All rights reserved.
+                        © 2025 Far West Masters. All rights reserved.
                       </p>
                       <p
                         style="
@@ -764,6 +1039,11 @@
               </td>
             </tr>
           </table>
+          <!--[if mso]>
+          </td>
+          </tr>
+          </table>
+          <![endif]-->
         </td>
       </tr>
     </table>
