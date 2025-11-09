@@ -412,9 +412,23 @@
                       font-family: Arial, sans-serif;
                     "
                   >
-                    Additional paragraph text goes here if needed.
+                    Key points to remember:
                   </p>
-                  <!-- Optional Call-to-action button -->
+                  <ul
+                    style="
+                      margin: 0 0 16px 0;
+                      padding-left: 20px;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    <li style="margin-bottom: 8px;">First important point about this announcement</li>
+                    <li style="margin-bottom: 8px;">Second important point to highlight</li>
+                    <li style="margin-bottom: 8px;">Third key detail for members to know</li>
+                  </ul>
+                  <!-- BUTTON START - Delete this entire comment block (from BUTTON START to BUTTON END) to remove the button -->
                   <table
                     border="0"
                     cellpadding="0"
@@ -451,6 +465,7 @@
                       </tr>
                     </tbody>
                   </table>
+                  <!-- BUTTON END -->
                 </td>
               </tr>
 
@@ -520,10 +535,60 @@
                       font-family: Arial, sans-serif;
                     "
                   >
-                    <li style="margin-bottom: 8px;">First list item</li>
-                    <li style="margin-bottom: 8px;">Second list item</li>
-                    <li style="margin-bottom: 8px;">Third list item</li>
+                    <li style="margin-bottom: 8px;">First list item with details</li>
+                    <li style="margin-bottom: 8px;">Second list item with important information</li>
+                    <li style="margin-bottom: 8px;">Third list item to highlight</li>
+                    <li style="margin-bottom: 8px;">Fourth item if you need more points</li>
                   </ul>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    Additional details or context can go here after your list.
+                  </p>
+                  <!-- BUTTON START - Delete this entire comment block (from BUTTON START to BUTTON END) to remove the button -->
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    style="margin: 25px 0"
+                  >
+                    <tbody>
+                      <tr>
+                        <td
+                          style="
+                            border-radius: 6px;
+                            background-color: #8b0000;
+                            border: 2px solid #003366;
+                          "
+                        >
+                          <a
+                            class="button-td"
+                            href="https://farwestmasters.org"
+                            style="
+                              display: inline-block;
+                              padding: 12px 24px;
+                              font-family: Arial, sans-serif;
+                              font-size: 16px;
+                              font-weight: bold;
+                              color: #ffffff;
+                              text-decoration: none;
+                              border-radius: 6px;
+                            "
+                          >
+                            Learn More or Take Action
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <!-- BUTTON END -->
                 </td>
               </tr>
 
@@ -581,8 +646,71 @@
                       font-family: Arial, sans-serif;
                     "
                   >
-                    <strong>Important:</strong> You can use bold text to highlight key information.
+                    <strong>Important details:</strong>
                   </p>
+                  <ul
+                    style="
+                      margin: 0 0 16px 0;
+                      padding-left: 20px;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    <li style="margin-bottom: 8px;">Detail one that members need to know</li>
+                    <li style="margin-bottom: 8px;">Detail two with specific information</li>
+                    <li style="margin-bottom: 8px;">Detail three for additional context</li>
+                  </ul>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    You can use bold text to highlight key information and add more context after your list.
+                  </p>
+                  <!-- BUTTON START - Delete this entire comment block (from BUTTON START to BUTTON END) to remove the button -->
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    style="margin: 25px 0"
+                  >
+                    <tbody>
+                      <tr>
+                        <td
+                          style="
+                            border-radius: 6px;
+                            background-color: #8b0000;
+                            border: 2px solid #003366;
+                          "
+                        >
+                          <a
+                            class="button-td"
+                            href="https://farwestmasters.org"
+                            style="
+                              display: inline-block;
+                              padding: 12px 24px;
+                              font-family: Arial, sans-serif;
+                              font-size: 16px;
+                              font-weight: bold;
+                              color: #ffffff;
+                              text-decoration: none;
+                              border-radius: 6px;
+                            "
+                          >
+                            Get More Information
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <!-- BUTTON END -->
                 </td>
               </tr>
 
@@ -640,8 +768,71 @@
                       font-family: Arial, sans-serif;
                     "
                   >
+                    Things to remember:
+                  </p>
+                  <ul
+                    style="
+                      margin: 0 0 16px 0;
+                      padding-left: 20px;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    <li style="margin-bottom: 8px;">Important point number one</li>
+                    <li style="margin-bottom: 8px;">Important point number two</li>
+                    <li style="margin-bottom: 8px;">Important point number three</li>
+                  </ul>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
                     If you have questions, email <a href="mailto:info@farwestmasters.org" style="color: #8b0000; text-decoration: underline;">info@farwestmasters.org</a>.
                   </p>
+                  <!-- BUTTON START - Delete this entire comment block (from BUTTON START to BUTTON END) to remove the button -->
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    style="margin: 25px 0"
+                  >
+                    <tbody>
+                      <tr>
+                        <td
+                          style="
+                            border-radius: 6px;
+                            background-color: #8b0000;
+                            border: 2px solid #003366;
+                          "
+                        >
+                          <a
+                            class="button-td"
+                            href="https://farwestmasters.org"
+                            style="
+                              display: inline-block;
+                              padding: 12px 24px;
+                              font-family: Arial, sans-serif;
+                              font-size: 16px;
+                              font-weight: bold;
+                              color: #ffffff;
+                              text-decoration: none;
+                              border-radius: 6px;
+                            "
+                          >
+                            Visit Our Website
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <!-- BUTTON END -->
                 </td>
               </tr>
 
@@ -673,7 +864,7 @@
                               font-family: Arial, sans-serif;
                             "
                           >
-                            &copy; 2025 Far West Masters. All rights reserved.
+                            &copy; [currentyear] Far West Masters. All rights reserved.
                           </p>
                           <p
                             style="
@@ -688,19 +879,11 @@
                               style="color: #ffffff; text-decoration: underline"
                               >www.farwestmasters.org</a
                             ><br />
-                            <a
-                              href="#"
-                              target="_blank"
-                              style="color: #ffffff; text-decoration: underline"
-                              >View in web browser</a
-                            >
+                            <webversion style="color: #ffffff; text-decoration: underline"
+                              >View in web browser</webversion>
                             |
-                            <a
-                              href="#"
-                              target="_blank"
-                              style="color: #ffffff; text-decoration: underline"
-                              >Unsubscribe</a
-                            >
+                            <unsubscribe style="color: #ffffff; text-decoration: underline"
+                              >Unsubscribe</unsubscribe>
                           </p>
                         </td>
                       </tr>
