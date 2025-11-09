@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Far West Masters Announcements</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style type="text/css">
+    /* Client-specific Styles */
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      -webkit-text-size-adjust: 100% !important;
+      -ms-text-size-adjust: 100% !important;
+      -webkit-font-smoothing: antialiased !important;
+    }
+    
+    /* Prevent Webkit and Windows Mobile platforms from changing default font sizes */
+    body,
+    table,
+    td,
+    a {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    
+    /* Remove spacing around tables in Outlook */
+    table,
+    td {
+      mso-table-lspace: 0pt !important;
+      mso-table-rspace: 0pt !important;
+    }
+    
+    /* Force Outlook to provide a "view in browser" message */
+    #outlook a {
+      padding: 0;
+    }
+    
+    /* Force Hotmail to display emails at full width */
+    .ExternalClass {
+      width: 100%;
+    }
+    
+    /* Force Hotmail to display normal line spacing */
+    .ExternalClass,
+    .ExternalClass p,
+    .ExternalClass span,
+    .ExternalClass font,
+    .ExternalClass td,
+    .ExternalClass div {
+      line-height: 100%;
+    }
+    
+    /* Prevent WebKit and Windows mobile changing default text sizes */
+    body,
+    table,
+    td,
+    p,
+    a,
+    li,
+    blockquote {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    
+    /* Remove spacing between tables in Outlook */
+    table,
+    td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+    
+    /* Allow smoother rendering of resized image in Internet Explorer */
+    img {
+      -ms-interpolation-mode: bicubic;
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+    }
+    
+    /* MOBILE STYLES */
+    @media only screen and (max-width: 600px) {
+      /* Force table to full width */
+      .wrapper {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+      
+      /* Force container to full width with padding */
+      .container {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      /* Adjust padding for mobile */
+      .mobile-padding {
+        padding: 20px 20px !important;
+      }
+      
+      .mobile-padding-small {
+        padding: 15px 20px !important;
+      }
+      
+      /* Adjust font sizes for mobile */
+      .mobile-heading {
+        font-size: 24px !important;
+      }
+      
+      .mobile-subheading {
+        font-size: 18px !important;
+      }
+      
+      /* Hide elements on mobile if needed */
+      .hide-mobile {
+        display: none !important;
+      }
+      
+      /* Center content on mobile */
+      .mobile-center {
+        text-align: center !important;
+      }
+      
+      /* Button adjustments */
+      .button-td {
+        padding: 10px 18px !important;
+        font-size: 15px !important;
+      }
+      
+      /* Callout item adjustments */
+      .callout-item {
+        font-size: 15px !important;
+        padding: 10px 0 !important;
+      }
+    }
+    
+    /* Prevent blue links on iOS */
+    a[x-apple-data-detectors] {
+      color: inherit !important;
+      text-decoration: none !important;
+      font-size: inherit !important;
+      font-family: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+    }
+  </style>
+</head>
+<body style="
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    font-family: Arial, sans-serif;
+  ">
+  <!-- Wrapper table for email clients -->
+  <table
+    border="0"
+    cellpadding="0"
+    cellspacing="0"
+    class="wrapper"
+    role="presentation"
+    style="background-color: #f4f4f4"
+    width="100%"
+  >
+    <tbody>
+      <tr>
+        <td align="center" style="padding: 20px 0">
+          <!-- Main container -->
+          <!--[if mso]>
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="width:600px;">
+          <tr>
+          <td style="padding:0;">
+          <![endif]-->
+          <table
+            border="0"
+            cellpadding="0"
+            cellspacing="0"
+            class="container"
+            role="presentation"
+            style="
+              width: 600px;
+              max-width: 600px;
+              background-color: #ffffff;
+              border: 3px solid #003366;
+            "
+            width="600"
+          >
+            <tbody>
+              <!-- Header -->
+              <tr>
+                <td
+                  class="mobile-padding"
+                  style="
+                    padding: 30px 40px 20px 40px;
+                    text-align: center;
+                    background-color: #ffffff;
+                  "
+                >
+                  <img
+                    alt="Far West Masters"
+                    src="https://images.squarespace-cdn.com/content/68b31728d76c116689325921/035a96dc-76e8-4c72-bb95-cb64d82beb74/FWMLogoHoriz2c.jpg?content-type=image%2Fjpeg"
+                    style="
+                      width: 150px;
+                      max-width: 150px;
+                      height: auto;
+                      display: block;
+                      margin: 0 auto 15px auto;
+                    "
+                    width="150"
+                    height="85"
+                  />
+                  <h1
+                    class="mobile-heading"
+                    style="
+                      margin: 0;
+                      font-size: 28px;
+                      font-weight: bold;
+                      color: #003366;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    Far West Masters
+                  </h1>
+                  <div
+                    style="
+                      width: 50px;
+                      height: 3px;
+                      background-color: #8b0000;
+                      margin: 10px auto 0;
+                    "
+                  >
+                    &nbsp;
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Callout Section - What's in this email -->
+              <tr>
+                <td
+                  class="mobile-padding-small"
+                  style="
+                    padding: 20px 40px;
+                    background-color: #f8fafc;
+                    border-top: 3px solid #8b0000;
+                    border-bottom: 3px solid #8b0000;
+                  "
+                >
+                  <h2
+                    class="mobile-subheading"
+                    style="
+                      margin: 0 0 15px 0;
+                      font-size: 20px;
+                      font-weight: bold;
+                      color: #003366;
+                      font-family: Arial, sans-serif;
+                      text-align: center;
+                    "
+                  >
+                    What's in this email:
+                  </h2>
+                  
+                  <!-- Callout Items -->
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    width="100%"
+                  >
+                    <tbody>
+                      <tr>
+                        <td
+                          class="callout-item"
+                          style="
+                            padding: 12px 0;
+                            border-bottom: 1px solid #cbd5e1;
+                          "
+                        >
+                          <a
+                            href="#announcement1"
+                            style="
+                              color: #8b0000;
+                              text-decoration: none;
+                              font-weight: bold;
+                              font-size: 16px;
+                              font-family: Arial, sans-serif;
+                              display: block;
+                            "
+                          >
+                            &raquo; Announcement Title One
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          class="callout-item"
+                          style="
+                            padding: 12px 0;
+                            border-bottom: 1px solid #cbd5e1;
+                          "
+                        >
+                          <a
+                            href="#announcement2"
+                            style="
+                              color: #8b0000;
+                              text-decoration: none;
+                              font-weight: bold;
+                              font-size: 16px;
+                              font-family: Arial, sans-serif;
+                              display: block;
+                            "
+                          >
+                            &raquo; Announcement Title Two
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          class="callout-item"
+                          style="
+                            padding: 12px 0;
+                            border-bottom: 1px solid #cbd5e1;
+                          "
+                        >
+                          <a
+                            href="#announcement3"
+                            style="
+                              color: #8b0000;
+                              text-decoration: none;
+                              font-weight: bold;
+                              font-size: 16px;
+                              font-family: Arial, sans-serif;
+                              display: block;
+                            "
+                          >
+                            &raquo; Announcement Title Three
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          class="callout-item"
+                          style="
+                            padding: 12px 0 0 0;
+                          "
+                        >
+                          <a
+                            href="#announcement4"
+                            style="
+                              color: #8b0000;
+                              text-decoration: none;
+                              font-weight: bold;
+                              font-size: 16px;
+                              font-family: Arial, sans-serif;
+                              display: block;
+                            "
+                          >
+                            &raquo; Announcement Title Four
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Announcement 1 -->
+              <tr>
+                <td
+                  id="announcement1"
+                  class="mobile-padding"
+                  style="padding: 30px 40px; background-color: #ffffff"
+                >
+                  <h2
+                    class="mobile-subheading"
+                    style="
+                      margin: 0 0 20px 0;
+                      font-size: 22px;
+                      font-weight: bold;
+                      color: #003366;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    Announcement Title One
+                  </h2>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    This is the first announcement. Add your content here with all the details about this particular announcement. You can include multiple paragraphs, links, and even call-to-action buttons.
+                  </p>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    Additional paragraph text goes here if needed.
+                  </p>
+                  <!-- Optional Call-to-action button -->
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    style="margin: 25px 0"
+                  >
+                    <tbody>
+                      <tr>
+                        <td
+                          style="
+                            border-radius: 6px;
+                            background-color: #8b0000;
+                            border: 2px solid #003366;
+                          "
+                        >
+                          <a
+                            class="button-td"
+                            href="https://farwestmasters.org"
+                            style="
+                              display: inline-block;
+                              padding: 12px 24px;
+                              font-family: Arial, sans-serif;
+                              font-size: 16px;
+                              font-weight: bold;
+                              color: #ffffff;
+                              text-decoration: none;
+                              border-radius: 6px;
+                            "
+                          >
+                            Button Text Here
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Divider -->
+              <tr>
+                <td style="padding: 0 40px; background-color: #ffffff">
+                  <div
+                    style="
+                      height: 2px;
+                      background-color: #e2e8f0;
+                      margin: 0;
+                    "
+                  >
+                    &nbsp;
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Announcement 2 -->
+              <tr>
+                <td
+                  id="announcement2"
+                  class="mobile-padding"
+                  style="padding: 30px 40px; background-color: #ffffff"
+                >
+                  <h2
+                    class="mobile-subheading"
+                    style="
+                      margin: 0 0 20px 0;
+                      font-size: 22px;
+                      font-weight: bold;
+                      color: #003366;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    Announcement Title Two
+                  </h2>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    This is the second announcement. Replace this text with your announcement content.
+                  </p>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    You can include lists if needed:
+                  </p>
+                  <ul
+                    style="
+                      margin: 0 0 16px 0;
+                      padding-left: 20px;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    <li style="margin-bottom: 8px;">First list item</li>
+                    <li style="margin-bottom: 8px;">Second list item</li>
+                    <li style="margin-bottom: 8px;">Third list item</li>
+                  </ul>
+                </td>
+              </tr>
+
+              <!-- Divider -->
+              <tr>
+                <td style="padding: 0 40px; background-color: #ffffff">
+                  <div
+                    style="
+                      height: 2px;
+                      background-color: #e2e8f0;
+                      margin: 0;
+                    "
+                  >
+                    &nbsp;
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Announcement 3 -->
+              <tr>
+                <td
+                  id="announcement3"
+                  class="mobile-padding"
+                  style="padding: 30px 40px; background-color: #ffffff"
+                >
+                  <h2
+                    class="mobile-subheading"
+                    style="
+                      margin: 0 0 20px 0;
+                      font-size: 22px;
+                      font-weight: bold;
+                      color: #003366;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    Announcement Title Three
+                  </h2>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    This is the third announcement. Add your content here.
+                  </p>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    <strong>Important:</strong> You can use bold text to highlight key information.
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Divider -->
+              <tr>
+                <td style="padding: 0 40px; background-color: #ffffff">
+                  <div
+                    style="
+                      height: 2px;
+                      background-color: #e2e8f0;
+                      margin: 0;
+                    "
+                  >
+                    &nbsp;
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Announcement 4 -->
+              <tr>
+                <td
+                  id="announcement4"
+                  class="mobile-padding"
+                  style="padding: 30px 40px; background-color: #ffffff"
+                >
+                  <h2
+                    class="mobile-subheading"
+                    style="
+                      margin: 0 0 20px 0;
+                      font-size: 22px;
+                      font-weight: bold;
+                      color: #003366;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    Announcement Title Four
+                  </h2>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    This is the fourth announcement. Replace with your final announcement content.
+                  </p>
+                  <p
+                    style="
+                      margin: 0 0 16px 0;
+                      font-size: 16px;
+                      line-height: 1.6;
+                      color: #333333;
+                      font-family: Arial, sans-serif;
+                    "
+                  >
+                    If you have questions, email <a href="mailto:info@farwestmasters.org" style="color: #8b0000; text-decoration: underline;">info@farwestmasters.org</a>.
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td
+                  class="mobile-padding"
+                  style="
+                    padding: 30px 40px;
+                    background-color: #003366;
+                    border-top: 3px solid #8b0000;
+                  "
+                >
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    width="100%"
+                  >
+                    <tbody>
+                      <tr>
+                        <td align="center">
+                          <p
+                            style="
+                              margin: 0 0 10px 0;
+                              font-size: 14px;
+                              color: #ffffff;
+                              font-family: Arial, sans-serif;
+                            "
+                          >
+                            &copy; 2025 Far West Masters. All rights reserved.
+                          </p>
+                          <p
+                            style="
+                              margin: 0;
+                              font-size: 12px;
+                              color: #cbd5e1;
+                              font-family: Arial, sans-serif;
+                            "
+                          >
+                            <a
+                              href="https://www.farwestmasters.org"
+                              style="color: #ffffff; text-decoration: underline"
+                              >www.farwestmasters.org</a
+                            ><br />
+                            <a
+                              href="#"
+                              target="_blank"
+                              style="color: #ffffff; text-decoration: underline"
+                              >View in web browser</a
+                            >
+                            |
+                            <a
+                              href="#"
+                              target="_blank"
+                              style="color: #ffffff; text-decoration: underline"
+                              >Unsubscribe</a
+                            >
+                          </p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <!--[if mso]>
+          </td>
+          </tr>
+          </table>
+          <![endif]-->
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
