@@ -123,11 +123,6 @@ tr:hover:not(.subheader):not(.canceled) {
 /* Out of Region Row Styling */
 tr.out-of-region {
   background-color: #fff3cd !important;
-  position: relative;
-}
-
-tr.out-of-region td {
-  /* You can add any specific td styling here if needed */
 }
 
 tr.out-of-region:hover {
@@ -138,7 +133,6 @@ tr.out-of-region:hover {
 tr.canceled {
   background-color: #ffebee !important;
   opacity: 0.7;
-  position: relative;
 }
 
 tr.canceled td {
@@ -168,7 +162,6 @@ tr.canceled .canceled-text {
 /* Rescheduled Row Styling */
 tr.rescheduled {
   background-color: #e3f2fd !important;
-  position: relative;
 }
 
 tr.rescheduled td:not(.download-cell) {
@@ -190,11 +183,6 @@ tr.rescheduled:hover {
 tr.rescheduled .rescheduled-text {
   text-decoration: none;
   display: inline-block;
-}
-
-/* Ensure labels don't overlap with download icons */
-tr.canceled .download-cell {
-  padding-right: 100px;
 }
 
 /* Cell Types */
@@ -257,7 +245,8 @@ tr.canceled .download-cell {
   width: 80px;
 }
 
-.download-link {
+.download-link,
+.results-link {
   display: inline-block;
   padding: 8px;
   border-radius: 4px;
@@ -265,7 +254,8 @@ tr.canceled .download-cell {
   text-decoration: none;
 }
 
-.download-link:hover {
+.download-link:hover,
+.results-link:hover {
   background-color: #e3f2fd;
   transform: scale(1.1);
 }
@@ -365,19 +355,6 @@ h1 {
   .subheader {
     font-size: 14px;
   }
-
-  /* Adjust label position for mobile */
-  tr.canceled::after,
-  tr.rescheduled::after {
-    right: 10px;
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-
-  tr.canceled .download-cell,
-  tr.rescheduled .download-cell {
-    padding-right: 85px;
-  }
 }
 
 /* Mobile Responsive (480px) */
@@ -446,20 +423,6 @@ h1 {
   .subheader {
     font-size: 12px;
   }
-
-  /* Adjust label position for smaller mobile */
-  tr.canceled::after,
-  tr.rescheduled::after {
-    right: 5px;
-    font-size: 9px;
-    padding: 2px 4px;
-    letter-spacing: 0;
-  }
-
-  tr.canceled .download-cell,
-  tr.rescheduled .download-cell {
-    padding-right: 75px;
-  }
 }
 
 /* Example/Demo Container Styles */
@@ -504,8 +467,18 @@ h1 {
 }
 
 .legend-color-rescheduled {
-  background: #fff3e0;
-  border-color: #ffe0b2;
+  background: #e3f2fd;
+  border-color: #bbdefb;
+}
+
+.legend-color-out-of-region {
+  background: #fff3cd;
+  border-color: #ffe69c;
+}
+
+.legend-color-completed {
+  background: #9a9a9a;
+  border-color: #9a9a9a;
 }
 
 .legend-color-normal {
@@ -536,20 +509,7 @@ h1 {
   width: 120px;
 }
 
-/* Results link styling - using same pattern as download-link */
-.results-link {
-  display: inline-block;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  text-decoration: none;
-}
-
-.results-link:hover {
-  background-color: #e3f2fd;
-  transform: scale(1.1);
-}
-
+/* Results link styling shares .download-link base rules above */
 .results-link:hover .results-icon {
   fill: #2e7d32;
 }
@@ -627,10 +587,12 @@ tr.completed .date-cell .day-info {
     box-sizing: border-box;
   }
 
-  /* Space between cards */
+  /* Space between cards (reset the desktop/tablet table min-width so cards fit the viewport) */
   .results-table {
     border-collapse: separate;
     border-spacing: 0 12px;
+    min-width: 0;
+    width: 100%;
   }
 
   /* Subheader styling for mobile */
@@ -750,6 +712,19 @@ tr.completed .date-cell .day-info {
   white-space: nowrap; /* Keeps cell content on one line */
 }
 
+/* On phones, let standings (markdown) tables wrap and fit the viewport instead of
+   forcing single-line cells (which pushed Time/Points off-screen). Time/score values
+   have no spaces, so only multi-word competitor names wrap. Scoped to markdown tables
+   so the schedule / results-index HTML-block tables are unaffected. */
+@media screen and (max-width: 600px) {
+  .sqs-block-markdown table {
+    min-width: 0;
+    width: 100%;
+    white-space: normal;
+    font-size: 13px;
+  }
+}
+
 /* Optional: Add visual hint that table scrolls */
 .sqs-block-markdown .sqs-block-content::-webkit-scrollbar,
 .sqs-block-html .sqs-block-content::-webkit-scrollbar {
@@ -786,19 +761,51 @@ tr.completed .date-cell .day-info {
    PRINT STYLES
    ========================================== */
 @media print {
-  /* Reset background and shadows */
-  body {
-    background-color: white;
-    margin: 0;
+  /* Reclaim the browser's default print margins */
+  @page {
+    margin: 0.5in;
   }
 
-  .table-container {
-    box-shadow: none;
-    border-radius: 0;
+  /* Hide everything except the main content */
+  header, footer, nav,
+  .sqs-announcement-bar,
+  .sqs-announcement-bar-dropzone,
+  .header-nav,
+  .site-footer,
+  .back-to-top,
+  .squarespace-social-buttons {
+    display: none !important;
+  }
+
+  /* Reset background and shadows */
+  body {
+    background: white;
+    margin: 0;
+    font-size: 11pt;
+  }
+
+  /* Neutralize Squarespace's fluid-engine CSS grid so content doesn't stretch
+     vertically (the grid spans many rows and inflates spacing in print) */
+  .fluid-engine {
+    display: block !important;
+  }
+
+  .fluid-engine > * {
+    grid-area: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .sqs-block,
+  .sqs-block-content,
+  .page-section {
+    padding: 0 !important;
   }
 
   /* Force table to full width, no scroll wrapper */
   .table-container {
+    box-shadow: none;
+    border-radius: 0;
     overflow: visible;
   }
 
@@ -892,27 +899,8 @@ tr.completed .date-cell .day-info {
     font-size: 0.75em;
     color: #666;
   } */
-}
 
-/* ==========================================
-   PRINT STYLES - RESULTS PAGES (MARKDOWN TABLES)
-   ========================================== */
-@media print {
-  /* Hide everything except the main content */
-  header, footer, nav,
-  .sqs-announcement-bar,
-  .header-nav,
-  .site-footer,
-  .back-to-top,
-  .squarespace-social-buttons {
-    display: none !important;
-  }
-
-  body {
-    background: white;
-    margin: 0;
-    font-size: 11pt;
-  }
+  /* ----- Results pages (markdown tables) ----- */
 
   /* Remove scroll wrapper, let tables flow naturally */
   .sqs-block-markdown .sqs-block-content,
@@ -920,14 +908,17 @@ tr.completed .date-cell .day-info {
     overflow: visible !important;
   }
 
-  /* Clean, minimal table styling */
+  /* Clean, minimal table styling.
+     Cell font-size/padding/line-height use !important because Squarespace styles
+     td/th more specifically than a table-level rule, and font-size doesn't inherit
+     once set on the cell — without this the print text stays full-size. */
   .sqs-block-markdown table,
   .sqs-block-html table {
     width: auto;
     border-collapse: collapse;
     white-space: normal;
     min-width: unset;
-    font-size: 8pt;
+    font-size: 8.5pt !important;
     page-break-inside: auto;
   }
 
@@ -937,7 +928,9 @@ tr.completed .date-cell .day-info {
     color: black !important;
     border-top: 2px solid black;
     border-bottom: 1px solid black;
-    padding: 4px 8px;
+    padding: 2px 6px !important;
+    font-size: 8.5pt !important;
+    line-height: 1.1 !important;
     text-align: left;
     font-weight: bold;
   }
@@ -946,20 +939,27 @@ tr.completed .date-cell .day-info {
   .sqs-block-html td {
     border: none;
     border-bottom: 1px solid #ccc;
-    padding: 3px 8px;
+    padding: 1px 6px !important;
+    font-size: 8.5pt !important;
+    line-height: 1.1 !important;
     background: none !important;
   }
 
-  /* Class header rows (bold text in first column, empty other columns) */
+  /* Class header rows (bold text in first column, empty other columns).
+     nowrap keeps "Men Class 13 (85-89)" on one line instead of wrapping to 4. */
   .sqs-block-markdown tr:has(td strong),
   .sqs-block-html tr:has(td strong) {
     background: none !important;
+    page-break-after: avoid;
+    break-after: avoid;
   }
 
   .sqs-block-markdown tr:has(td strong) td,
   .sqs-block-html tr:has(td strong) td {
     border-bottom: 1px solid #999;
-    padding-top: 10px;
+    padding-top: 4px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap;
     font-weight: bold;
   }
 
@@ -970,26 +970,25 @@ tr.completed .date-cell .day-info {
     break-inside: avoid;
   }
 
-  /* Headings */
+  /* Headings — kept but smaller/tighter (!important to beat Squarespace sizes) */
   .sqs-block-markdown h2,
   .sqs-block-html h2 {
-    font-size: 14pt;
-    margin-bottom: 4px;
+    font-size: 12pt !important;
+    margin: 0 0 4px !important;
     border-bottom: 2px solid black;
     padding-bottom: 4px;
   }
 
   .sqs-block-markdown h3,
   .sqs-block-html h3 {
-    font-size: 11pt;
-    margin-bottom: 4px;
-    margin-top: 12px;
+    font-size: 10pt !important;
+    margin: 6px 0 2px !important;
   }
 
   /* Summary text above the table */
   .sqs-block-markdown p,
   .sqs-block-html p {
-    font-size: 10pt;
-    margin: 2px 0;
+    font-size: 9pt !important;
+    margin: 1px 0 !important;
   }
 }
