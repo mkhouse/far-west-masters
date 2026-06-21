@@ -1,0 +1,641 @@
+<!--
+  FWM RACE SCHEDULE TABLE TEMPLATE
+  =================================
+  This is the starting template for the season schedule table embedded in Squarespace.
+  Copy this file, rename it for the new season, and fill in the race details.
+  The CSS below should match the sitewide CSS in Squarespace exactly.
+
+  ROW STATE CLASSES:
+    <tr>                      = upcoming race (default, no class needed)
+    <tr class="completed">    = race has been run, results posted
+    <tr class="canceled">     = race canceled; use <span class="canceled-text"> for label
+    <tr class="rescheduled">  = original date row for a rescheduled race; use <span class="canceled-text"> with "RESCHEDULED TO [DATE]"
+                                Add a new row with class="completed" and <span class="rescheduled-text"> for the new date
+    <tr class="out-of-region"> = non-FWM race (Beaver Creek, Nationals, etc.)
+    <tr class="subheader">    = section divider row (blue background)
+
+  ICON TYPES (for download-cell links):
+    pdf-icon      = red,   race flyer PDFs on resources.farwestmasters.org
+    external-icon = blue,  registration links and external sites
+    results-icon  = green, results pages on farwestmasters.org (rarely used; text links preferred)
+
+  RESULTS LINK FORMAT (text links, no icons):
+    "[Discipline] [N] Class"  → byclass URL
+    "[Discipline] [N] Gender" → bygender URL
+    "[Discipline] [N] Overall" → overall URL
+    "[Series Name] Results"   → es-[series]YYYY-bygender URL (if event has series standings)
+
+  URL PATTERNS:
+    Race flyers:  https://resources.farwestmasters.org/announcements/[YYYY]/FWM-EventInfo-[Name].pdf
+    Registration: https://masters.adminskiracing.com/fwm-[slug]
+    Results:      https://farwestmasters.org/[YYYYMMDD]-[location]-[discipline]-[series]-[Nof N]-[view]
+    Event series: https://farwestmasters.org/es-[seriesname][YYYY]-bygender
+    Season standings: https://farwestmasters.org/2026/ss-bestnfinishes-byclass
+-->
+<style>
+/* Add icon color classes when links are active:
+    .pdf-icon for PDF downloads (red)
+    .external-icon for external links (blue)
+    .results-icon for results (green)
+
+Add status classes to any canceled or rescheduled races:
+    class="canceled" to the <tr> for canceled races
+    class="rescheduled" to the <tr> for rescheduled races 
+	class='out-of-region' for out of region races
+	class='completed' for completed races
+*/
+
+/* Base Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 20px;
+  background-color: #f5f5f5;
+}
+
+.page-section {
+  padding-top: 10px !important;
+  padding-bottom: 5px !important;
+}
+
+/* Table Link Styling */
+table a {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+table a:hover {
+  color: #0052a3;
+  text-decoration: underline;
+}
+
+table a:visited {
+  color: #551a8b;
+}
+
+/* Email Links */
+table a[href^='mailto:'] {
+  color: #0066cc;
+  font-size: 0.8em;
+}
+
+table a[href^='mailto:']:hover {
+  color: #0052a3;
+}
+
+/* Container */
+.table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Table Structure */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Table Headers */
+th {
+  background-color: #253551;
+  color: white;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  border-right: 1px solid #e0e0e0;
+}
+
+th:last-child {
+  border-right: none;
+}
+
+/* Table Data */
+td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
+}
+
+td:last-child {
+  border-right: none;
+}
+
+/* Row Styling */
+tr:nth-child(even):not(.subheader):not(.canceled):not(.rescheduled) {
+  background-color: #f2f2f2;
+}
+
+tr:hover:not(.subheader):not(.canceled) {
+  background-color: #e0e0db !important;
+}
+
+/* Subheader Row */
+.subheader {
+  background-color: #4a90e2 !important;
+  color: white !important;
+  font-weight: bold;
+  text-align: center;
+  font-size: 16px;
+}
+
+.subheader td {
+  padding: 12px 15px;
+  border-bottom: 2px solid #357abd;
+  border-right: 1px solid #357abd;
+}
+
+.subheader td:first-child {
+  text-align: left;
+}
+
+.subheader td:last-child {
+  border-right: none;
+}
+
+/* Out of Region Row Styling */
+tr.out-of-region {
+  background-color: #fff3cd !important;
+  position: relative;
+}
+
+tr.out-of-region:hover {
+  background-color: #ffe69c !important;
+}
+
+/* Canceled Row Styling */
+tr.canceled {
+  background-color: #ffebee !important;
+  opacity: 0.7;
+  position: relative;
+}
+
+tr.canceled td {
+  color: #999;
+  text-decoration: line-through;
+  text-decoration-color: #d32f2f;
+  text-decoration-thickness: 2px;
+}
+
+tr.canceled:hover {
+  background-color: #ffcdd2 !important;
+  opacity: 0.8;
+}
+
+.canceled-text {
+  color: #d32f2f;
+  font-weight: bold;
+  font-size: 0.85em;
+  text-decoration: none;
+}
+
+tr.canceled .canceled-text {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Rescheduled Row Styling */
+tr.rescheduled {
+  background-color: #e3f2fd !important;
+  position: relative;
+}
+
+tr.rescheduled td:not(.download-cell) {
+  color: #333;
+  font-style: italic;
+}
+
+tr.rescheduled:hover {
+  background-color: #bbdefb !important;
+}
+
+.rescheduled-text {
+  color: #1565c0;
+  font-weight: bold;
+  font-size: 0.85em;
+  text-decoration: none;
+}
+
+tr.rescheduled .rescheduled-text {
+  text-decoration: none;
+  display: inline-block;
+}
+
+tr.canceled .download-cell {
+  padding-right: 100px;
+}
+
+/* Completed Race Row Styling */
+tr.completed {
+  background-color: #9a9a9a !important;
+}
+
+tr.completed:hover {
+  background-color: #9a9a9a !important;
+}
+
+tr.completed td {
+  color: #1a1a1a;
+}
+
+tr.completed a {
+  color: #0047ab;
+}
+
+tr.completed a:visited {
+  color: #4a2870;
+}
+
+tr.completed a:hover {
+  color: #0066cc;
+}
+
+tr.completed .date-cell {
+  color: #1a1a1a;
+}
+
+tr.completed .date-cell .day-info {
+  color: #3a3a3a;
+}
+
+/* Cell Types */
+.date-cell {
+  font-weight: 600;
+  color: #253551;
+  min-width: 140px;
+}
+
+.date-cell .day-info {
+  font-weight: normal;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.location-cell {
+  font-weight: 500;
+  color: #333;
+  max-width: 200px;
+}
+
+.title-cell {
+  font-weight: 500;
+  color: #333;
+  max-width: 300px;
+}
+
+.entry-cost {
+  color: #000;
+  font-weight: 500;
+}
+
+.entry-details {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.red-asterisk {
+  color: #d32f2f;
+}
+
+.no-race-day {
+  color: #000;
+  font-weight: bold;
+}
+
+.discipline-cell,
+.disciplines-cell {
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  max-width: 150px;
+}
+
+/* Download Cell */
+.download-cell {
+  text-align: center;
+  width: 80px;
+}
+
+.download-link {
+  display: inline-block;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.download-link:hover {
+  background-color: #e3f2fd;
+  transform: scale(1.1);
+}
+
+.download-icon {
+  width: 20px;
+  height: 20px;
+  fill: #253551;
+}
+
+.download-link:hover .download-icon {
+  fill: #1a2740;
+}
+
+.pdf-icon { fill: #d32f2f; }
+.external-icon { fill: #1976d2; }
+.results-icon { fill: #388e3c; }
+
+/* Results links */
+.results-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.results-links a {
+  padding: 4px 8px;
+  background-color: #e8f0f8;
+  border-radius: 4px;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.results-links a:hover {
+  background-color: #d0e0f0;
+}
+
+h1 {
+  text-align: center;
+  color: #253551;
+  margin-bottom: 30px;
+  font-size: 2.2em;
+}
+
+/* Tablet Responsive (768px) */
+@media screen and (max-width: 768px) {
+  body { margin: 10px; }
+  h1 { font-size: 1.8em; margin-bottom: 20px; }
+  .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 700px; font-size: 14px; }
+  th, td { padding: 8px 6px; }
+  .date-cell { min-width: 100px; font-size: 0.9em; }
+  .location-cell { max-width: 150px; font-size: 0.9em; }
+  .title-cell { max-width: 200px; font-size: 0.9em; }
+  .discipline-cell, .disciplines-cell { max-width: 120px; font-size: 0.9em; }
+  .download-cell { width: 60px; }
+  .download-icon { width: 16px; height: 16px; }
+  .download-link { padding: 6px; }
+  .subheader { font-size: 14px; }
+  tr.canceled .download-cell, tr.rescheduled .download-cell { padding-right: 85px; }
+}
+
+/* Mobile Responsive (480px) */
+@media screen and (max-width: 480px) {
+  body { margin: 5px; }
+  h1 { font-size: 1.5em; margin-bottom: 15px; }
+  .table-container { border-radius: 4px; }
+  table { min-width: 600px; font-size: 12px; }
+  th, td { padding: 6px 4px; }
+  .date-cell { min-width: 85px; font-size: 0.8em; }
+  .date-cell .day-info { font-size: 0.8em; }
+  .location-cell { max-width: 120px; font-size: 0.8em; }
+  .title-cell { max-width: 150px; font-size: 0.8em; }
+  .discipline-cell, .disciplines-cell { max-width: 100px; font-size: 0.8em; }
+  .download-cell { width: 50px; }
+  .download-icon { width: 14px; height: 14px; }
+  .download-link { padding: 4px; }
+  .subheader { font-size: 12px; }
+  tr.canceled .download-cell, tr.rescheduled .download-cell { padding-right: 75px; }
+}
+</style>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Location</th>
+        <th>Event Info</th>
+        <th>Disciplines</th>
+        <th>Race Flyer</th>
+        <th>Registration</th>
+        <th>Results</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- ============================================================
+           UPCOMING RACE (default — no class on tr)
+           ============================================================ -->
+      <tr>
+        <td class="date-cell">
+          Mon. DD–DD<br /><span class="day-info">(Mon-Tue)</span>
+        </td>
+        <td class="location-cell">
+          <a href="https://www.venue-website.com" target="_blank" rel="noopener noreferrer">Venue Name</a><br />
+          City, ST XXXXX
+        </td>
+        <td class="title-cell">
+          Event Name<br />
+          <span class="entry-cost">Entries: $XX per race</span><span class="red-asterisk">*</span><br />
+          <span class="entry-details">Entries due [Day] 7pm [M/D]<br />
+          (<span class="red-asterisk">*</span>$5 late fee after [Day M/D])</span><br />
+          <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span><br />
+          Race Day Checkin: TBA<br />
+          Race Day Communications: TBA
+        </td>
+        <td class="disciplines-cell">SL / SL<br /><br />Race: TBA<br />Start: TBA</td>
+        <td class="download-cell">
+          <a href="https://resources.farwestmasters.org/announcements/YYYY/FWM-EventInfo-[Name].pdf" class="download-link" title="Race Info PDF" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
+        </td>
+        <td class="download-cell">
+          <a href="https://masters.adminskiracing.com/fwm-[slug]" class="download-link" title="Registration" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon external-icon" viewBox="0 0 24 24">
+              <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+            </svg>
+          </a>
+        </td>
+        <td class="download-cell">
+          <!-- Results: add text links here once posted -->
+        </td>
+      </tr>
+
+      <!-- ============================================================
+           COMPLETED RACE
+           ============================================================ -->
+      <tr class="completed">
+        <td class="date-cell">
+          Mon. DD–DD<br /><span class="day-info">(Sat-Sun)</span>
+        </td>
+        <td class="location-cell">
+          <a href="https://www.venue-website.com" target="_blank" rel="noopener noreferrer">Venue Name</a><br />
+          City, ST XXXXX
+        </td>
+        <td class="title-cell">
+          Event Name<br />
+          <span class="entry-cost">Entries: $XX per race</span><span class="red-asterisk">*</span><br />
+          <span class="entry-details">Entries due [Day] 7pm [M/D]<br />
+          (<span class="red-asterisk">*</span>$5 late fee after [Day M/D])</span><br />
+          <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span>
+        </td>
+        <td class="disciplines-cell">GS / GS</td>
+        <td class="download-cell">
+          <a href="https://resources.farwestmasters.org/announcements/YYYY/FWM-EventInfo-[Name].pdf" class="download-link" title="Race Info PDF" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
+        </td>
+        <td class="download-cell">
+          <!-- Registration: leave empty once race is complete -->
+        </td>
+        <td class="download-cell">
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-byclass" target="_blank" rel="noopener noreferrer">GS 1 Class</a><br />
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-bygender" target="_blank" rel="noopener noreferrer">GS 1 Gender</a><br />
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-overall" target="_blank" rel="noopener noreferrer">GS 1 Overall</a><br />
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-byclass" target="_blank" rel="noopener noreferrer">GS 2 Class</a><br />
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-bygender" target="_blank" rel="noopener noreferrer">GS 2 Gender</a><br />
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-overall" target="_blank" rel="noopener noreferrer">GS 2 Overall</a><br />
+          <!-- Add if event has series standings: -->
+          <!-- <a href="https://farwestmasters.org/es-[seriesname]YYYY-bygender" target="_blank" rel="noopener noreferrer">Series Results</a> -->
+        </td>
+      </tr>
+
+      <!-- ============================================================
+           CANCELED RACE
+           ============================================================ -->
+      <tr class="canceled">
+        <td class="date-cell">
+          Mon. DD–DD<br /><span class="day-info">(Sat-Sun)</span>
+          <span class="canceled-text">CANCELED</span>
+        </td>
+        <td class="location-cell">
+          <a href="https://www.venue-website.com" target="_blank" rel="noopener noreferrer">Venue Name</a><br />
+          City, ST XXXXX
+        </td>
+        <td class="title-cell">Event Name</td>
+        <td class="disciplines-cell">SL / SL</td>
+        <td class="download-cell">
+          <!-- Keep flyer link if it exists -->
+          <a href="https://resources.farwestmasters.org/announcements/YYYY/FWM-EventInfo-[Name].pdf" class="download-link" title="Race Info PDF" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
+        </td>
+        <td class="download-cell"></td>
+        <td class="download-cell"></td>
+      </tr>
+
+      <!-- ============================================================
+           RESCHEDULED RACE — original date row (shows as canceled)
+           Follow with a new row for the rescheduled date below.
+           ============================================================ -->
+      <tr class="canceled">
+        <td class="date-cell">
+          Mon. DD–DD<br /><span class="day-info">(Sat-Sun)</span>
+          <span class="canceled-text">RESCHEDULED TO [NEW DATE]</span>
+        </td>
+        <td class="location-cell">
+          <a href="https://www.venue-website.com" target="_blank" rel="noopener noreferrer">Venue Name</a><br />
+          City, ST XXXXX
+        </td>
+        <td class="title-cell">Event Name</td>
+        <td class="disciplines-cell">SL / SL</td>
+        <td class="download-cell">
+          <!-- Comment out links if no longer relevant -->
+        </td>
+        <td class="download-cell"></td>
+        <td class="download-cell"></td>
+      </tr>
+
+      <!-- RESCHEDULED RACE — new date row (completed or upcoming) -->
+      <tr class="completed">
+        <td class="date-cell">
+          Mon. DD–DD<br /><span class="day-info">(Sat-Sun)</span>
+          <span class="rescheduled-text">RESCHEDULED FROM [ORIGINAL DATE]</span>
+        </td>
+        <td class="location-cell">
+          <a href="https://www.venue-website.com" target="_blank" rel="noopener noreferrer">Venue Name</a><br />
+          City, ST XXXXX
+        </td>
+        <td class="title-cell">
+          Event Name<br />
+          <span class="entry-cost">Entries: $XX per race</span><span class="red-asterisk">*</span><br />
+          <span class="entry-details">Entries due [Day] 7pm [M/D]<br />
+          (<span class="red-asterisk">*</span>$5 late fee after [Day M/D])</span><br />
+          <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span>
+        </td>
+        <td class="disciplines-cell">SL / SL</td>
+        <td class="download-cell">
+          <a href="https://resources.farwestmasters.org/announcements/YYYY/FWM-EventInfo-[Name].pdf" class="download-link" title="Race Info PDF" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
+        </td>
+        <td class="download-cell">
+          <a href="https://masters.adminskiracing.com/fwm-[slug]" class="download-link" title="Registration" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon external-icon" viewBox="0 0 24 24">
+              <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+            </svg>
+          </a>
+        </td>
+        <td class="download-cell">
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-byclass" target="_blank" rel="noopener noreferrer">SL 1 Class</a><br />
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-bygender" target="_blank" rel="noopener noreferrer">SL 1 Gender</a><br />
+          <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-overall" target="_blank" rel="noopener noreferrer">SL 1 Overall</a>
+        </td>
+      </tr>
+
+      <!-- ============================================================
+           OUT OF REGION (Beaver Creek, Nationals, etc.)
+           No FWM entry info. Link to external results and info pages.
+           ============================================================ -->
+      <tr class="out-of-region">
+        <td class="date-cell">
+          Mon. DD–DD<br /><span class="day-info">(Mon-Sat)</span>
+        </td>
+        <td class="location-cell">
+          <a href="https://www.venue-website.com" target="_blank" rel="noopener noreferrer">Venue Name</a><br />
+          City, ST
+        </td>
+        <td class="title-cell">
+          Event Name<br />
+          <span class="entry-details">Entries: See Masters Handbook</span><br />
+          <a href="https://usskiandsnowboard.org/masters/masters-events-schedules#NAT" target="_blank" rel="noopener noreferrer">Info on usskiandsnowboard.org/masters</a>
+        </td>
+        <td class="disciplines-cell">DH / SG / GS / SL [unscored]</td>
+        <td class="download-cell">
+          <a href="https://www.usskiandsnowboard.org/masters/masters-events-schedules#NAT" class="download-link" title="Event Info" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon external-icon" viewBox="0 0 24 24">
+              <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+            </svg>
+          </a>
+        </td>
+        <td class="download-cell">
+          <a href="https://masters.adminskiracing.com/[slug]" class="download-link" title="Registration" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon external-icon" viewBox="0 0 24 24">
+              <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+            </svg>
+          </a>
+        </td>
+        <td class="download-cell">
+          <a href="https://usalpinemasters.org/YYYY/nat" target="_blank" rel="noopener noreferrer">Results</a>
+        </td>
+      </tr>
+
+      <!-- ============================================================
+           SUBHEADER ROW (section divider, blue background)
+           Use colspan="7" to span all columns.
+           ============================================================ -->
+      <tr class="subheader">
+        <td colspan="7">Section Title</td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>

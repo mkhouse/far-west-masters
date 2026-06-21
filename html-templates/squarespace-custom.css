@@ -1,0 +1,995 @@
+/* Add icon color classes when links are active:
+    .pdf-icon for PDF downloads (red)
+    .external-icon for external links (blue)
+    .results-icon for results (green)
+
+Add status classes to any canceled or rescheduled races:
+    class="canceled" to the <tr> for canceled races
+    class="rescheduled" to the <tr> for rescheduled races 
+	class='out-of-region' for out of region races
+	class='completed' for completed races
+*/
+
+/* Base Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 20px;
+  background-color: #f5f5f5;
+}
+
+.page-section {
+  padding-top: 10px !important;
+  padding-bottom: 5px !important;
+}
+
+/* Table Link Styling */
+table a {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+table a:hover {
+  color: #0052a3;
+  text-decoration: underline;
+}
+
+table a:visited {
+  color: #551a8b;
+}
+
+/* Email Links */
+/* Purple option */
+table a[href^='mailto:'] {
+  color: #0066cc;
+  font-size: 0.8em;
+}
+
+table a[href^='mailto:']:hover {
+  color: #0052a3;
+}
+
+/* Container */
+.table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Table Structure */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Table Headers */
+th {
+  background-color: #253551;
+  color: white;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  border-right: 1px solid #e0e0e0;
+}
+
+th:last-child {
+  border-right: none;
+}
+
+/* Table Data */
+td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
+}
+
+td:last-child {
+  border-right: none;
+}
+
+/* Row Styling */
+tr:nth-child(even):not(.subheader):not(.canceled):not(.rescheduled) {
+  background-color: #f2f2f2;
+}
+
+tr:hover:not(.subheader):not(.canceled) {
+  background-color: #e0e0db !important;
+}
+
+/* Subheader Row (from stylesheet 2) */
+.subheader {
+  background-color: #4a90e2 !important;
+  color: white !important;
+  font-weight: bold;
+  text-align: center;
+  font-size: 16px;
+}
+
+.subheader td {
+  padding: 12px 15px;
+  border-bottom: 2px solid #357abd;
+  border-right: 1px solid #357abd;
+}
+
+.subheader td:first-child {
+  text-align: left;
+}
+
+.subheader td:last-child {
+  border-right: none;
+}
+
+/* Out of Region Row Styling */
+tr.out-of-region {
+  background-color: #fff3cd !important;
+  position: relative;
+}
+
+tr.out-of-region td {
+  /* You can add any specific td styling here if needed */
+}
+
+tr.out-of-region:hover {
+  background-color: #ffe69c !important;
+}
+
+/* Canceled Row Styling */
+tr.canceled {
+  background-color: #ffebee !important;
+  opacity: 0.7;
+  position: relative;
+}
+
+tr.canceled td {
+  color: #999;
+  text-decoration: line-through;
+  text-decoration-color: #d32f2f;
+  text-decoration-thickness: 2px;
+}
+
+tr.canceled:hover {
+  background-color: #ffcdd2 !important;
+  opacity: 0.8;
+}
+.canceled-text {
+  color: #d32f2f;
+  font-weight: bold;
+  font-size: 0.85em;
+  text-decoration: none;
+}
+
+/* Prevent the strikethrough from applying to the canceled label */
+tr.canceled .canceled-text {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Rescheduled Row Styling */
+tr.rescheduled {
+  background-color: #e3f2fd !important;
+  position: relative;
+}
+
+tr.rescheduled td:not(.download-cell) {
+  color: #333;
+  font-style: italic;
+}
+
+tr.rescheduled:hover {
+  background-color: #bbdefb !important;
+}
+
+.rescheduled-text {
+  color: #1565c0;
+  font-weight: bold;
+  font-size: 0.85em;
+  text-decoration: none;
+}
+
+tr.rescheduled .rescheduled-text {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Ensure labels don't overlap with download icons */
+tr.canceled .download-cell {
+  padding-right: 100px;
+}
+
+/* Cell Types */
+.date-cell {
+  font-weight: 600;
+  color: #253551;
+  min-width: 140px;
+}
+
+.date-cell .day-info {
+  font-weight: normal;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.location-cell {
+  font-weight: 500;
+  color: #333;
+  max-width: 200px;
+}
+
+.title-cell {
+  font-weight: 500;
+  color: #333;
+  max-width: 300px;
+}
+
+/* Schedule color classes here */
+.entry-cost {
+  color: #000;
+  font-weight: 500;
+}
+
+.entry-details {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.red-asterisk {
+  color: #d32f2f;
+}
+
+.no-race-day {
+  color: #000;
+  font-weight: bold;
+}
+
+/* Discipline cells - supporting both naming conventions */
+.discipline-cell,
+.disciplines-cell {
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  max-width: 150px;
+}
+
+/* Download Cell */
+.download-cell {
+  text-align: center;
+  width: 80px;
+}
+
+.download-link {
+  display: inline-block;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.download-link:hover {
+  background-color: #e3f2fd;
+  transform: scale(1.1);
+}
+
+/* Icons */
+.download-icon {
+  width: 20px;
+  height: 20px;
+  fill: #253551;
+}
+
+.download-link:hover .download-icon {
+  fill: #1a2740;
+}
+
+/* Icon color variations (from stylesheet 1) */
+.pdf-icon {
+  fill: #d32f2f;
+}
+
+.external-icon {
+  fill: #1976d2;
+}
+
+.results-icon {
+  fill: #388e3c;
+}
+
+/* Heading */
+h1 {
+  text-align: center;
+  color: #253551;
+  margin-bottom: 30px;
+  font-size: 2.2em;
+}
+
+/* Tablet Responsive (768px) */
+@media screen and (max-width: 768px) {
+  body {
+    margin: 10px;
+  }
+
+  h1 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 700px;
+    font-size: 14px;
+  }
+
+  th,
+  td {
+    padding: 8px 6px;
+  }
+
+  .date-cell {
+    min-width: 100px;
+    font-size: 0.9em;
+  }
+
+  .location-cell {
+    max-width: 150px;
+    font-size: 0.9em;
+  }
+
+  .title-cell {
+    max-width: 200px;
+    font-size: 0.9em;
+  }
+
+  .discipline-cell,
+  .disciplines-cell {
+    max-width: 120px;
+    font-size: 0.9em;
+  }
+
+  .download-cell {
+    width: 60px;
+  }
+
+  .download-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .download-link {
+    padding: 6px;
+  }
+
+  .subheader {
+    font-size: 14px;
+  }
+
+  /* Adjust label position for mobile */
+  tr.canceled::after,
+  tr.rescheduled::after {
+    right: 10px;
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  tr.canceled .download-cell,
+  tr.rescheduled .download-cell {
+    padding-right: 85px;
+  }
+}
+
+/* Mobile Responsive (480px) */
+@media screen and (max-width: 480px) {
+  body {
+    margin: 5px;
+  }
+
+  h1 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+
+  .table-container {
+    border-radius: 4px;
+  }
+
+  table {
+    min-width: 600px;
+    font-size: 12px;
+  }
+
+  th,
+  td {
+    padding: 6px 4px;
+  }
+
+  .date-cell {
+    min-width: 85px;
+    font-size: 0.8em;
+  }
+
+  .date-cell .day-info {
+    font-size: 0.8em;
+  }
+
+  .location-cell {
+    max-width: 120px;
+    font-size: 0.8em;
+  }
+
+  .title-cell {
+    max-width: 150px;
+    font-size: 0.8em;
+  }
+
+  .discipline-cell,
+  .disciplines-cell {
+    max-width: 100px;
+    font-size: 0.8em;
+  }
+
+  .download-cell {
+    width: 50px;
+  }
+
+  .download-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .download-link {
+    padding: 4px;
+  }
+
+  .subheader {
+    font-size: 12px;
+  }
+
+  /* Adjust label position for smaller mobile */
+  tr.canceled::after,
+  tr.rescheduled::after {
+    right: 5px;
+    font-size: 9px;
+    padding: 2px 4px;
+    letter-spacing: 0;
+  }
+
+  tr.canceled .download-cell,
+  tr.rescheduled .download-cell {
+    padding-right: 75px;
+  }
+}
+
+/* Example/Demo Container Styles */
+.demo-container {
+  padding: 20px;
+  background: #f5f5f5;
+}
+
+.legend-box {
+  margin-top: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+}
+
+.legend-title {
+  color: #253551;
+  font-size: 1.4em;
+  margin-bottom: 15px;
+}
+
+.legend-list {
+  list-style: none;
+  padding: 0;
+}
+
+.legend-item {
+  margin-bottom: 10px;
+}
+
+.legend-color-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  border: 1px solid #e0e0e0;
+}
+
+.legend-color-canceled {
+  background: #ffebee;
+  border-color: #ffcdd2;
+}
+
+.legend-color-rescheduled {
+  background: #fff3e0;
+  border-color: #ffe0b2;
+}
+
+.legend-color-normal {
+  background: white;
+  border-color: #e0e0e0;
+}
+
+.legend-label {
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.legend-description {
+  font-weight: normal;
+}
+
+/* Additional styling for race results table */
+.race-cell {
+  font-weight: 500;
+  color: #333;
+  min-width: 300px;
+}
+
+.overall-cell {
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  width: 120px;
+}
+
+/* Results link styling - using same pattern as download-link */
+.results-link {
+  display: inline-block;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.results-link:hover {
+  background-color: #e3f2fd;
+  transform: scale(1.1);
+}
+
+.results-link:hover .results-icon {
+  fill: #2e7d32;
+}
+
+/* Completed Race Row Styling */
+tr.completed {
+  background-color: #9a9a9a !important;
+}
+
+tr.completed:hover {
+  background-color: #9a9a9a !important;
+}
+
+tr.completed td {
+  color: #1a1a1a;
+}
+
+tr.completed a {
+  color: #0047ab;
+}
+
+tr.completed a:visited {
+  color: #4a2870;
+}
+
+tr.completed a:hover {
+  color: #0066cc;
+}
+
+tr.completed .date-cell {
+  color: #1a1a1a;
+}
+
+tr.completed .date-cell .day-info {
+  color: #3a3a3a;
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE ADDITIONS FOR RESULTS TABLE
+   Add this to your existing site-wide CSS
+   ========================================== */
+
+/* Results links container */
+.results-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.results-links a {
+  padding: 4px 8px;
+  background-color: #e8f0f8;
+  border-radius: 4px;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.results-links a:hover {
+  background-color: #d0e0f0;
+}
+
+/* Mobile card layout - scoped to .results-table only */
+@media screen and (max-width: 600px) {
+  /* Hide table header on mobile */
+  .results-table thead {
+    display: none;
+  }
+
+  .results-table,
+  .results-table tbody,
+  .results-table tr,
+  .results-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Space between cards */
+  .results-table {
+    border-collapse: separate;
+    border-spacing: 0 12px;
+  }
+
+  /* Subheader styling for mobile */
+  .results-table tr.subheader {
+    background-color: #4a90e2 !important;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+
+  .results-table tr.subheader td {
+    border: none;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 15px;
+    padding: 14px 15px;
+  }
+
+  .results-table tr.subheader td[colspan] {
+    display: block;
+  }
+
+  /* Card styling for data rows */
+  .results-table tr:not(.subheader) {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .results-table tr:not(.subheader):hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: white !important;
+  }
+
+  /* Cell styling - stacked layout */
+  .results-table td {
+    padding: 10px 15px;
+    border: none;
+    border-bottom: 1px solid #eee;
+    display: block;
+    text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .results-table td:last-child {
+    border-bottom: none;
+  }
+
+  /* Labels above content */
+  .results-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 600;
+    color: #666;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  /* Date cell as card header - no label needed */
+  .results-table td.date-cell {
+    background-color: #253551;
+    color: white;
+    font-weight: 600;
+    padding: 12px 15px;
+    border-bottom: none;
+    font-size: 1.1em;
+  }
+
+  .results-table td.date-cell::before {
+    display: none;
+  }
+
+  /* Results cell - natural sizing */
+  .results-table .results-links {
+    display: inline-flex;
+    gap: 8px;
+  }
+
+  .results-table .results-links a {
+    padding: 6px 12px;
+  }
+
+  /* Empty results show "Pending" */
+  .results-table td[data-label='Results']:empty::after {
+    content: 'Pending';
+    color: #999;
+    font-style: italic;
+  }
+
+  /* Override alternating row colors in card layout */
+  .results-table tr:nth-child(even):not(.subheader) {
+    background-color: white;
+  }
+}
+
+/* ==========================================
+   MARKDOWN TABLE HORIZONTAL SCROLL
+   For wide tables that overflow on any screen
+   ========================================== */
+
+/* Squarespace wraps markdown content in these containers */
+.sqs-block-markdown .sqs-block-content,
+.sqs-block-html .sqs-block-content {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Style the markdown tables themselves */
+.sqs-block-markdown table,
+.sqs-block-html table {
+  min-width: max-content; /* Prevents columns from collapsing */
+  white-space: nowrap; /* Keeps cell content on one line */
+}
+
+/* Optional: Add visual hint that table scrolls */
+.sqs-block-markdown .sqs-block-content::-webkit-scrollbar,
+.sqs-block-html .sqs-block-content::-webkit-scrollbar {
+  height: 8px;
+}
+
+.sqs-block-markdown .sqs-block-content::-webkit-scrollbar-track,
+.sqs-block-html .sqs-block-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.sqs-block-markdown .sqs-block-content::-webkit-scrollbar-thumb,
+.sqs-block-html .sqs-block-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.sqs-block-markdown .sqs-block-content::-webkit-scrollbar-thumb:hover,
+.sqs-block-html .sqs-block-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Email links in markdown content (outside tables) */
+.sqs-block-markdown a[href^='mailto:'] {
+  color: #0066cc;
+}
+
+.sqs-block-markdown a[href^='mailto:']:hover {
+  color: #0052a3;
+}
+
+/* ==========================================
+   PRINT STYLES
+   ========================================== */
+@media print {
+  /* Reset background and shadows */
+  body {
+    background-color: white;
+    margin: 0;
+  }
+
+  .table-container {
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  /* Force table to full width, no scroll wrapper */
+  .table-container {
+    overflow: visible;
+  }
+
+  /* Restore card layout columns (overrides mobile card stacking if printing from phone) */
+  .results-table thead {
+    display: table-header-group !important;
+  }
+
+  .results-table,
+  .results-table tbody,
+  .results-table tr,
+  .results-table td {
+    display: revert !important;
+  }
+
+  /* Clean up header row */
+  th {
+    background-color: #253551 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Preserve row status colors so canceled/rescheduled/completed are still visible */
+  tr.canceled {
+    background-color: #ffebee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  tr.rescheduled {
+    background-color: #e3f2fd !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  tr.completed {
+    background-color: #9a9a9a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  tr.out-of-region {
+    background-color: #fff3cd !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Keep alternating rows readable */
+  tr:nth-child(even):not(.subheader):not(.canceled):not(.rescheduled):not(.completed) {
+    background-color: #f2f2f2 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Subheader rows */
+  .subheader {
+    background-color: #4a90e2 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Avoid row breaks mid-content */
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Keep subheaders with the rows that follow them */
+  tr.subheader {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Hide hover effects and interactive elements */
+  .download-link,
+  .results-link {
+    transform: none !important;
+  }
+
+  /* Make links print as plain text color */
+  table a {
+    color: #003366 !important;
+    text-decoration: none;
+  }
+
+  /* Optionally show full URLs after links — remove if too noisy */
+  /* table a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.75em;
+    color: #666;
+  } */
+}
+
+/* ==========================================
+   PRINT STYLES - RESULTS PAGES (MARKDOWN TABLES)
+   ========================================== */
+@media print {
+  /* Hide everything except the main content */
+  header, footer, nav,
+  .sqs-announcement-bar,
+  .header-nav,
+  .site-footer,
+  .back-to-top,
+  .squarespace-social-buttons {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    margin: 0;
+    font-size: 11pt;
+  }
+
+  /* Remove scroll wrapper, let tables flow naturally */
+  .sqs-block-markdown .sqs-block-content,
+  .sqs-block-html .sqs-block-content {
+    overflow: visible !important;
+  }
+
+  /* Clean, minimal table styling */
+  .sqs-block-markdown table,
+  .sqs-block-html table {
+    width: auto;
+    border-collapse: collapse;
+    white-space: normal;
+    min-width: unset;
+    font-size: 8pt;
+    page-break-inside: auto;
+  }
+
+  .sqs-block-markdown th,
+  .sqs-block-html th {
+    background: none !important;
+    color: black !important;
+    border-top: 2px solid black;
+    border-bottom: 1px solid black;
+    padding: 4px 8px;
+    text-align: left;
+    font-weight: bold;
+  }
+
+  .sqs-block-markdown td,
+  .sqs-block-html td {
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 3px 8px;
+    background: none !important;
+  }
+
+  /* Class header rows (bold text in first column, empty other columns) */
+  .sqs-block-markdown tr:has(td strong),
+  .sqs-block-html tr:has(td strong) {
+    background: none !important;
+  }
+
+  .sqs-block-markdown tr:has(td strong) td,
+  .sqs-block-html tr:has(td strong) td {
+    border-bottom: 1px solid #999;
+    padding-top: 10px;
+    font-weight: bold;
+  }
+
+  /* Keep rows together */
+  .sqs-block-markdown tr,
+  .sqs-block-html tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Headings */
+  .sqs-block-markdown h2,
+  .sqs-block-html h2 {
+    font-size: 14pt;
+    margin-bottom: 4px;
+    border-bottom: 2px solid black;
+    padding-bottom: 4px;
+  }
+
+  .sqs-block-markdown h3,
+  .sqs-block-html h3 {
+    font-size: 11pt;
+    margin-bottom: 4px;
+    margin-top: 12px;
+  }
+
+  /* Summary text above the table */
+  .sqs-block-markdown p,
+  .sqs-block-html p {
+    font-size: 10pt;
+    margin: 2px 0;
+  }
+}

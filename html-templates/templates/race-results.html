@@ -1,0 +1,147 @@
+<!--
+  FWM RACE RESULTS INDEX TABLE TEMPLATE
+  ======================================
+  This table lives on the Results page of farwestmasters.org and links to
+  all individual race result pages for the season.
+
+  STRUCTURE:
+  - Use <tr class="subheader"> with colspan="4" to group races by event/location
+  - One <tr> per race day per discipline
+  - For event series standings (Bernard Cup, Viva Italia), add a row at the end
+    of that group with the series name in the Discipline cell and series link in Results
+
+  RESULTS LINK FORMAT:
+  - FWM races: Class | Gender | Overall links in a <div class="results-links">
+  - Out-of-region races (Beaver Creek, Nationals): single "Results" link to usalpinemasters.org
+  - Event series: "By Gender" link to es-[seriesname]YYYY-bygender
+
+  URL PATTERNS:
+    FWM results:    https://farwestmasters.org/[YYYYMMDD]-[location]-[disc]-[Nof N]-[view]
+    Northstar NSS:  https://farwestmasters.org/[YYYY]-[MM]-[DD]-northstar-sg-nss-[Nof N]-[view]
+    External:       https://usalpinemasters.org/[YYYY]/[wr|nat]
+    Event series:   https://farwestmasters.org/es-[seriesname][YYYY]-bygender
+
+  NOTE: The CSS for this table (results-table class, results-links, subheader,
+  date-cell, data-label attributes for mobile) lives in squarespace-custom.css.
+  The data-label attributes on each <td> power the mobile card layout.
+-->
+
+<div class="table-container">
+  <table class="results-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Location</th>
+        <th>Discipline</th>
+        <th>Results</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- ============================================================
+           STANDARD FWM RACE GROUP
+           One subheader, one row per race. Class | Gender | Overall links.
+           ============================================================ -->
+      <tr class="subheader">
+        <td colspan="4">Event Name</td>
+      </tr>
+      <tr>
+        <td class="date-cell" data-label="Date">Month DD</td>
+        <td data-label="Location">Venue, ST</td>
+        <td data-label="Discipline">SL</td>
+        <td data-label="Results">
+          <div class="results-links">
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-byclass" target="_blank" rel="noopener noreferrer">Class</a>
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-bygender" target="_blank" rel="noopener noreferrer">Gender</a>
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-overall" target="_blank" rel="noopener noreferrer">Overall</a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="date-cell" data-label="Date">Month DD</td>
+        <td data-label="Location">Venue, ST</td>
+        <td data-label="Discipline">SL</td>
+        <td data-label="Results">
+          <div class="results-links">
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-byclass" target="_blank" rel="noopener noreferrer">Class</a>
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-bygender" target="_blank" rel="noopener noreferrer">Gender</a>
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-overall" target="_blank" rel="noopener noreferrer">Overall</a>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ============================================================
+           EVENT SERIES GROUP (e.g. Bernard Cup, Viva Italia)
+           Same as standard group but add a series results row at the end.
+           ============================================================ -->
+      <tr class="subheader">
+        <td colspan="4">Series Name</td>
+      </tr>
+      <tr>
+        <td class="date-cell" data-label="Date">Month DD</td>
+        <td data-label="Location">Venue, ST</td>
+        <td data-label="Discipline">GS</td>
+        <td data-label="Results">
+          <div class="results-links">
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-byclass" target="_blank" rel="noopener noreferrer">Class</a>
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-bygender" target="_blank" rel="noopener noreferrer">Gender</a>
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-1of2-overall" target="_blank" rel="noopener noreferrer">Overall</a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="date-cell" data-label="Date">Month DD</td>
+        <td data-label="Location">Venue, ST</td>
+        <td data-label="Discipline">GS</td>
+        <td data-label="Results">
+          <div class="results-links">
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-byclass" target="_blank" rel="noopener noreferrer">Class</a>
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-bygender" target="_blank" rel="noopener noreferrer">Gender</a>
+            <a href="https://farwestmasters.org/YYYYMMDD-[location]-[disc]-2of2-overall" target="_blank" rel="noopener noreferrer">Overall</a>
+          </div>
+        </td>
+      </tr>
+      <!-- Series standings row — goes at end of group, date matches last race day -->
+      <tr>
+        <td class="date-cell" data-label="Date">Month DD</td>
+        <td data-label="Location">Venue, ST</td>
+        <td data-label="Discipline">Series Name Results</td>
+        <td data-label="Results">
+          <div class="results-links">
+            <a href="https://farwestmasters.org/es-[seriesname]YYYY-bygender" target="_blank" rel="noopener noreferrer">By Gender</a>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ============================================================
+           OUT-OF-REGION RACE GROUP (Beaver Creek, Nationals, etc.)
+           Single external "Results" link — no Class/Gender/Overall breakdown.
+           ============================================================ -->
+      <tr class="subheader">
+        <td colspan="4">Event Name</td>
+      </tr>
+      <tr>
+        <td class="date-cell" data-label="Date">Month DD</td>
+        <td data-label="Location">Venue, ST</td>
+        <td data-label="Discipline">SG</td>
+        <td data-label="Results">
+          <div class="results-links">
+            <a href="https://usalpinemasters.org/YYYY/wr" target="_blank" rel="noopener noreferrer">Results</a>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ============================================================
+           PENDING RESULTS ROW
+           Leave Results cell empty until results are posted.
+           ============================================================ -->
+      <tr>
+        <td class="date-cell" data-label="Date">Month DD</td>
+        <td data-label="Location">Venue, ST</td>
+        <td data-label="Discipline">DH</td>
+        <td data-label="Results"></td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
