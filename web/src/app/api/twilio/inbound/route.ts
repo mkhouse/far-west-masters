@@ -15,9 +15,9 @@
  */
 
 import { NextResponse, type NextRequest } from 'next/server'
-import twilio from 'twilio'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { sendOne, twilioConfig } from '@/lib/sms/twilio'
+import { verifyTwilioSignature } from '@/lib/sms/webhook'
 
 /** Words Twilio treats as opt-out. Recorded here as well, never only there. */
 const STOP_WORDS = new Set([
@@ -26,30 +26,6 @@ const STOP_WORDS = new Set([
 
 /** Words Twilio treats as opt-in, undoing a previous STOP. */
 const START_WORDS = new Set(['start', 'yes', 'unstop'])
-
-/**
- * Verify the request genuinely came from Twilio.
- *
- * Without this the endpoint is a public API for writing into the messages log and
- * triggering forwarded texts to officers. The signature check is the only thing
- * standing between that and the open internet.
- *
- * Skipped only when no auth token is configured, which is a misconfiguration rather
- * than a mode — and it is logged loudly.
- */
-function verifySignature(
-  authToken: string | undefined,
-  signature: string | null,
-  url: string,
-  params: Record<string, string>
-): boolean {
-  if (!authToken) {
-    console.error('TWILIO_AUTH_TOKEN not set — inbound webhook cannot verify requests')
-    return false
-  }
-  if (!signature) return false
-  return twilio.validateRequest(authToken, signature, url, params)
-}
 
 /** Twilio expects TwiML. An empty response means "say nothing back". */
 function twiml(message?: string) {
@@ -67,11 +43,10 @@ export async function POST(request: NextRequest) {
   const params: Record<string, string> = {}
   for (const [k, v] of form.entries()) params[k] = String(v)
 
-  const signature = request.headers.get('x-twilio-signature')
-  const url =
-    (process.env.NEXT_PUBLIC_SITE_URL ?? '') + '/api/twilio/inbound'
-
-  if (!verifySignature(process.env.TWILIO_AUTH_TOKEN, signature, url, params)) {
+  // Without this the endpoint is a public API for writing into the messages log and
+  // triggering forwarded texts to officers. The signature check is the only thing
+  // standing between that and the open internet.
+  if (!verifyTwilioSignature(request, '/api/twilio/inbound', params)) {
     return new NextResponse('Invalid signature', { status: 403 })
   }
 

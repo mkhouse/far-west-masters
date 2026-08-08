@@ -11,8 +11,8 @@
  */
 
 import { NextResponse, type NextRequest } from 'next/server'
-import twilio from 'twilio'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { verifyTwilioSignature } from '@/lib/sms/webhook'
 
 export async function POST(request: NextRequest) {
   const form = await request.formData()
@@ -21,11 +21,7 @@ export async function POST(request: NextRequest) {
 
   // Same reasoning as the inbound webhook: without signature verification this is a
   // public endpoint for rewriting delivery history.
-  const authToken = process.env.TWILIO_AUTH_TOKEN
-  const signature = request.headers.get('x-twilio-signature')
-  const url = (process.env.NEXT_PUBLIC_SITE_URL ?? '') + '/api/twilio/status'
-
-  if (!authToken || !signature || !twilio.validateRequest(authToken, signature, url, params)) {
+  if (!verifyTwilioSignature(request, '/api/twilio/status', params)) {
     return new NextResponse('Invalid signature', { status: 403 })
   }
 

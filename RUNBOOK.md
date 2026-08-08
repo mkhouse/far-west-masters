@@ -205,10 +205,13 @@ Three places have to change together:
 2. The Twilio inbound webhook URL
 3. Supabase → Authentication → URL Configuration (Site URL and Redirect URLs)
 
-Miss the first and every Twilio callback is rejected with a 403 — silently, because
-a rejected webhook looks like nothing happening. Miss the third and sign-in breaks.
-Twilio signs each request over the exact URL it called, so this has to match
-character for character: no trailing slash, `https`, exact host.
+Miss the third and sign-in breaks.
+
+The Twilio webhooks no longer depend on `NEXT_PUBLIC_SITE_URL`: signature checks
+rebuild the signed URL from the request Twilio actually made, so a wrong or stale
+value there cannot silently kill replies and delivery reports. It is still worth
+setting correctly — it is what tells Twilio where to send status callbacks in the
+first place.
 
 ### Twilio message configuration
 
