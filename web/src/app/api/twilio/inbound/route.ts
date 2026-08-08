@@ -183,14 +183,24 @@ export async function POST(request: NextRequest) {
   if (forwardTo) {
     const tw = twilioConfig()
     if (!('missing' in tw)) {
+      // Name AND number.
+      //
+      // A forward arrives from the FWM number, not the member's, so without the
+      // name the officer has no idea who is talking to them — and without the
+      // number they cannot answer. Replying to the forward does not reach the
+      // member; it comes back into this webhook. The number is what makes a reply
+      // possible at all: the officer copies it and starts a normal conversation.
+      //
+      // Left in E.164 so phones recognise it as dialable and offer to call or text
+      // it directly. The trade-off is that the conversation then continues outside
+      // this system, so nothing after this point is logged, and the member ends up
+      // holding that officer's personal number. A reply inbox in the app would fix
+      // both; this is the version that works today.
       const who = person
-        ? `${person.first_name} ${person.last_name}`
+        ? `${person.first_name} ${person.last_name} ${from}`
         : `unknown number ${from}`
       const context = lastMessage?.purpose ? ` (re: ${lastMessage.purpose})` : ''
 
-      // Include who it is from, because the forwarded message arrives from the FWM
-      // number rather than the member's — without this the recipient has no idea
-      // who they are replying to.
       await sendOne(tw.config, forwardTo, `From ${who}${context}: ${body}`)
 
       if (inbound) {

@@ -130,6 +130,29 @@ wait, or change the wording.
 string *only* if Twilio is ever configured to append its own, or members will get it
 twice.
 
+### When a member replies
+
+The reply is forwarded to whichever officer was named on that message, as:
+
+```
+From Damian Palfini +15305550142 (re: Sugar Bowl start times): See you at 9
+```
+
+**Do not reply to that text.** It arrives from the FWM number, so a reply goes back
+into the system, not to the member. Twilio will only send from numbers the club
+owns, so a forward can never appear to come from the member's phone — that would be
+spoofing, and carriers block it.
+
+To answer, **copy the number and start a normal conversation.** Two things follow
+from that, and both are worth knowing before you do it:
+
+- Nothing after that point is recorded here. The send log will show what the club
+  sent and what the member replied, but not your answer.
+- The member ends up holding your personal number.
+
+A reply inbox inside the app would fix both, and is the intended answer when replies
+become common enough to be a nuisance.
+
 ### The send log
 
 `/messages` is the record of every text the system has sent: what was sent, to which
