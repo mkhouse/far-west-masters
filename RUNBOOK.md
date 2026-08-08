@@ -260,6 +260,7 @@ should always say `NO — correct`.
 | Sign-in hangs ~30s, then "email rate limit exceeded" | The SMTP host is not answering. A web domain and its mail server are different machines: use the provider's mail host (`smtp.dreamhost.com`), not the domain itself |
 | SMTP fails as though the password were wrong | Username must be the **full email address**, not the part before the @ |
 | Two sign-in attempts in a row both fail | "Minimum interval per user" (Authentication → Rate Limits) is 60s, separate from the hourly cap. Wait a minute between attempts when testing |
+| Sign-in link says "expired" on a first click | The code did not reach `/auth/callback`. Supabase falls back to the **Site URL** whenever the redirect it was asked for is not in the allow list — including when only a query string differs, which no wildcard covers. Check Redirect URLs contains `<site>/auth/callback` exactly, with no query |
 | "Not authorized" after signing in | No `app_users` row for that account |
 | Results import produces nonsense | Check the live-timing parsing traps in [migration/live-timing-format.md](migration/live-timing-format.md) — six of them fail silently |
 | A score is off by 0.01 | Expected, and explained — see "READ FIRST" in [migration/scoring-history.md](migration/scoring-history.md) |

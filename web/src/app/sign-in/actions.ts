@@ -28,7 +28,19 @@ export async function requestMagicLink(formData: FormData) {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(next)}`,
+      // No query string here, deliberately.
+      //
+      // Supabase matches this against its Redirect URLs allow list as a whole
+      // string, and an entry of ".../auth/callback" does not match
+      // ".../auth/callback?next=/messages" — nor does a "/**" wildcard, which
+      // covers path segments rather than a query. On a mismatch it silently falls
+      // back to the project's Site URL, so the code arrives at the site root and
+      // never reaches the one route that can exchange it. The failure looks like an
+      // expired link, which sends you looking in entirely the wrong place.
+      //
+      // Where the officer was headed is not worth that. The app has one destination
+      // after sign-in; the callback sends them to /messages.
+      emailRedirectTo: `${siteUrl}/auth/callback`,
       // Officers are invited by an admin, so there is no self-service signup.
       shouldCreateUser: true,
     },

@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
   // Only ever redirect to a path on this site. Taking the `next` parameter at face
   // value would let a crafted sign-in link bounce someone to another domain
   // immediately after authenticating.
-  const requested = searchParams.get('next') ?? '/'
+  // Defaults to /messages rather than "/": the sign-in email no longer carries a
+  // `next` (see sign-in/actions.ts), and "/" only redirects here anyway.
+  const requested = searchParams.get('next') ?? '/messages'
   const next = requested.startsWith('/') && !requested.startsWith('//') ? requested : '/'
 
   if (!code) {
