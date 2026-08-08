@@ -6,6 +6,7 @@
  * adding one here is all that is needed to message it.
  */
 
+import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { addMember, createGroup, deleteGroup, removeMember } from './actions'
@@ -54,7 +55,13 @@ export default async function GroupsPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-xl font-semibold">Recipient groups</h1>
+      <p className="text-sm">
+        <Link href="/admin" className="text-neutral-500 underline">
+          &larr; Admin
+        </Link>
+      </p>
+
+      <h1 className="mt-4 text-xl font-semibold">Recipient groups</h1>
       <p className="mt-1 text-sm text-neutral-500">
         Named audiences for the compose screen. Groups appear in the &ldquo;Send
         to&rdquo; list as soon as they have members.

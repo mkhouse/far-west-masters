@@ -173,9 +173,17 @@ message — is the answer.
 
 ## Deployment
 
-The app is hosted on Vercel at **https://far-west-masters-web.vercel.app**, built
-from the `main` branch of this repository. Pushing to `main` deploys. There is no
-separate release step.
+The app is hosted on Vercel at **https://fwm-results.mkinthehouse.com**, built from
+the `main` branch of this repository. Pushing to `main` deploys. There is no
+separate release step. The original `far-west-masters-web.vercel.app` address still
+works and is kept as a fallback.
+
+> **That domain is a bridge, not the destination.** It belongs to Melissa
+> personally, and was used because nobody yet has DNS access for
+> `farwestmasters.org`. Moving the app to the club's own domain is the same
+> three-step change described under "Changing the domain" below, and should happen
+> once that access exists — a club system on one person's domain is the dependency
+> this project exists to remove.
 
 | Setting | Value | Why it matters |
 |---|---|---|
@@ -186,10 +194,19 @@ separate release step.
 ### Environment variables
 
 The eight variables are listed and explained in `web/.env.example`. Values live in
-Vercel (Settings → Environment Variables) and in `web/.env.local` locally. The
-secrets are marked sensitive in Vercel, meaning they cannot be read back — if
-`.env.local` is ever lost, regenerate them from the Supabase and Twilio dashboards
-rather than trying to recover them.
+Vercel (Settings → Environment Variables) and in `web/.env.local` locally.
+
+> **Never mark a `NEXT_PUBLIC_` variable as Sensitive in Vercel.** Sensitive values
+> are withheld from the build, and `NEXT_PUBLIC_` values are compiled *into* the
+> build — so the variable ends up with no value at all, and every read of it returns
+> undefined. Nothing warns you. What it looks like instead: delivery reports stop
+> arriving, and sign-in links point at `localhost` and fail as "expired". The three
+> `NEXT_PUBLIC_` variables are public by design — they are sent to every visitor's
+> browser — so there is nothing to protect.
+>
+> Do keep `SUPABASE_SERVICE_ROLE_KEY` and `TWILIO_AUTH_TOKEN` sensitive. They cannot
+> then be read back from the dashboard, so if `.env.local` is lost, regenerate them
+> from the Supabase and Twilio dashboards rather than trying to recover them.
 
 **Scope them to Production only, never Preview.** A preview deployment is built from
 any branch, including an unfinished one. Given production credentials it would hold
@@ -219,7 +236,7 @@ Phone Numbers → the FWM number → Messaging:
 
 | Field | Value |
 |---|---|
-| A message comes in | Webhook, `https://far-west-masters-web.vercel.app/api/twilio/inbound`, HTTP POST |
+| A message comes in | Webhook, `https://fwm-results.mkinthehouse.com/api/twilio/inbound`, HTTP POST |
 | Primary handler fails | Studio Flow → **Autoresponder** |
 
 The fallback is deliberate. If the app is ever down mid-season, a member who texts
@@ -263,7 +280,8 @@ should always say `NO — correct`.
 | Sign-in hangs ~30s, then "email rate limit exceeded" | The SMTP host is not answering. A web domain and its mail server are different machines: use the provider's mail host (`smtp.dreamhost.com`), not the domain itself |
 | SMTP fails as though the password were wrong | Username must be the **full email address**, not the part before the @ |
 | Two sign-in attempts in a row both fail | "Minimum interval per user" (Authentication → Rate Limits) is 60s, separate from the hourly cap. Wait a minute between attempts when testing |
-| Sign-in link says "expired" on a first click | The code did not reach `/auth/callback`. Supabase falls back to the **Site URL** whenever the redirect it was asked for is not in the allow list — including when only a query string differs, which no wildcard covers. Check Redirect URLs contains `<site>/auth/callback` exactly, with no query |
+| Sign-in link says "expired" on a first click, AND delivery reports stopped | Both at once means `NEXT_PUBLIC_SITE_URL` has no value in the build — almost certainly marked Sensitive in Vercel. See Environment variables above |
+| Sign-in link says "expired" on a first click | The code did not reach `/auth/callback`. Supabase falls back to the **Site URL** whenever the redirect it was asked for is not in the allow list. Check Redirect URLs contains `<site>/auth/callback` exactly |
 | "Not authorized" after signing in | No `app_users` row for that account |
 | Results import produces nonsense | Check the live-timing parsing traps in [migration/live-timing-format.md](migration/live-timing-format.md) — six of them fail silently |
 | A score is off by 0.01 | Expected, and explained — see "READ FIRST" in [migration/scoring-history.md](migration/scoring-history.md) |

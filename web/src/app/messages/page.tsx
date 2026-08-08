@@ -114,12 +114,23 @@ export default async function MessagesPage() {
             Signed in as {appUser.email} ({appUser.role})
           </p>
         </div>
-        <Link
-          href="/messages/compose"
-          className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
-        >
-          Compose
-        </Link>
+        <div className="flex items-center gap-3">
+          {/* Groups are a messaging idea, so they are linked from here as well as
+              from the admin index — this is where someone thinks of them. Shown
+              only to admins, because the groups screen requires that role and a
+              link that errors is worse than no link. */}
+          {appUser.role === 'admin' && (
+            <Link href="/admin/groups" className="text-sm text-neutral-500 hover:underline">
+              Groups
+            </Link>
+          )}
+          <Link
+            href="/messages/compose"
+            className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+          >
+            Compose
+          </Link>
+        </div>
       </div>
 
       <dl className="mt-8 grid grid-cols-2 gap-4 text-sm">
