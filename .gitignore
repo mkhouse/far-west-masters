@@ -1,0 +1,22 @@
+# --- PII / data safety: never commit member data to this public repo ---
+# Airtable backups live OUTSIDE the repo (../fwm-migration-backups), but guard
+# against accidental copies landing here.
+fwm-migration-backups/
+migration/**/*.csv
+migration/**/*.json
+!migration/**/package.json
+member*.json
+member*.csv
+*.pii.*
+
+# Seed data that names real members. Migrations create structure; anything that
+# identifies a person by email or phone stays here, outside version control.
+supabase/local/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/

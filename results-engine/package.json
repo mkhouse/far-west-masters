@@ -1,0 +1,28 @@
+{
+  "name": "@fwm/results-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "FWM race scoring engine and parity harness. Ports the trusted logic from airtable-results/ and verifies it against the results published by ACE Scoring.",
+  "exports": {
+    "./scoring": "./src/scoring.ts",
+    "./standings": "./src/standings.ts",
+    "./cups": "./src/cups.ts",
+    "./parseAce": "./src/parseAce.ts",
+    "./parseStandings": "./src/parseStandings.ts",
+    "./time": "./src/time.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "parity": "tsx bin/parity-report.ts",
+    "standings": "tsx bin/standings-parity.ts",
+    "cups": "tsx bin/cup-parity.ts",
+    "typecheck": "tsc --noEmit",
+    "prelim": "tsx bin/prelim-parity.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

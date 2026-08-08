@@ -1,12 +1,52 @@
 # far-west-masters
 
-Far West Masters email and web templates, scripts, and archives.
+Far West Masters club software: the member texting and race results platform, plus
+the email and web templates, scripts, and archives for farwestmasters.org.
+
+## Start here
+
+The repo holds two quite different things. If you are new, read this section first.
+
+**1. The platform** (`web/`, `results-engine/`, `supabase/`, `migration/`)
+
+A Next.js + Supabase application replacing two Airtable bases: member texting via
+Twilio, and race results / season standings / cup scoring. In progress.
+
+| If you want to… | Read |
+|---|---|
+| Understand the data model and why it is shaped this way | [migration/schema-design.md](migration/schema-design.md) |
+| Understand FWM's scoring rules, and how they changed over 18 seasons | [migration/scoring-history.md](migration/scoring-history.md) |
+| Know why a recomputed result differs from the official one | [migration/scoring-history.md](migration/scoring-history.md) — "READ FIRST" |
+| Work with the Bernard Cup, Viva Italia or McKinney Cup | [migration/cup-rules.md](migration/cup-rules.md) |
+| Import results from live-timing.com | [migration/live-timing-format.md](migration/live-timing-format.md) |
+| Understand SMS length, segments, and what they cost | [migration/sms-limits.md](migration/sms-limits.md) |
+| Run the scoring engine or its verification harnesses | [results-engine/README.md](results-engine/README.md) |
+| Back up Airtable, or mirror the published results | [migration/README.md](migration/README.md) |
+| **Operate the system** — race day, sending texts, what to do when it breaks | **[RUNBOOK.md](RUNBOOK.md)** |
+
+Two reports are regenerated from the code, not written by hand:
+
+- [reports/parity-report.md](reports/parity-report.md) — does our scoring reproduce
+  the official results? (297 races, 2009-2026)
+- [reports/preliminary-vs-official.md](reports/preliminary-vs-official.md) — how far
+  do race-day preliminary results differ from the official ones?
+
+**2. The website and email content** (`email-templates/`, `html-templates/`,
+`archive/`, `social/`, `screenshots/`) — documented in the rest of this file.
+
+`airtable-results/` holds the original Airtable scoring scripts. They are kept as
+the reference the engine was ported from, and are no longer edited.
 
 ## Directory Structure
 
 ```text
 far-west-masters/
-├── airtable-results/        # Scripts for race points calculation
+├── web/                     # The platform: Next.js app (members, texting, results)
+├── results-engine/          # Scoring engine + verification harnesses
+├── supabase/migrations/     # Database schema and seed data
+├── migration/               # Migration tooling and the reference documentation
+├── reports/                 # Generated verification reports
+├── airtable-results/        # Original Airtable scripts (reference; not edited)
 ├── archive/                 # Historical files by season
 │   ├── 25-26/
 │   │   ├── email/           # All emails sent during 2025-26 season

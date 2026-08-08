@@ -1,0 +1,26 @@
+{
+  "name": "far-west-masters",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Far West Masters platform: member texting, race results, and season standings, plus the site templates and archives.",
+  "workspaces": [
+    "web",
+    "results-engine"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace web",
+    "build": "npm run build --workspace web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+
+    "parity": "npm run parity --workspace @fwm/results-engine",
+    "standings": "npm run standings --workspace @fwm/results-engine",
+    "cups": "npm run cups --workspace @fwm/results-engine",
+
+    "backup:airtable": "node migration/airtable-backup.mjs",
+    "archive:results": "node migration/archive-results.mjs",
+    "detect:points-scale": "node migration/detect-points-scale.mjs"
+  },
+  "engines": {
+    "node": ">=20.9"
+  }
+}
