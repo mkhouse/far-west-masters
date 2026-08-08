@@ -30,10 +30,18 @@ const nextConfig: NextConfig = {
       // lands, "/" becomes a public page and this goes away. A permanent
       // redirect would be cached by every browser that ever followed it, and
       // undoing that is not something you can do from the server.
+      //
+      // `missing` keeps this out of the way of sign-in: a magic-link code often
+      // arrives at "/" (Supabase redirects to the project Site URL when the
+      // requested callback is not allow-listed), and redirecting it onward buries
+      // the code somewhere that cannot use it. The proxy also rescues this case;
+      // both exist because a broken sign-in is not a failure worth being clever
+      // about.
       {
         source: "/",
         destination: "/messages",
         permanent: false,
+        missing: [{ type: "query", key: "code" }],
       },
     ];
   },

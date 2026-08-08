@@ -27,6 +27,33 @@ import { NextResponse, type NextRequest } from 'next/server'
 const PROTECTED = ['/admin', '/process', '/messages']
 
 export async function proxy(request: NextRequest) {
+  // --- rescue a sign-in code that arrived at the wrong path ---
+  //
+  // Only /auth/callback can exchange a magic-link code for a session. But the code
+  // does not always arrive there: Supabase falls back to the project's Site URL
+  // whenever the requested redirect is not in its allow list, and a Site URL is
+  // usually a bare domain. From "/" it then follows whatever redirects the app has,
+  // and lands somewhere that ignores it — for us, at the sign-in page, which is a
+  // uniquely confusing place to be told to sign in.
+  //
+  // Rather than depend on a setting in someone else's dashboard being exactly
+  // right, treat a `code` parameter as meaning what it says wherever it turns up.
+  const code = request.nextUrl.searchParams.get('code')
+  if (code && request.nextUrl.pathname !== '/auth/callback') {
+    const callback = request.nextUrl.clone()
+    callback.pathname = '/auth/callback'
+
+    // Where they were headed: an explicit `next`, otherwise the path the code
+    // landed on — unless that is the sign-in page, which would loop.
+    const landed = request.nextUrl.pathname
+    const next =
+      request.nextUrl.searchParams.get('next') ??
+      (landed === '/sign-in' || landed === '/' ? '/messages' : landed)
+
+    callback.searchParams.set('next', next)
+    return NextResponse.redirect(callback)
+  }
+
   let response = NextResponse.next({ request })
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
