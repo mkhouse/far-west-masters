@@ -115,6 +115,15 @@ half a race. The importer should refuse; if it does not, stop and fix that.
 5. Send. Replies are forwarded to the membership director's phone; STOP is handled
    automatically.
 
+**A send takes minutes, and that is normal.** One phone number emits roughly one
+message per second, so ninety members takes a couple of minutes. The button is
+replaced by a spinner for the whole time. Do not reload the page to check — the
+send is running, and the message page will show every recipient when it finishes.
+
+Sending the same words to the same audience twice within ten minutes is refused,
+on the assumption it was an accident. If you genuinely mean to repeat a message,
+wait, or change the wording.
+
 **`Text STOP to stop` is added by this app**, not by Twilio, and it costs 18 of the
 160 characters in a segment. To change the wording, edit `sms_optout_text` in
 `app_settings` — the character budget follows automatically. Set it to an empty
@@ -224,7 +233,10 @@ should always say `NO — correct`.
 | Delivery stuck on `queued`, never `delivered` | `NEXT_PUBLIC_SITE_URL` does not match the deployed URL, so Twilio's status callbacks are rejected with 403 |
 | Replies not appearing, but members get an autoresponder reply | Same cause — the Twilio fallback is masking a failing webhook. See Deployment |
 | `permission denied for table …` | `service_role` grants missing — run migration 0004 |
-| Sign-in emails never arrive | Supabase's built-in mailer is rate limited to a few per hour; custom SMTP must be configured |
+| Sign-in emails never arrive | Custom SMTP not enabled — the built-in mailer allows about two per hour, project-wide, and cannot be raised |
+| Sign-in hangs ~30s, then "email rate limit exceeded" | The SMTP host is not answering. A web domain and its mail server are different machines: use the provider's mail host (`smtp.dreamhost.com`), not the domain itself |
+| SMTP fails as though the password were wrong | Username must be the **full email address**, not the part before the @ |
+| Two sign-in attempts in a row both fail | "Minimum interval per user" (Authentication → Rate Limits) is 60s, separate from the hourly cap. Wait a minute between attempts when testing |
 | "Not authorized" after signing in | No `app_users` row for that account |
 | Results import produces nonsense | Check the live-timing parsing traps in [migration/live-timing-format.md](migration/live-timing-format.md) — six of them fail silently |
 | A score is off by 0.01 | Expected, and explained — see "READ FIRST" in [migration/scoring-history.md](migration/scoring-history.md) |

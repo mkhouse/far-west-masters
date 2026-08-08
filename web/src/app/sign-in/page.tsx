@@ -10,7 +10,7 @@
  * successfully still sees nothing. See lib/auth.ts.
  */
 
-import { requestMagicLink } from './actions'
+import { SignInForm } from './sign-in-form'
 
 export default async function SignInPage({
   searchParams,
@@ -48,37 +48,7 @@ export default async function SignInPage({
           </p>
         </div>
       ) : (
-        <form action={requestMagicLink} className="mt-8 space-y-4">
-          {/* Preserve where the officer was headed before being redirected here. */}
-          <input type="hidden" name="next" value={params.next ?? '/'} />
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900"
-          >
-            Email me a sign-in link
-          </button>
-
-          {params.error ? (
-            <p className="text-sm text-red-600" role="alert">
-              {params.error}
-            </p>
-          ) : null}
-        </form>
+        <SignInForm next={params.next ?? '/'} error={params.error} />
       )}
 
       <p className="mt-8 text-xs text-neutral-500">

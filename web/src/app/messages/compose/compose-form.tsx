@@ -11,6 +11,7 @@
  */
 
 import { useMemo, useState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { sendMessage } from './send'
 import {
   additionsLength,
@@ -306,16 +307,61 @@ export function ComposeForm({
         typedLength={body.length}
       />
 
-      <button
-        type="submit"
-        disabled={!canSend}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
-      >
-        {recipientCount === 0
-          ? 'No recipients'
-          : `Send to ${recipientCount} ${recipientCount === 1 ? 'person' : 'people'}`}
-      </button>
+      <SendButton canSend={canSend} recipientCount={recipientCount} />
     </form>
+  )
+}
+
+/**
+ * The Send button, and the pending state that matters more than it does.
+ *
+ * A send to ninety people takes minutes: a single Twilio number emits roughly one
+ * segment per second, and the action does not return until it has worked through
+ * the list. For that whole time the page looks idle.
+ *
+ * Left as an ordinary button, a second click starts a SECOND send — a new message
+ * with the same audience, every member texted twice, at double the cost. The
+ * per-recipient unique index does not help: it prevents duplicates within one
+ * message, and this would be two.
+ *
+ * So while sending, the button is replaced rather than disabled. There is nothing
+ * left to click.
+ */
+function SendButton({
+  canSend,
+  recipientCount,
+}: {
+  canSend: boolean
+  recipientCount: number
+}) {
+  const { pending } = useFormStatus()
+
+  if (pending) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex items-center gap-2 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+      >
+        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+          <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        </svg>
+        Sending to {recipientCount} {recipientCount === 1 ? 'person' : 'people'}…
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="submit"
+      disabled={!canSend}
+      className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
+    >
+      {recipientCount === 0
+        ? 'No recipients'
+        : `Send to ${recipientCount} ${recipientCount === 1 ? 'person' : 'people'}`}
+    </button>
   )
 }
 

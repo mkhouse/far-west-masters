@@ -187,6 +187,50 @@ export async function sendMessage(formData: FormData) {
     replyForwardTo = (person?.phone as string) ?? null
   }
 
+  // --- duplicate guard ---
+  //
+  // The button cannot be clicked twice, but a browser can still resubmit: a
+  // refresh, a back-button, a flaky connection retried, or two officers acting on
+  // the same request minutes apart. Any of those sends the whole audience a second
+  // copy, and a text cannot be unsent.
+  //
+  // So: refuse an identical message to the same audience from the same officer
+  // inside a short window. Deliberately narrow — a genuinely intended repeat is
+  // rare, and waiting a few minutes is a far smaller cost than texting ninety
+  // people twice.
+  const DUPLICATE_WINDOW_MINUTES = 10
+  const since = new Date(Date.now() - DUPLICATE_WINDOW_MINUTES * 60_000).toISOString()
+
+  // Matched on the specific audience, not just its kind — the same words sent to
+  // two different groups is a normal thing to do, and must not be mistaken for a
+  // double-click.
+  let duplicateQuery = db
+    .from('messages')
+    .select('id, created_at')
+    .eq('created_by', appUser.userId)
+    .eq('body', body)
+    .eq('audience_kind', kind)
+    .gte('created_at', since)
+
+  duplicateQuery = groupId
+    ? duplicateQuery.eq('group_id', groupId)
+    : duplicateQuery.is('group_id', null)
+
+  duplicateQuery = series
+    ? duplicateQuery.eq('series', series)
+    : duplicateQuery.is('series', null)
+
+  const { data: recent } = await duplicateQuery.limit(1).maybeSingle()
+
+  if (recent) {
+    const id = (recent as { id: string }).id
+    fail(
+      `That exact message was already sent to this audience in the last ` +
+        `${DUPLICATE_WINDOW_MINUTES} minutes. If you meant to send it again, wait ` +
+        `a few minutes or change the wording. Open /messages/${id} to see what went out.`
+    )
+  }
+
   const audience = await resolveAudience(kind, { series, groupId })
 
   // Who is sending, in a form a person can read months from now. Stored on the
