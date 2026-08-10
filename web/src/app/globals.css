@@ -3,11 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Far West Masters brand colours, the same pair used in the Forerunner emails
+     and the club site — see email-templates/examples/README.md. Reused here so the
+     app reads as part of the club rather than as a separate tool. */
+  --fwm-navy: #003366;
+  --fwm-burgundy: #8b0000;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-fwm-navy: var(--fwm-navy);
+  --color-fwm-burgundy: var(--fwm-burgundy);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,6 +24,12 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* The print navy and burgundy are close to unreadable on a dark background.
+       These are the same hues lifted in lightness until they pass contrast — the
+       brand still reads, and the text can actually be read. */
+    --fwm-navy: #7ea8d4;
+    --fwm-burgundy: #e39393;
   }
 }
 

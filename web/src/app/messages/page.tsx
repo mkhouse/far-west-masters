@@ -149,24 +149,45 @@ export default async function MessagesPage() {
         text yet, and so cannot receive bulk messages under FWM&rsquo;s consent rule.
       </p>
 
-      <h2 className="mt-12 text-sm font-medium">Send log</h2>
+      <h2 className="mt-12 text-sm font-medium text-fwm-navy">Send log</h2>
       <p className="mt-1 text-xs text-neutral-500">
         Every message this system has sent, who sent it, and what reached a phone.
       </p>
+
+      {/* Placeholder for search (#46). Deliberately styled as unavailable rather
+          than as a disabled input — a text box that ignores typing is worse than
+          an honest note. */}
+      <div className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-neutral-300 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-700">
+        <svg
+          className="h-3.5 w-3.5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+        </svg>
+        Search across sent messages — coming soon
+      </div>
 
       {messages.length === 0 ? (
         <p className="mt-6 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
           Nothing sent yet.
         </p>
       ) : (
-        <ul className="mt-4 divide-y divide-neutral-200 border-y border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
+        <ul className="mt-4 space-y-3">
           {messages.map((m) => {
             const t = tallies.get(m.id) ?? { total: 0, delivered: 0, failed: 0 }
             const when = m.sent_at ?? m.created_at
 
             return (
-              <li key={m.id} className="py-4">
-                <Link href={`/messages/${m.id}`} className="group block">
+              <li key={m.id}>
+                <Link
+                  href={`/messages/${m.id}`}
+                  className="group block rounded-lg border border-neutral-200 p-4 transition-colors hover:border-fwm-navy dark:border-neutral-800 dark:hover:border-fwm-navy"
+                >
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="truncate font-medium group-hover:underline">
                       {/* Falls back to the message itself when no purpose was
@@ -198,13 +219,13 @@ export default async function MessagesPage() {
                         minutes. Shown only once at least one has confirmed. */}
                     {t.delivered > 0 && ` · ${t.delivered} delivered`}
                     {t.failed > 0 && (
-                      <span className="text-red-700 dark:text-red-300">
+                      <span className="font-medium text-fwm-burgundy">
                         {' '}
                         · {t.failed} failed
                       </span>
                     )}
                     {m.status === 'failed' && (
-                      <span className="text-red-700 dark:text-red-300">
+                      <span className="font-medium text-fwm-burgundy">
                         {' '}
                         · send failed
                       </span>

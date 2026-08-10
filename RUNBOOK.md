@@ -280,6 +280,7 @@ should always say `NO — correct`.
 | Sign-in hangs ~30s, then "email rate limit exceeded" | The SMTP host is not answering. A web domain and its mail server are different machines: use the provider's mail host (`smtp.dreamhost.com`), not the domain itself |
 | SMTP fails as though the password were wrong | Username must be the **full email address**, not the part before the @ |
 | Two sign-in attempts in a row both fail | "Minimum interval per user" (Authentication → Rate Limits) is 60s, separate from the hourly cap. Wait a minute between attempts when testing |
+| Edited an auth email template, but sends still use the old one | Supabase caches templates for a few minutes. The dashboard preview updates immediately, which makes it look like the change is live. Wait, then send one test — repeated attempts only burn the rate limit |
 | Sign-in link says "expired" on a first click, AND delivery reports stopped | Both at once means `NEXT_PUBLIC_SITE_URL` has no value in the build — almost certainly marked Sensitive in Vercel. See Environment variables above |
 | Sign-in link says "expired" on a first click | The code did not reach `/auth/callback`. Supabase falls back to the **Site URL** whenever the redirect it was asked for is not in the allow list. Check Redirect URLs contains `<site>/auth/callback` exactly |
 | "Not authorized" after signing in | No `app_users` row for that account |
