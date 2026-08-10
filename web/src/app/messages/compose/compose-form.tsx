@@ -75,7 +75,7 @@ export interface AudienceResult {
   recipientCount: number
   consideredCount: number
   excluded: { reason: string; count: number }[]
-  bypassesConsentGate: boolean
+  incompleteConsent: boolean
   unavailableReason?: string
 }
 
@@ -559,11 +559,15 @@ function AudiencePicker({
           </ul>
         )}
 
-        {audience.bypassesConsentGate && (
+        {/* Intro texts are the only audience where the gate is not fully satisfied,
+            and it is worth saying plainly what is and is not true of it — the risk
+            here is an officer assuming it reaches people who have not asked to
+            hear from the club. It does not. */}
+        {audience.incompleteConsent && (
           <p className="mt-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-            This audience does not apply the usual consent gate. Intro texts reach
-            people who have not yet opted in — that is how they opt in — and test
-            sends reach the test group directly.
+            Everyone here opted in on the form but has not had their intro text yet.
+            Sending it completes their consent, and they move into the regular
+            audiences afterwards.
           </p>
         )}
       </div>

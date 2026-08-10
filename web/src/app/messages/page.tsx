@@ -209,7 +209,7 @@ export default async function MessagesPage() {
                       sent by {m.sent_by ?? 'unknown'}
                     </span>
                     {m.category && m.category !== 'general' && ` · ${m.category}`}
-                    {m.bypassed_consent_gate && ' · consent gate bypassed'}
+                    {m.bypassed_consent_gate && ' · intro text'}
                   </p>
 
                   <p className="mt-1 text-xs text-neutral-500">

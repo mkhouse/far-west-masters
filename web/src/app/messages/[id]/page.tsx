@@ -44,7 +44,10 @@ const AUDIENCE_KIND_LABEL: Record<string, string> = {
   group: 'saved group',
   all_eligible: 'all eligible members',
   series: 'race series',
-  series_intro: 'intro texts',
+  intro_pending: 'opted in, awaiting intro text',
+  // Retained so historical messages still describe themselves. The audience was
+  // renamed and rescoped in task #48.
+  series_intro: 'intro texts (former series-scoped audience)',
   always: 'always-notify list',
 }
 
@@ -219,8 +222,8 @@ export default async function MessagePage({
           <div className="border-t border-neutral-200 px-5 py-3 text-xs text-neutral-500 dark:border-neutral-800">
             {message.bypassed_consent_gate && (
               <p className="text-amber-700 dark:text-amber-400">
-                Consent gate bypassed — sent without the opt-in and intro-text
-                checks.
+                Intro text — recipients had opted in but not yet been introduced.
+                Sending this completed their consent.
               </p>
             )}
             {!message.replies_monitored && <p>Replies were not monitored.</p>}

@@ -47,22 +47,18 @@ interface GatePerson {
 async function recipientsFor(
   kind: AudienceKind,
   opts: { series?: string; groupId?: string }
-): Promise<{ people: GatePerson[]; bypass: boolean }> {
+): Promise<{ people: GatePerson[]; incompleteConsent: boolean }> {
   const db = supabaseAdmin()
 
   const passesGate = (p: GatePerson) =>
     !!p.phone && !p.opted_out_at && !p.sms_never && !!p.opt_in_at && !!p.intro_sent_at
-
-  // Reachable at all: enough to send to, regardless of consent. Used only by
-  // audiences that legitimately bypass the gate.
-  const reachable = (p: GatePerson) => !!p.phone && !p.opted_out_at
 
   switch (kind) {
     case 'group': {
       // Groups always apply the consent gate — see migration 0020. There is
       // deliberately no per-group escape hatch: an audience that can silently skip
       // consent gets set once for a good reason and then forgotten.
-      if (!opts.groupId) return { people: [], bypass: false }
+      if (!opts.groupId) return { people: [], incompleteConsent: false }
       const { data: rows } = await db
         .from('recipient_group_members')
         .select(`people!inner(${GATE})`)
@@ -75,22 +71,46 @@ async function recipientsFor(
         })
         .filter(Boolean) as GatePerson[]
 
-      return { people: people.filter(passesGate), bypass: false }
+      return { people: people.filter(passesGate), incompleteConsent: false }
     }
 
     case 'all_eligible': {
       const { data } = await db.from('people').select(GATE)
-      return { people: ((data ?? []) as GatePerson[]).filter(passesGate), bypass: false }
+      return {
+        people: ((data ?? []) as GatePerson[]).filter(passesGate),
+        incompleteConsent: false,
+      }
     }
 
     case 'always': {
       const { data } = await db.from('people').select(GATE).eq('sms_always', true)
-      return { people: ((data ?? []) as GatePerson[]).filter(passesGate), bypass: false }
+      return {
+        people: ((data ?? []) as GatePerson[]).filter(passesGate),
+        incompleteConsent: false,
+      }
     }
 
-    case 'series':
-    case 'series_intro': {
-      if (!opts.series) return { people: [], bypass: false }
+    case 'intro_pending': {
+      // Opted in, not yet sent the intro text that completes their consent.
+      //
+      // Note what is still required: opt_in_at. This is not a bypass — nothing in
+      // this system messages anyone who has not opted in. FWM's consent flow, as
+      // described to Twilio when the toll-free number was verified, is form first
+      // and then intro text, so an intro text always follows a form submission.
+      const { data } = await db
+        .from('people')
+        .select(GATE)
+        .not('opt_in_at', 'is', null)
+        .is('intro_sent_at', null)
+
+      const people = ((data ?? []) as GatePerson[]).filter(
+        (p) => !!p.phone && !p.opted_out_at && !p.sms_never
+      )
+      return { people, incompleteConsent: true }
+    }
+
+    case 'series': {
+      if (!opts.series) return { people: [], incompleteConsent: false }
       const { data: entries } = await db
         .from('race_entries')
         .select(`person_id, people!inner(${GATE}), races!inner(series)`)
@@ -107,15 +127,7 @@ async function recipientsFor(
       }
       const all = [...seen.values()]
 
-      if (kind === 'series') return { people: all.filter(passesGate), bypass: false }
-
-      // Intro texts: the one audience that reaches people who have not passed the
-      // gate, because receiving it is how they begin to. Restricted to race
-      // entrants, and only those who have never had one.
-      return {
-        people: all.filter((p) => reachable(p) && !p.sms_never && !p.intro_sent_at),
-        bypass: true,
-      }
+      return { people: all.filter(passesGate), incompleteConsent: false }
     }
   }
 }
@@ -148,7 +160,7 @@ export async function sendMessage(formData: FormData) {
   }
 
   // Re-resolve on the server. Never trust a recipient list from the browser.
-  const { people, bypass } = await recipientsFor(kind, { series, groupId })
+  const { people, incompleteConsent } = await recipientsFor(kind, { series, groupId })
   if (!people.length) fail('That audience has nobody in it right now.')
 
   // Re-check the limits too. The client shows them, but the client can be stale.
@@ -258,7 +270,7 @@ export async function sendMessage(formData: FormData) {
       audience_label: audience.label,
       group_id: groupId ?? null,
       series: series ?? null,
-      bypassed_consent_gate: bypass,
+      bypassed_consent_gate: incompleteConsent,
       replies_monitored: repliesMonitored,
       reply_notice: replyNotice,
       reply_forward_to: replyForwardTo,
@@ -305,6 +317,31 @@ export async function sendMessage(formData: FormData) {
       sent_at: r.error ? null : new Date().toISOString(),
     }))
   )
+
+  // --- record that the intro text was sent ---
+  //
+  // This is what completes someone's consent: they opted in on the form, and this
+  // send is the confirmation that closes the loop. Until it is stamped, they stay
+  // outside the gate and would receive the intro again on every subsequent run.
+  //
+  // Only for recipients Twilio accepted. A failed send did not introduce anyone, and
+  // marking it would quietly promote them into the eligible audience having never
+  // heard from the club.
+  if (incompleteConsent) {
+    const introduced = results
+      .filter((r) => !r.error && r.personId)
+      .map((r) => r.personId as string)
+
+    if (introduced.length) {
+      await db
+        .from('people')
+        .update({ intro_sent_at: new Date().toISOString() })
+        .in('id', introduced)
+        // Never overwrite an earlier introduction — the first one is the one that
+        // established consent, and its date is the one that matters.
+        .is('intro_sent_at', null)
+    }
+  }
 
   const failed = results.filter((r) => r.error).length
   await db

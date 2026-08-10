@@ -20,7 +20,7 @@ export type AudienceKind =
   | 'group' // a named group an admin maintains: test groups, officials, board
   | 'all_eligible' // everyone past the consent gate
   | 'series' // people entered in a race weekend
-  | 'series_intro' // people in a race weekend who have never had an intro text
+  | 'intro_pending' // opted in, but not yet sent the intro text that completes it
   | 'always' // members who asked to hear about races regardless of entry
 
 export interface AudienceOption {
@@ -45,8 +45,14 @@ export interface AudienceResult {
   /** People considered before the consent gate was applied */
   consideredCount: number
   excluded: ExclusionReason[]
-  /** True when this audience deliberately bypasses the consent gate */
-  bypassesConsentGate: boolean
+  /**
+   * True when this audience reaches people who have not yet passed the whole gate.
+   *
+   * Only the intro-text audience does, and it is not a bypass: those people have
+   * opted in, and the intro text is what completes their consent. Nothing in this
+   * system messages anyone who has not opted in.
+   */
+  incompleteConsent: boolean
   /** Set when the audience cannot be built yet, e.g. no roster imported */
   unavailableReason?: string
 }
@@ -121,7 +127,11 @@ export async function listAudiences(): Promise<AudienceOption[]> {
 
   options.push(
     { kind: 'all_eligible', label: 'All eligible members' },
-    { kind: 'always', label: 'Members who always want race texts' }
+    { kind: 'always', label: 'Members who always want race texts' },
+    // Not scoped to a race: the trigger is a completed opt-in form, not a race
+    // entry. FWM's flow is form first, then intro text — see the note on
+    // 'intro_pending' in resolveAudience.
+    { kind: 'intro_pending', label: 'Opted in, awaiting their intro text' }
   )
 
   // A series is offerable once at least one of its races has entries.
@@ -139,11 +149,6 @@ export async function listAudiences(): Promise<AudienceOption[]> {
 
   for (const series of seriesWithEntries) {
     options.push({ kind: 'series', series, label: series })
-    options.push({
-      kind: 'series_intro',
-      series,
-      label: `${series} — intro texts to those who need one`,
-    })
   }
 
   return options
@@ -162,7 +167,7 @@ export async function resolveAudience(
       if (!groupId) {
         return {
           kind, label: 'Group', recipientCount: 0, consideredCount: 0,
-          excluded: [], bypassesConsentGate: false,
+          excluded: [], incompleteConsent: false,
           unavailableReason: 'No group selected',
         }
       }
@@ -199,7 +204,7 @@ export async function resolveAudience(
         recipientCount: eligible,
         consideredCount: people.length,
         excluded,
-        bypassesConsentGate: false,
+        incompleteConsent: false,
         unavailableReason: people.length === 0 ? 'This group has no members yet' : undefined,
       }
     }
@@ -214,7 +219,7 @@ export async function resolveAudience(
         recipientCount: eligible,
         consideredCount: people.length,
         excluded,
-        bypassesConsentGate: false,
+        incompleteConsent: false,
       }
     }
 
@@ -228,12 +233,51 @@ export async function resolveAudience(
         recipientCount: eligible,
         consideredCount: people.length,
         excluded,
-        bypassesConsentGate: false,
+        incompleteConsent: false,
       }
     }
 
-    case 'series':
-    case 'series_intro': {
+    case 'intro_pending': {
+      // Members who completed the opt-in form but have not yet been sent the intro
+      // text that confirms it.
+      //
+      // This is the ONLY audience that reaches people who have not passed the whole
+      // gate, and it is not a bypass: `opt_in_at` is required here exactly as it is
+      // everywhere else. What is missing is `intro_sent_at`, and this send is what
+      // supplies it.
+      //
+      // It is deliberately not scoped to a race. FWM's consent flow — the one
+      // described to Twilio when the toll-free number was verified — is form first,
+      // then intro text. The trigger is a completed form, so scoping this to race
+      // entrants would both miss people and imply a first contact that nobody asked
+      // for.
+      const { data } = await db
+        .from('people')
+        .select(GATE_COLUMNS)
+        .not('opt_in_at', 'is', null)
+        .is('intro_sent_at', null)
+
+      const people = data ?? []
+      const reachable = people.filter(
+        (p) => p.phone && !p.opted_out_at && !p.sms_never
+      )
+      const unreachable = people.length - reachable.length
+
+      return {
+        kind,
+        label: 'Opted in, awaiting their intro text',
+        recipientCount: reachable.length,
+        consideredCount: people.length,
+        excluded: unreachable > 0
+          ? [{ reason: 'no phone number, opted out, or suppressed', count: unreachable }]
+          : [],
+        incompleteConsent: true,
+        unavailableReason:
+          people.length === 0 ? 'Everyone who has opted in has had their intro text' : undefined,
+      }
+    }
+
+    case 'series': {
       if (!series) {
         return {
           kind,
@@ -241,7 +285,7 @@ export async function resolveAudience(
           recipientCount: 0,
           consideredCount: 0,
           excluded: [],
-          bypassesConsentGate: kind === 'series_intro',
+          incompleteConsent: false,
           unavailableReason: 'No series selected',
         }
       }
@@ -267,34 +311,14 @@ export async function resolveAudience(
       }
       const people = [...seen.values()]
 
-      if (kind === 'series') {
-        const { eligible, excluded } = explainExclusions(people)
-        return {
-          kind,
-          label: series,
-          recipientCount: eligible,
-          consideredCount: people.length,
-          excluded,
-          bypassesConsentGate: false,
-        }
-      }
-
-      // Intro texts: the one audience that may reach people who have not passed the
-      // consent gate, because it is how they pass it. Restricted to entrants — a
-      // first contact is justified by their having registered for a race, not by
-      // being in the database.
-      const needsIntro = people.filter(
-        (p) => p.phone && !p.opted_out_at && !p.sms_never && !p.intro_sent_at
-      )
-      const already = people.length - needsIntro.length
-
+      const { eligible, excluded } = explainExclusions(people)
       return {
         kind,
-        label: `${series} — intro texts`,
-        recipientCount: needsIntro.length,
+        label: series,
+        recipientCount: eligible,
         consideredCount: people.length,
-        excluded: already > 0 ? [{ reason: 'already had an intro text, or unreachable', count: already }] : [],
-        bypassesConsentGate: true,
+        excluded,
+        incompleteConsent: false,
       }
     }
   }

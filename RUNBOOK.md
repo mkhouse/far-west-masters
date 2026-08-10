@@ -107,9 +107,24 @@ half a race. The importer should refuse; if it does not, stop and fix that.
 1. Choose the audience — a race, a series, or all members.
 2. Write the message. Watch the segment counter: over 160 characters costs multiple
    segments per recipient.
-3. The system excludes anyone who has opted out, is suppressed, or has not been sent
-   an intro text. **This is FWM's own consent rule, not a technical limit.** If the
-   recipient count looks low, that is usually why.
+3. The system excludes anyone who has opted out, is suppressed, has not opted in, or
+   has not been sent an intro text. **This is FWM's own consent rule, not a technical
+   limit.** If the recipient count looks low, that is usually why.
+
+   **Consent has two halves**, and both are required: the member submits the opt-in
+   form (`opt_in_at`), and FWM sends them an intro text confirming it
+   (`intro_sent_at`). Nothing in this system messages anyone who has not opted in —
+   there is no override, for any audience, including test groups.
+
+   The **"Opted in, awaiting their intro text"** audience is how the second half gets
+   done. It reaches members who submitted the form but have not been introduced yet;
+   sending it stamps `intro_sent_at` and moves them into the regular audiences. That
+   is the only audience where consent is not already complete, and it is not an
+   exception to the rule — those people asked to hear from the club.
+
+   Note the order: **form first, then intro text.** Texting people to ask them to opt
+   in would contradict the consent process described to Twilio when the toll-free
+   number was verified.
 4. Check the **What arrives on the phone** preview. It shows the message as members
    will see it, with everything the system adds greyed out.
 5. Send. Replies are forwarded to the membership director's phone; STOP is handled
