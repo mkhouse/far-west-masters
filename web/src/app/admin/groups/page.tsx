@@ -21,7 +21,6 @@ export default async function GroupsPage() {
     id: string
     name: string
     description: string | null
-    bypasses_consent_gate: boolean
     is_test_group: boolean
     recipient_group_members: Array<{
       person_id: string
@@ -37,7 +36,7 @@ export default async function GroupsPage() {
   const { data: groupData } = await db
     .from('recipient_groups')
     .select(
-      `id, name, description, bypasses_consent_gate, is_test_group,
+      `id, name, description, is_test_group,
        recipient_group_members(person_id, people(id, first_name, last_name, phone))`
     )
     .order('is_test_group', { ascending: false })
@@ -107,16 +106,6 @@ export default async function GroupsPage() {
                   </button>
                 </form>
               </div>
-
-              {/* Groups that skip the consent gate are marked wherever they appear,
-                  not just where they are created. */}
-              {g.bypasses_consent_gate && (
-                <p className="mt-3 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-                  Skips the opt-in and intro-text checks. Appropriate for test
-                  groups; not for groups of members who have not agreed to receive
-                  texts.
-                </p>
-              )}
 
               <ul className="mt-3 space-y-1 text-sm">
                 {members.map((m) => (
@@ -205,16 +194,13 @@ export default async function GroupsPage() {
             </span>
           </label>
 
-          <label className="flex items-start gap-2 text-sm">
-            <input type="checkbox" name="bypasses_consent_gate" className="mt-1" />
-            <span>
-              Skip the consent checks
-              <span className="block text-xs text-neutral-500">
-                Only for test groups. Everyone else — officials, board members —
-                still needs to have opted in and had an intro text.
-              </span>
-            </span>
-          </label>
+          {/* There is deliberately no "skip the consent checks" option. Every group
+              applies the gate — see migration 0020. */}
+          <p className="text-xs text-neutral-500">
+            Everyone in a group still needs to have opted in and had an intro text
+            before they can receive a message. Groups choose who is asked, not
+            whether consent applies.
+          </p>
 
           <button
             type="submit"

@@ -169,7 +169,7 @@ export async function resolveAudience(
 
       const { data: group } = await db
         .from('recipient_groups')
-        .select('name, bypasses_consent_gate')
+        .select('name')
         .eq('id', groupId)
         .single()
 
@@ -186,26 +186,12 @@ export async function resolveAudience(
         })
         .filter(Boolean) as GatePerson[]
 
-      // Whether the consent gate applies is a property of the group, set when it was
-      // created. A test group skips it so the test actually arrives; a group of
-      // officials or board members should not, because they are still people who
-      // need to have agreed to receive texts.
-      const bypass = group?.bypasses_consent_gate === true
-
-      if (bypass) {
-        const reachable = people.filter((p) => p.phone && !p.opted_out_at).length
-        const blocked = people.length - reachable
-        return {
-          kind,
-          label: (group?.name as string) ?? 'Group',
-          recipientCount: reachable,
-          consideredCount: people.length,
-          excluded: blocked > 0 ? [{ reason: 'no phone number or opted out', count: blocked }] : [],
-          bypassesConsentGate: true,
-          unavailableReason: people.length === 0 ? 'This group has no members yet' : undefined,
-        }
-      }
-
+      // Groups always apply the consent gate — see migration 0020. Test groups used
+      // to skip it, on the assumption that a test needed to reach people who had not
+      // been through the consent flow. In practice testers are officers and
+      // officials who have opted in like everybody else, so the exception bought
+      // nothing and cost a path by which a forgotten setting could text someone who
+      // never agreed.
       const { eligible, excluded } = explainExclusions(people)
       return {
         kind,

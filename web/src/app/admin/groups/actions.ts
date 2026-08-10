@@ -19,18 +19,15 @@ export async function createGroup(formData: FormData) {
   const name = String(formData.get('name') ?? '').trim()
   if (!name) return
 
-  // Bypassing the consent gate is deliberately opt-in and defaults off. Most groups
-  // — officials, board members — are still people who must have agreed to receive
-  // texts. Only test groups have a good reason to skip it.
-  const bypasses = formData.get('bypasses_consent_gate') === 'on'
   const isTest = formData.get('is_test_group') === 'on'
 
+  // No consent-gate exemption. Every group applies the gate — see migration 0020 —
+  // so a group decides who is asked, never whether consent applies.
   await supabaseAdmin()
     .from('recipient_groups')
     .insert({
       name,
       description: String(formData.get('description') ?? '').trim() || null,
-      bypasses_consent_gate: bypasses,
       is_test_group: isTest,
       created_by: appUser.userId,
     })

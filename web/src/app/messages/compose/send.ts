@@ -59,12 +59,10 @@ async function recipientsFor(
 
   switch (kind) {
     case 'group': {
+      // Groups always apply the consent gate — see migration 0020. There is
+      // deliberately no per-group escape hatch: an audience that can silently skip
+      // consent gets set once for a good reason and then forgotten.
       if (!opts.groupId) return { people: [], bypass: false }
-      const { data: group } = await db
-        .from('recipient_groups')
-        .select('bypasses_consent_gate')
-        .eq('id', opts.groupId)
-        .single()
       const { data: rows } = await db
         .from('recipient_group_members')
         .select(`people!inner(${GATE})`)
@@ -77,8 +75,7 @@ async function recipientsFor(
         })
         .filter(Boolean) as GatePerson[]
 
-      const bypass = group?.bypasses_consent_gate === true
-      return { people: people.filter(bypass ? reachable : passesGate), bypass }
+      return { people: people.filter(passesGate), bypass: false }
     }
 
     case 'all_eligible': {

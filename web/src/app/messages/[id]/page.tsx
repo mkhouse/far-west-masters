@@ -31,6 +31,24 @@ interface RecipientRow {
 const FAILED_STATES = new Set(['failed', 'undelivered'])
 
 /**
+ * How the audience was chosen, in plain words.
+ *
+ * The label alone ("Board members") does not say whether that was a maintained
+ * list, everyone eligible, or a race's entrants — and those answer different
+ * questions when someone asks why they received a text.
+ *
+ * There is no ad-hoc option here because there is no ad-hoc audience: every send
+ * targets something saved. See task #47.
+ */
+const AUDIENCE_KIND_LABEL: Record<string, string> = {
+  group: 'saved group',
+  all_eligible: 'all eligible members',
+  series: 'race series',
+  series_intro: 'intro texts',
+  always: 'always-notify list',
+}
+
+/**
  * Colour a delivery state.
  *
  * Only two states earn colour: confirmed arrival and confirmed failure. Everything
@@ -62,6 +80,7 @@ export default async function MessagePage({
     category: string
     purpose: string | null
     audience_label: string | null
+    audience_kind: string | null
     /** Snapshotted at send time — see migration 0017. */
     sent_by: string | null
     status: string
@@ -75,8 +94,8 @@ export default async function MessagePage({
   const { data: messageData } = await db
     .from('messages')
     .select(
-      `body, category, purpose, audience_label, sent_by, status, segments, sent_at,
-       replies_monitored, reply_notice, bypassed_consent_gate`
+      `body, category, purpose, audience_label, audience_kind, sent_by, status,
+       segments, sent_at, replies_monitored, reply_notice, bypassed_consent_gate`
     )
     .eq('id', id)
     .single()
@@ -156,10 +175,29 @@ export default async function MessagePage({
         {/* A definition list rather than a sentence: these are the four facts
             someone comes back for, and they should be scannable, not parsed. */}
         <dl className="grid gap-x-6 gap-y-4 px-5 py-4 text-sm sm:grid-cols-2">
+          {/* Reached first: it is the outcome, and the reason anyone opens this
+              page. To is the input, and answers the follow-up question. */}
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-neutral-500">
+              Reached
+            </dt>
+            <dd className="mt-0.5 font-medium">
+              {delivered.length} of {recipients.length} delivered
+              {failures.length > 0 && (
+                <span className="text-fwm-burgundy"> · {failures.length} failed</span>
+              )}
+            </dd>
+          </div>
           <div>
             <dt className="text-xs uppercase tracking-wide text-neutral-500">To</dt>
             <dd className="mt-0.5 font-medium">
               {message.audience_label ?? 'unknown audience'}
+              {/* How the audience was chosen, not just what it was called. */}
+              {message.audience_kind && AUDIENCE_KIND_LABEL[message.audience_kind] && (
+                <span className="block text-xs font-normal italic text-neutral-500">
+                  {AUDIENCE_KIND_LABEL[message.audience_kind]}
+                </span>
+              )}
             </dd>
           </div>
           <div>
@@ -172,17 +210,6 @@ export default async function MessagePage({
               {message.sent_at
                 ? new Date(message.sent_at).toLocaleString()
                 : 'not sent'}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-neutral-500">
-              Reached
-            </dt>
-            <dd className="mt-0.5 font-medium">
-              {delivered.length} of {recipients.length} delivered
-              {failures.length > 0 && (
-                <span className="text-fwm-burgundy"> · {failures.length} failed</span>
-              )}
             </dd>
           </div>
         </dl>
