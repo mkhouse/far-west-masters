@@ -174,6 +174,10 @@ export function ComposeForm({
           <input type="hidden" name="f_q" value={filterParams.q ?? ''} />
         </>
       )}
+      {/* One panel with divided sections, matching the send log and the members
+          directory: the compose screen is one task, not five loose controls
+          scattered on the page background. */}
+      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
       {/* --- who this goes to; first, because it changes everything below --- */}
       <AudiencePicker
         audiences={audiences}
@@ -182,7 +186,7 @@ export function ComposeForm({
         selectedGroupId={selectedGroupId}
       />
 
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className="grid gap-4 border-b border-neutral-200 px-5 py-4 sm:grid-cols-2 dark:border-neutral-800">
         <label className="block">
           <span className="text-sm font-medium">Category</span>
           <select
@@ -218,7 +222,7 @@ export function ComposeForm({
       </section>
 
       {/* --- reply handling --- */}
-      <section className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
+      <section className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
         <label className="flex items-start gap-3">
           <input
             type="checkbox"
@@ -259,7 +263,7 @@ export function ComposeForm({
 
       {/* Short label stored with the message. Cheap to type, and it is what makes
           the log readable months later. */}
-      <label className="block">
+      <label className="block border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
         <span className="text-sm font-medium">
           Purpose <span className="font-normal text-neutral-600">(for the log)</span>
         </span>
@@ -271,7 +275,7 @@ export function ComposeForm({
       </label>
 
       {/* --- message --- */}
-      <section>
+      <section className="px-5 py-4">
         <label className="block">
           <span className="text-sm font-medium">Message</span>
           <textarea
@@ -319,6 +323,8 @@ export function ComposeForm({
         costPerSegmentUsd={settings.costPerSegmentUsd}
         typedLength={body.length}
       />
+
+      </div>
 
       <SendButton canSend={canSend} recipientCount={recipientCount} />
     </form>
@@ -415,7 +421,7 @@ function CostSummary({
     ? 'border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40'
     : warn
       ? 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40'
-      : 'border-neutral-200 dark:border-neutral-800'
+      : 'border-neutral-200 bg-surface dark:border-neutral-800'
 
   return (
     <section className={`rounded-lg border p-4 text-sm ${tone}`}>
@@ -514,9 +520,9 @@ function AudiencePicker({
       : audience.kind + (selectedSeries ? `|${selectedSeries}` : '')
 
   return (
-    <section className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
+    <section className="border-b border-neutral-200 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
       <label className="block">
-        <span className="text-sm font-medium">Send to</span>
+        <span className="text-sm font-medium text-fwm-navy">Send to</span>
         <select
           value={value}
           onChange={(e) => {
