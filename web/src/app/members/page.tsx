@@ -330,24 +330,46 @@ export default async function MembersPage({
 
       {/* The send action, offered only for the two states that have opted in.
           Every other filter has no button at all — the absence is the rule, rather
-          than a check somewhere that has to be remembered. */}
-      {activeState && MESSAGEABLE[activeState] && matches.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-fwm-navy/30 bg-fwm-navy/5 px-4 py-3">
-          <Link
-            href={`/messages/compose?audience=${MESSAGEABLE[activeState]!.audience}`}
-            className="rounded-md bg-fwm-navy px-4 py-2 text-sm font-medium text-white"
-          >
-            {MESSAGEABLE[activeState]!.action}
-          </Link>
-          <span className="text-sm text-neutral-600 dark:text-neutral-400">
-            {/* The compose screen recomputes the audience, so say so — the number
-                here is a snapshot, and someone opting in between the two screens
-                should not look like a bug. */}
-            Goes to everyone in this state at the moment you send, not to the{' '}
-            {counts.get(activeState)} shown here.
-          </span>
-        </div>
-      )}
+          than a check somewhere that has to be remembered.
+
+          And only when the list on screen IS the audience. Narrowing by membership,
+          USSA or a search term produces a set the send path cannot express: every
+          audience is computed fresh at send time from consent alone. Offering the
+          button anyway would mean a button under a list of sixteen that texts
+          ninety-three people. */}
+      {activeState &&
+        MESSAGEABLE[activeState] &&
+        (() => {
+          const narrowed =
+            activeMembership !== 'all' || missingUsssa || query.length > 0
+
+          if (narrowed) {
+            return (
+              <p className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/50">
+                Messaging a filtered subset is not possible yet — an audience is
+                worked out from consent alone when you send. Clear the other filters
+                to message everyone {CONSENT_STATE_LABEL[activeState].toLowerCase()}.
+              </p>
+            )
+          }
+
+          return (
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-fwm-navy/30 bg-fwm-navy/5 px-4 py-3">
+              <Link
+                href={`/messages/compose?audience=${MESSAGEABLE[activeState]!.audience}`}
+                className="rounded-md bg-fwm-navy px-4 py-2 text-sm font-medium text-white"
+              >
+                {MESSAGEABLE[activeState]!.action}
+              </Link>
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                {/* The compose screen recomputes the audience, so say so — someone
+                    opting in between these two screens should not look like a bug. */}
+                Goes to everyone in this state at the moment you send, which is{' '}
+                {counts.get(activeState)} right now.
+              </span>
+            </div>
+          )
+        })()}
 
       </div>
 
