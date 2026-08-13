@@ -187,107 +187,185 @@ export default async function MessagesPage({
         .
       </p>
 
-      <h2 className="mt-12 text-sm font-medium text-fwm-navy">Send log</h2>
-      <p className="mt-1 text-sm text-neutral-600">
-        Every message this system has sent, who sent it, and what reached a phone.
-      </p>
+      {/* One panel holding the heading, the search and the rows, rather than a
+          stack of separate cards. With every fact in the same horizontal position
+          on every row, the eye tracks down a column instead of re-reading each
+          card — which is what makes a long log scannable. */}
+      <section className="mt-10 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
+        <div className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+          <h2 className="font-medium text-fwm-navy">Send log</h2>
+          <p className="mt-0.5 text-sm text-neutral-600">
+            Every message this system has sent, who sent it, and what reached a
+            phone.
+          </p>
 
-      {/* Search lives in the URL, so a result is a shareable link and the back
-          button behaves. A plain form — no client-side JavaScript. */}
-      <form className="mt-4 flex gap-2">
-        <input
-          name="q"
-          defaultValue={query}
-          placeholder="Search messages, audiences or senders"
-          className="flex-1 rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
-        />
-        <button
-          type="submit"
-          className="rounded-md border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700"
-        >
-          Search
-        </button>
-        {query && (
-          <Link href="/messages" className="self-center text-sm text-neutral-600 underline">
-            Clear
-          </Link>
+          {/* Search lives in the URL, so a result is a shareable link and the back
+              button behaves. A plain form — no client-side JavaScript. */}
+          <form className="mt-4 flex gap-2">
+            <input
+              name="q"
+              defaultValue={query}
+              placeholder="Search messages, audiences or senders"
+              className="flex-1 rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+            />
+            <button
+              type="submit"
+              className="rounded-md border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700"
+            >
+              Search
+            </button>
+            {query && (
+              <Link
+                href="/messages"
+                className="self-center px-2 text-sm text-neutral-600 underline"
+              >
+                Clear
+              </Link>
+            )}
+          </form>
+        </div>
+
+        {messages.length === 0 ? (
+          <p className="px-5 py-10 text-center text-sm text-neutral-600">
+            {query ? `No messages match “${query}”.` : 'Nothing sent yet.'}
+          </p>
+        ) : (
+          <>
+            {/* --- table, on anything wider than a phone --- */}
+            <table className="hidden w-full text-left text-sm md:table">
+              <thead className="border-b border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/50">
+                <tr>
+                  <th className="px-5 py-2.5 font-medium">Message</th>
+                  <th className="px-3 py-2.5 font-medium">Sent to</th>
+                  <th className="px-3 py-2.5 font-medium">By</th>
+                  <th className="px-3 py-2.5 font-medium">Date</th>
+                  {/* Recipients, segments and delivery are one idea — what happened
+                      to this send — so they share a column rather than three. */}
+                  <th className="px-3 py-2.5 font-medium">Delivery</th>
+                  <th className="px-5 py-2.5" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                {messages.map((m) => {
+                  const t = tallies.get(m.id) ?? { total: 0, delivered: 0, failed: 0 }
+                  const when = m.sent_at ?? m.created_at
+
+                  return (
+                    <tr key={m.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-900/40">
+                      <td className="max-w-xs px-5 py-3">
+                        <span className="block truncate font-medium">
+                          {/* Falls back to the message itself when no purpose was
+                              typed — better a first line than an empty cell. */}
+                          {m.purpose || m.body.split('\n')[0]}
+                        </span>
+                        {m.bypassed_consent_gate && (
+                          <span className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-sm text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+                            intro text
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-3 text-neutral-700 dark:text-neutral-300">
+                        {m.audience_label ?? 'unknown'}
+                      </td>
+                      <td className="px-3 py-3 text-neutral-700 dark:text-neutral-300">
+                        {m.sent_by ?? 'unknown'}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-3 text-neutral-600">
+                        {new Date(when).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-3">
+                        <span
+                          className={
+                            t.failed > 0 ? 'font-medium text-fwm-burgundy' : ''
+                          }
+                        >
+                          {t.delivered} of {t.total} delivered
+                          {t.failed > 0 && ` · ${t.failed} failed`}
+                        </span>
+                        <span className="block text-sm text-neutral-600">
+                          {m.segments} {m.segments === 1 ? 'segment' : 'segments'}
+                          {m.status === 'failed' && ' · send failed'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        {/* An explicit button rather than a clickable row: nothing
+                            about a row announces that it is interactive. */}
+                        <Link
+                          href={`/messages/${m.id}`}
+                          className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:border-fwm-navy dark:border-neutral-700"
+                        >
+                          View details
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+
+            {/* --- stacked, on a phone ---
+                Six columns do not survive a narrow screen, and officers use this on
+                a hill. Same data, one row per line. */}
+            <ul className="divide-y divide-neutral-200 md:hidden dark:divide-neutral-800">
+              {messages.map((m) => {
+                const t = tallies.get(m.id) ?? { total: 0, delivered: 0, failed: 0 }
+                const when = m.sent_at ?? m.created_at
+
+                return (
+                  <li key={m.id}>
+                    <Link href={`/messages/${m.id}`} className="block px-5 py-4">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="truncate font-medium">
+                          {m.purpose || m.body.split('\n')[0]}
+                        </span>
+                        <span className="shrink-0 text-sm text-neutral-600">
+                          {new Date(when).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-neutral-600">
+                        {m.audience_label ?? 'unknown'} · sent by{' '}
+                        {m.sent_by ?? 'unknown'}
+                      </p>
+                      <p className="mt-1 text-sm">
+                        <span
+                          className={
+                            t.failed > 0 ? 'font-medium text-fwm-burgundy' : 'text-neutral-600'
+                          }
+                        >
+                          {t.delivered} of {t.total} delivered
+                          {t.failed > 0 && ` · ${t.failed} failed`}
+                        </span>
+                        <span className="text-neutral-600">
+                          {' '}
+                          · {m.segments} {m.segments === 1 ? 'segment' : 'segments'}
+                        </span>
+                      </p>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </>
         )}
-      </form>
 
-      {messages.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-600 dark:border-neutral-700">
-          {query ? `No messages match “${query}”.` : 'Nothing sent yet.'}
-        </p>
-      ) : (
-        <ul className="mt-4 space-y-3">
-          {messages.map((m) => {
-            const t = tallies.get(m.id) ?? { total: 0, delivered: 0, failed: 0 }
-            const when = m.sent_at ?? m.created_at
-
-            return (
-              <li key={m.id}>
-                <Link
-                  href={`/messages/${m.id}`}
-                  className="group block rounded-lg border border-neutral-200 bg-surface p-4 transition-colors hover:border-fwm-navy dark:border-neutral-800 dark:hover:border-fwm-navy"
-                >
-                  <div className="flex items-baseline justify-between gap-4">
-                    <span className="truncate font-medium group-hover:underline">
-                      {/* Falls back to the message itself when no purpose was
-                          typed — better a first line than an empty row. */}
-                      {m.purpose || m.body.split('\n')[0]}
-                    </span>
-                    <span className="shrink-0 text-sm text-neutral-600">
-                      {new Date(when).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-
-                  <p className="mt-1 text-sm text-neutral-600">
-                    {m.audience_label ?? 'unknown audience'} ·{' '}
-                    <span className="text-neutral-700 dark:text-neutral-300">
-                      sent by {m.sent_by ?? 'unknown'}
-                    </span>
-                    {m.category && m.category !== 'general' && ` · ${m.category}`}
-                    {m.bypassed_consent_gate && ' · intro text'}
-                  </p>
-
-                  <p className="mt-1 text-sm text-neutral-600">
-                    {t.total} {t.total === 1 ? 'recipient' : 'recipients'}
-                    {m.segments ? ` · ${m.segments} seg` : ''}
-                    {/* Delivery is asynchronous, so "delivered" lags a send by
-                        minutes. Shown only once at least one has confirmed. */}
-                    {t.delivered > 0 && ` · ${t.delivered} delivered`}
-                    {t.failed > 0 && (
-                      <span className="font-medium text-fwm-burgundy">
-                        {' '}
-                        · {t.failed} failed
-                      </span>
-                    )}
-                    {m.status === 'failed' && (
-                      <span className="font-medium text-fwm-burgundy">
-                        {' '}
-                        · send failed
-                      </span>
-                    )}
-                  </p>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-
-      {/* Said plainly, because a truncated result set that looks complete is how
-          someone concludes a message was never sent. */}
-      {messages.length === HISTORY_LIMIT && (
-        <p className="mt-3 text-sm text-neutral-600">
-          Showing the first {HISTORY_LIMIT}
-          {query ? ' matches — narrow the search to see the rest.' : ' — search to find older messages.'}
-        </p>
-      )}
+        {/* Said plainly, because a truncated result set that looks complete is how
+            someone concludes a message was never sent. */}
+        {messages.length === HISTORY_LIMIT && (
+          <p className="border-t border-neutral-200 px-5 py-3 text-sm text-neutral-600 dark:border-neutral-800">
+            Showing the first {HISTORY_LIMIT}
+            {query
+              ? ' matches — narrow the search to see the rest.'
+              : ' — search to find older messages.'}
+          </p>
+        )}
+      </section>
     </main>
   )
 }
