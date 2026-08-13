@@ -1,12 +1,17 @@
 'use client'
 
 /**
- * The USSA number, editable in place.
+ * Fill in a missing USSA number, in place.
  *
  * Eighteen members are missing one, and without it they cannot race. Making that
  * fixable where you notice it — rather than on another screen, one page load per
  * person — is the difference between a list that gets worked through and one that
  * stays as it is.
+ *
+ * A number that is already set is shown, not offered for editing. Changing one can
+ * silently detach a racer from their own results, and unlike a blank, a wrong
+ * number looks right. That edit belongs in member admin, where it can be recorded.
+ * The server refuses it too — this is not only a hidden button.
  *
  * A missing number shows as "Missing" in burgundy rather than an empty space,
  * because a blank cell reads as "nothing to see" when it is the opposite.
@@ -23,9 +28,12 @@ export function UsssaField({
   value: number | null
 }) {
   const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(value ? String(value) : '')
+  const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+
+  // Already set: display only.
+  if (value !== null) return <span className="tabular-nums">{value}</span>
 
   function save() {
     setError(null)
@@ -41,17 +49,13 @@ export function UsssaField({
       <button
         type="button"
         onClick={() => {
-          setDraft(value ? String(value) : '')
+          setDraft('')
           setEditing(true)
         }}
-        title={value ? 'Change this number' : 'Add a USSA number'}
-        className={
-          value
-            ? 'tabular-nums underline decoration-dotted underline-offset-4 hover:text-fwm-navy'
-            : 'font-medium text-fwm-burgundy underline decoration-dotted underline-offset-4'
-        }
+        title="Add a USSA number"
+        className="font-medium text-fwm-burgundy underline decoration-dotted underline-offset-4"
       >
-        {value ?? 'Missing'}
+        Missing
       </button>
     )
   }

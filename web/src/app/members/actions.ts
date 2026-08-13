@@ -22,10 +22,19 @@ export interface ActionResult {
 }
 
 /**
- * Set or clear a member's USSA number.
+ * Fill in a MISSING USSA number.
  *
- * An empty value clears it, which is the honest way to undo a mistyped entry —
- * better than leaving a wrong number that looks like a real one.
+ * Adding one where there is none is gap-filling: eighteen members cannot race
+ * without it, and the fix should be possible wherever the gap is noticed.
+ *
+ * Changing an existing one is a different act. That number is how a person is
+ * identified in race results, so altering it can silently detach someone from
+ * their own history — and unlike a blank, a wrong number looks correct. It belongs
+ * in the member admin screen alongside the other consequential edits, where it can
+ * be recorded rather than done in passing.
+ *
+ * Refused here as well as hidden in the UI. A rule that only the interface
+ * enforces is not a rule.
  */
 export async function setUsssa(
   personId: string,
@@ -34,6 +43,7 @@ export async function setUsssa(
   await requireAppUser()
 
   const trimmed = raw.trim()
+  if (!trimmed) return { ok: false, error: 'Enter a USSA number.' }
 
   // Digits only. USSA numbers are printed on cards with spaces and sometimes a
   // stray dash, so those are stripped rather than rejected — retyping a number
@@ -46,9 +56,25 @@ export async function setUsssa(
 
   const db = supabaseAdmin()
 
-  // Check for a clash first, so the message can name the person. The unique
-  // constraint would catch it anyway, but "23505" tells nobody anything, and the
-  // usual cause is either a typo or two records for the same human.
+  // Only fill a blank. Read the current value rather than trusting the page that
+  // called this — a stale tab could otherwise overwrite a number added since.
+  const { data: current } = await db
+    .from('people')
+    .select('usssa')
+    .eq('id', personId)
+    .maybeSingle()
+
+  if (current?.usssa) {
+    return {
+      ok: false,
+      error:
+        'This member already has a USSA number. Changing an existing number will be possible from member admin.',
+    }
+  }
+
+  // Check for a clash, so the message can name the person. The unique constraint
+  // would catch it anyway, but "23505" tells nobody anything, and the usual cause
+  // is either a typo or two records for the same human.
   if (digits) {
     const { data: clash } = await db
       .from('people')
