@@ -111,15 +111,20 @@ export default async function MembersPage({
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
+    <main className="mx-auto max-w-6xl px-6 py-12">
       <h1 className="text-xl font-semibold">Members</h1>
       <p className="mt-1 text-sm text-neutral-600">
         {everyone.length} people. Search by name, phone or email.
       </p>
 
+      {/* One panel, same pattern as the send log: heading, controls and rows inside
+          a single surface rather than a stack of separate cards. */}
+      <section className="mt-8 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
+      <div className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+
       {/* A plain form: search lives in the URL, so a result is a shareable link and
           the back button behaves. No client-side JavaScript involved. */}
-      <form className="mt-6 flex gap-2">
+      <form className="flex gap-2">
         {activeState && <input type="hidden" name="filter" value={activeState} />}
         <input
           name="q"
@@ -205,44 +210,98 @@ export default async function MembersPage({
         </div>
       )}
 
+      </div>
+
       {matches.length === 0 ? (
-        <p className="mt-8 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-600 dark:border-neutral-700">
+        <p className="px-5 py-10 text-center text-sm text-neutral-600">
           Nobody matches {query ? `“${query}”` : 'that filter'}.
         </p>
       ) : (
-        <ul className="mt-6 space-y-2">
-          {matches.map((p) => {
-            const state = consentState(p)
-            return (
-              <li key={p.id}>
-                <Link
-                  href={`/members/${p.id}`}
-                  className="group flex items-baseline justify-between gap-4 rounded-lg border border-neutral-200 bg-surface px-4 py-3 transition-colors hover:border-fwm-navy dark:border-neutral-800 dark:hover:border-fwm-navy"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium group-hover:underline">
+        <>
+          {/* --- table, on anything wider than a phone --- */}
+          <table className="hidden w-full text-left text-sm md:table">
+            <thead className="border-b border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/50">
+              <tr>
+                <th className="px-5 py-2.5 font-medium">Name</th>
+                {/* Phone and email are one idea — how to reach them — so they share
+                    a column rather than two half-empty ones. */}
+                <th className="px-3 py-2.5 font-medium">Contact</th>
+                <th className="px-3 py-2.5 font-medium">Member status</th>
+                <th className="px-3 py-2.5 font-medium">Texting</th>
+                <th className="px-5 py-2.5" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+              {matches.map((p) => {
+                const state = consentState(p)
+                return (
+                  <tr key={p.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-900/40">
+                    <td className="whitespace-nowrap px-5 py-3 font-medium">
                       {p.first_name} {p.last_name}
-                    </span>
-                    <span className="mt-0.5 block text-sm text-neutral-600">
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="block whitespace-nowrap">
+                        {formatPhone(p.phone)}
+                      </span>
+                      {p.email && (
+                        <span className="block max-w-xs truncate text-sm text-neutral-600">
+                          {p.email}
+                        </span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 text-neutral-600">
+                      {p.status.replace(/_/g, ' ')}
+                    </td>
+                    <td className={`whitespace-nowrap px-3 py-3 ${stateClass(state)}`}>
+                      {CONSENT_STATE_LABEL[state]}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <Link
+                        href={`/members/${p.id}`}
+                        className="whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:border-fwm-navy dark:border-neutral-700"
+                      >
+                        View details
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+
+          {/* --- stacked, on a phone --- */}
+          <ul className="divide-y divide-neutral-200 md:hidden dark:divide-neutral-800">
+            {matches.map((p) => {
+              const state = consentState(p)
+              return (
+                <li key={p.id}>
+                  <Link href={`/members/${p.id}`} className="block px-5 py-3">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="truncate font-medium">
+                        {p.first_name} {p.last_name}
+                      </span>
+                      <span className={`shrink-0 text-sm ${stateClass(state)}`}>
+                        {CONSENT_STATE_LABEL[state]}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 truncate text-sm text-neutral-600">
                       {formatPhone(p.phone)}
                       {p.email && ` · ${p.email}`}
-                    </span>
-                  </span>
-                  <span className={`shrink-0 text-sm ${stateClass(state)}`}>
-                    {CONSENT_STATE_LABEL[state]}
-                  </span>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+                    </p>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </>
       )}
 
       {matches.length > 0 && matches.length !== everyone.length && (
-        <p className="mt-3 text-sm text-neutral-600">
+        <p className="border-t border-neutral-200 px-5 py-3 text-sm text-neutral-600 dark:border-neutral-800">
           Showing {matches.length} of {everyone.length}.
         </p>
       )}
+      </section>
     </main>
   )
 }
