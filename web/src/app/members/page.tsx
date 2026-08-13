@@ -26,6 +26,7 @@ interface PersonRow {
   first_name: string
   last_name: string
   status: string
+  usssa: number | null
   phone: string | null
   email: string | null
   opt_in_at: string | null
@@ -49,6 +50,29 @@ const FILTER_ORDER: ConsentState[] = [
   'no_phone',
 ]
 
+/**
+ * Build a /members URL, dropping empty parameters.
+ *
+ * Filters combine rather than replace, so every chip has to carry the others'
+ * current values — doing that inline produced a thicket of nested template
+ * strings that was easy to get subtly wrong.
+ */
+function qs(params: Record<string, string>): string {
+  const search = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v)
+  ).toString()
+  return search ? `/members?${search}` : '/members'
+}
+
+/** One chip style, so an active filter looks the same wherever it appears. */
+function chipClass(active: boolean): string {
+  return `rounded-full border px-3 py-1 text-sm ${
+    active
+      ? 'border-fwm-navy bg-fwm-navy/10 font-medium text-fwm-navy'
+      : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-400'
+  }`
+}
+
 /** Colour only the two states that need acting on; the rest stay quiet. */
 function stateClass(state: ConsentState): string {
   if (state === 'eligible') return 'text-fwm-navy'
@@ -59,15 +83,20 @@ function stateClass(state: ConsentState): string {
 export default async function MembersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; filter?: string }>
+  searchParams: Promise<{ q?: string; filter?: string; missing?: string }>
 }) {
   await requireAppUser()
-  const { q, filter } = await searchParams
+  const { q, filter, missing } = await searchParams
   const db = supabaseAdmin()
 
   const query = (q ?? '').trim()
-  const activeState =
-    FILTER_ORDER.find((s) => s === filter) ?? null
+  const activeState = FILTER_ORDER.find((s) => s === filter) ?? null
+
+  // A separate dimension from consent, deliberately. Someone can be opted in for
+  // texts AND missing the USSA number they need in order to race, and those are
+  // different problems for different people to chase — so the two filters combine
+  // rather than replacing each other.
+  const missingUsssa = missing === 'usssa'
 
   // Everyone, then filtered in memory. At ~300 members that is one small query and
   // no pagination to get wrong; if this club ever reaches thousands, the search
@@ -75,7 +104,7 @@ export default async function MembersPage({
   const { data } = await db
     .from('people')
     .select(
-      'id, first_name, last_name, status, phone, email, opt_in_at, intro_sent_at, opted_out_at, sms_never'
+      'id, first_name, last_name, status, usssa, phone, email, opt_in_at, intro_sent_at, opted_out_at, sms_never'
     )
     .order('last_name')
     .order('first_name')
@@ -98,8 +127,11 @@ export default async function MembersPage({
       if (!hitName && !hitEmail && !hitPhone) return false
     }
     if (activeState && consentState(p) !== activeState) return false
+    if (missingUsssa && p.usssa) return false
     return true
   })
+
+  const missingUsssaCount = everyone.filter((p) => !p.usssa).length
 
   // Counts for the filter chips, computed over everyone rather than the current
   // result — a filter that says "0" only because of the search term would be
@@ -126,6 +158,7 @@ export default async function MembersPage({
           the back button behaves. No client-side JavaScript involved. */}
       <form className="flex gap-2">
         {activeState && <input type="hidden" name="filter" value={activeState} />}
+        {missingUsssa && <input type="hidden" name="missing" value="usssa" />}
         <input
           name="q"
           defaultValue={query}
@@ -140,24 +173,28 @@ export default async function MembersPage({
         </button>
         {query && (
           <Link
-            href={activeState ? `/members?filter=${activeState}` : '/members'}
-            className="self-center text-sm text-neutral-600 underline"
+            href={qs({
+              filter: activeState ?? '',
+              missing: missingUsssa ? 'usssa' : '',
+            })}
+            className="self-center px-2 text-sm text-neutral-600 underline"
           >
             Clear
           </Link>
         )}
       </form>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      {/* Two rows, because these are two different questions. Texting state is
+          about consent; the second row is about data the club needs for other
+          reasons. They combine — "opted in for texts, and cannot race" is a real
+          and useful thing to ask for. */}
+      <p className="mt-4 text-sm font-medium text-neutral-600">Texting</p>
+      <div className="mt-2 flex flex-wrap gap-2">
         {/* Everyone: the way back to the whole directory, and the only chip with no
             send action — looking a racer up is half of what this screen is for. */}
         <Link
-          href={`/members${query ? `?q=${encodeURIComponent(query)}` : ''}`}
-          className={`rounded-full border px-3 py-1 text-sm ${
-            activeState === null
-              ? 'border-fwm-navy bg-fwm-navy/10 font-medium text-fwm-navy'
-              : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-400'
-          }`}
+          href={`/members${qs({ q: query, missing: missingUsssa ? 'usssa' : '' })}`}
+          className={chipClass(activeState === null)}
         >
           Everyone <span className="opacity-60">{everyone.length}</span>
         </Link>
@@ -169,24 +206,34 @@ export default async function MembersPage({
           // link to an empty state does not lose its own chip.
           if (s === activeState) return true
           return (counts.get(s) ?? 0) > 0
-        }).map((s) => {
-          const n = counts.get(s) ?? 0
-          const active = s === activeState
-          const href = `/members?filter=${s}${query ? `&q=${encodeURIComponent(query)}` : ''}`
-          return (
-            <Link
-              key={s}
-              href={href}
-              className={`rounded-full border px-3 py-1 text-sm ${
-                active
-                  ? 'border-fwm-navy bg-fwm-navy/10 font-medium text-fwm-navy'
-                  : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-400'
-              }`}
-            >
-              {CONSENT_STATE_LABEL[s]} <span className="opacity-60">{n}</span>
-            </Link>
-          )
-        })}
+        }).map((s) => (
+          <Link
+            key={s}
+            href={qs({ filter: s, q: query, missing: missingUsssa ? 'usssa' : '' })}
+            className={chipClass(s === activeState)}
+          >
+            {CONSENT_STATE_LABEL[s]}{' '}
+            <span className="opacity-60">{counts.get(s) ?? 0}</span>
+          </Link>
+        ))}
+      </div>
+
+      <p className="mt-4 text-sm font-medium text-neutral-600">Racing eligibility</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {/* A member without a USSA number cannot race, so this is an action list
+            rather than a curiosity. Clicking it again clears it. */}
+        <Link
+          href={qs({
+            filter: activeState ?? '',
+            q: query,
+            missing: missingUsssa ? '' : 'usssa',
+          })}
+          className={chipClass(missingUsssa)}
+        >
+          Missing USSA number{' '}
+          <span className="opacity-60">{missingUsssaCount}</span>
+          {missingUsssa && <span className="ml-1.5 opacity-60">&times;</span>}
+        </Link>
       </div>
 
       {/* The send action, offered only for the two states that have opted in.
@@ -226,6 +273,7 @@ export default async function MembersPage({
                 {/* Phone and email are one idea — how to reach them — so they share
                     a column rather than two half-empty ones. */}
                 <th className="px-3 py-2.5 font-medium">Contact</th>
+                <th className="px-3 py-2.5 font-medium">USSA</th>
                 <th className="px-3 py-2.5 font-medium">Member status</th>
                 <th className="px-3 py-2.5 font-medium">Texting</th>
                 <th className="px-5 py-2.5" />
@@ -247,6 +295,16 @@ export default async function MembersPage({
                         <span className="block max-w-xs truncate text-sm text-neutral-600">
                           {p.email}
                         </span>
+                      )}
+                    </td>
+                    {/* A missing number is called out rather than shown as a blank.
+                        Without it a member cannot race, so the gap is the point —
+                        an empty cell reads as "nothing to see". */}
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {p.usssa ? (
+                        <span className="tabular-nums">{p.usssa}</span>
+                      ) : (
+                        <span className="font-medium text-fwm-burgundy">Missing</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3 text-neutral-600">
@@ -287,6 +345,15 @@ export default async function MembersPage({
                     <p className="mt-0.5 truncate text-sm text-neutral-600">
                       {formatPhone(p.phone)}
                       {p.email && ` · ${p.email}`}
+                    </p>
+                    <p className="mt-0.5 text-sm">
+                      {p.usssa ? (
+                        <span className="text-neutral-600">USSA {p.usssa}</span>
+                      ) : (
+                        <span className="font-medium text-fwm-burgundy">
+                          USSA number missing
+                        </span>
+                      )}
                     </p>
                   </Link>
                 </li>
