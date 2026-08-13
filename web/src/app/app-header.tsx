@@ -10,8 +10,8 @@
  * cookies" is not an instruction anyone should have to follow.
  */
 
-import Link from 'next/link'
 import { getUser } from '@/lib/supabase/server'
+import { NavLinks } from './nav-links'
 
 export async function AppHeader() {
   const user = await getUser()
@@ -21,20 +21,12 @@ export async function AppHeader() {
     // White, not the page grey: the bar needs to read as a fixed frame around the
     // content rather than as part of it.
     <header className="border-b border-neutral-200 bg-surface dark:border-neutral-800">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
-        <nav className="flex items-center gap-4 text-sm">
-          <Link href="/messages" className="font-medium hover:underline">
-            Messages
-          </Link>
-          <Link href="/members" className="text-neutral-600 hover:underline">
-            Members
-          </Link>
-          <Link href="/admin" className="text-neutral-600 hover:underline">
-            Admin
-          </Link>
-        </nav>
+      {/* No vertical padding on the row itself: the links carry it, so their
+          underline can reach the bottom edge of the bar. */}
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6">
+        <NavLinks />
 
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-3 py-3 text-sm">
           {/* Which account, not just that you are signed in. On a shared machine
               those are different questions, and sending a text as the wrong
               officer is not something you can take back. */}
