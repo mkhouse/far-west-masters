@@ -166,14 +166,20 @@ export default async function MessagesPage({
           <dd className="mt-1 text-2xl font-semibold">{total ?? '—'}</dd>
         </div>
         <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <dt className="text-neutral-500">Can receive a bulk text</dt>
+          {/* Same words as the members directory. Opt-in is the gate, and saying so
+              on every screen is the point. */}
+          <dt className="text-neutral-500">Opted in</dt>
           <dd className="mt-1 text-2xl font-semibold">{eligible ?? '—'}</dd>
         </div>
       </dl>
 
       <p className="mt-3 text-xs text-neutral-500">
         The gap is members who have not opted in, or have not been sent an intro
-        text yet, and so cannot receive bulk messages under FWM&rsquo;s consent rule.
+        text yet.{' '}
+        <Link href="/members" className="underline">
+          See who and why
+        </Link>
+        .
       </p>
 
       <h2 className="mt-12 text-sm font-medium text-fwm-navy">Send log</h2>

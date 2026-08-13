@@ -126,12 +126,15 @@ export async function listAudiences(): Promise<AudienceOption[]> {
   }
 
   options.push(
-    { kind: 'all_eligible', label: 'All eligible members' },
+    // Same wording as the members directory, deliberately: one vocabulary for
+    // member state everywhere, so opt-in is visibly the thing that decides who can
+    // be messaged rather than a rule buried in the code.
+    { kind: 'all_eligible', label: 'All opted-in members' },
     { kind: 'always', label: 'Members who always want race texts' },
     // Not scoped to a race: the trigger is a completed opt-in form, not a race
     // entry. FWM's flow is form first, then intro text — see the note on
     // 'intro_pending' in resolveAudience.
-    { kind: 'intro_pending', label: 'Opted in, awaiting their intro text' }
+    { kind: 'intro_pending', label: 'Opted in, needs intro text' }
   )
 
   // A series is offerable once at least one of its races has entries.
@@ -215,7 +218,7 @@ export async function resolveAudience(
       const { eligible, excluded } = explainExclusions(people)
       return {
         kind,
-        label: 'All eligible members',
+        label: 'All opted-in members',
         recipientCount: eligible,
         consideredCount: people.length,
         excluded,
@@ -265,7 +268,7 @@ export async function resolveAudience(
 
       return {
         kind,
-        label: 'Opted in, awaiting their intro text',
+        label: 'Opted in, needs intro text',
         recipientCount: reachable.length,
         consideredCount: people.length,
         excluded: unreachable > 0

@@ -15,6 +15,7 @@ import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import {
   CONSENT_STATE_LABEL,
+  MESSAGEABLE,
   consentState,
   formatPhone,
   type ConsentState,
@@ -33,15 +34,19 @@ interface PersonRow {
   sms_never: boolean
 }
 
-/** Filters offered above the list, in the order they are useful. */
-const FILTERS: Array<{ key: string; label: string; state?: ConsentState }> = [
-  { key: 'all', label: 'Everyone' },
-  { key: 'eligible', label: 'Can receive texts', state: 'eligible' },
-  { key: 'awaiting_intro', label: 'Awaiting intro', state: 'awaiting_intro' },
-  { key: 'not_opted_in', label: 'Not opted in', state: 'not_opted_in' },
-  { key: 'opted_out', label: 'Opted out', state: 'opted_out' },
-  { key: 'suppressed', label: 'Suppressed', state: 'suppressed' },
-  { key: 'no_phone', label: 'No phone', state: 'no_phone' },
+/**
+ * Filters offered above the list, ordered so the two that can be messaged come
+ * first. Labels come from CONSENT_STATE_LABEL rather than being written again here,
+ * so the directory, the compose audiences and the action buttons cannot drift into
+ * describing the same set three different ways.
+ */
+const FILTER_ORDER: ConsentState[] = [
+  'eligible',
+  'awaiting_intro',
+  'not_opted_in',
+  'opted_out',
+  'suppressed',
+  'no_phone',
 ]
 
 /** Colour only the two states that need acting on; the rest stay quiet. */
@@ -61,7 +66,8 @@ export default async function MembersPage({
   const db = supabaseAdmin()
 
   const query = (q ?? '').trim()
-  const activeFilter = FILTERS.find((f) => f.key === filter) ?? FILTERS[0]
+  const activeState =
+    FILTER_ORDER.find((s) => s === filter) ?? null
 
   // Everyone, then filtered in memory. At ~300 members that is one small query and
   // no pagination to get wrong; if this club ever reaches thousands, the search
@@ -91,7 +97,7 @@ export default async function MembersPage({
         digits.length >= 3 && (p.phone ?? '').replace(/\D/g, '').includes(digits)
       if (!hitName && !hitEmail && !hitPhone) return false
     }
-    if (activeFilter.state && consentState(p) !== activeFilter.state) return false
+    if (activeState && consentState(p) !== activeState) return false
     return true
   })
 
@@ -114,11 +120,7 @@ export default async function MembersPage({
       {/* A plain form: search lives in the URL, so a result is a shareable link and
           the back button behaves. No client-side JavaScript involved. */}
       <form className="mt-6 flex gap-2">
-        <input
-          type="hidden"
-          name="filter"
-          value={activeFilter.key}
-        />
+        {activeState && <input type="hidden" name="filter" value={activeState} />}
         <input
           name="q"
           defaultValue={query}
@@ -133,7 +135,7 @@ export default async function MembersPage({
         </button>
         {query && (
           <Link
-            href={`/members?filter=${activeFilter.key}`}
+            href={activeState ? `/members?filter=${activeState}` : '/members'}
             className="self-center text-sm text-neutral-500 underline"
           >
             Clear
@@ -142,13 +144,33 @@ export default async function MembersPage({
       </form>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {FILTERS.map((f) => {
-          const n = f.state ? (counts.get(f.state) ?? 0) : everyone.length
-          const active = f.key === activeFilter.key
-          const href = `/members?filter=${f.key}${query ? `&q=${encodeURIComponent(query)}` : ''}`
+        {/* Everyone: the way back to the whole directory, and the only chip with no
+            send action — looking a racer up is half of what this screen is for. */}
+        <Link
+          href={`/members${query ? `?q=${encodeURIComponent(query)}` : ''}`}
+          className={`rounded-full border px-3 py-1 text-xs ${
+            activeState === null
+              ? 'border-fwm-navy bg-fwm-navy/10 font-medium text-fwm-navy'
+              : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-400'
+          }`}
+        >
+          Everyone <span className="opacity-60">{everyone.length}</span>
+        </Link>
+
+        {FILTER_ORDER.filter((s) => {
+          // Hide states nobody is in. "Opted out 0" and "Suppressed 0" are noise
+          // until somebody actually texts STOP, and they appear on their own the
+          // moment that happens. The active filter always shows, so following a
+          // link to an empty state does not lose its own chip.
+          if (s === activeState) return true
+          return (counts.get(s) ?? 0) > 0
+        }).map((s) => {
+          const n = counts.get(s) ?? 0
+          const active = s === activeState
+          const href = `/members?filter=${s}${query ? `&q=${encodeURIComponent(query)}` : ''}`
           return (
             <Link
-              key={f.key}
+              key={s}
               href={href}
               className={`rounded-full border px-3 py-1 text-xs ${
                 active
@@ -156,11 +178,32 @@ export default async function MembersPage({
                   : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-400'
               }`}
             >
-              {f.label} <span className="opacity-60">{n}</span>
+              {CONSENT_STATE_LABEL[s]} <span className="opacity-60">{n}</span>
             </Link>
           )
         })}
       </div>
+
+      {/* The send action, offered only for the two states that have opted in.
+          Every other filter has no button at all — the absence is the rule, rather
+          than a check somewhere that has to be remembered. */}
+      {activeState && MESSAGEABLE[activeState] && matches.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-fwm-navy/30 bg-fwm-navy/5 px-4 py-3">
+          <Link
+            href={`/messages/compose?audience=${MESSAGEABLE[activeState]!.audience}`}
+            className="rounded-md bg-fwm-navy px-4 py-2 text-sm font-medium text-white"
+          >
+            {MESSAGEABLE[activeState]!.action}
+          </Link>
+          <span className="text-xs text-neutral-600 dark:text-neutral-400">
+            {/* The compose screen recomputes the audience, so say so — the number
+                here is a snapshot, and someone opting in between the two screens
+                should not look like a bug. */}
+            Goes to everyone in this state at the moment you send, not to the{' '}
+            {counts.get(activeState)} shown here.
+          </span>
+        </div>
+      )}
 
       {matches.length === 0 ? (
         <p className="mt-8 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">

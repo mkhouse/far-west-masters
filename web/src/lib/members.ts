@@ -30,11 +30,18 @@ export interface ConsentSignals {
   sms_never: boolean
 }
 
-/** How each state reads on screen, and what it means. */
+/**
+ * How each state reads on screen, and what it means.
+ *
+ * The wording leads with opt-in deliberately, and the same words are used wherever
+ * a set of members appears — directory filters, compose audiences, action buttons.
+ * One vocabulary, so that "opted in" is visibly the thing that decides whether
+ * anyone can be texted, rather than a rule buried in the code.
+ */
 export const CONSENT_STATE_LABEL: Record<ConsentState, string> = {
-  eligible: 'Can receive texts',
-  awaiting_intro: 'Awaiting intro text',
-  not_opted_in: 'Has not opted in',
+  eligible: 'Opted in',
+  awaiting_intro: 'Opted in, needs intro text',
+  not_opted_in: 'Not opted in',
   opted_out: 'Opted out',
   suppressed: 'Suppressed',
   no_phone: 'No phone number',
@@ -48,6 +55,23 @@ export const CONSENT_STATE_DETAIL: Record<ConsentState, string> = {
   opted_out: 'Texted STOP. Twilio blocks further messages to this number.',
   suppressed: 'Manually suppressed by an officer, independent of anything the member did.',
   no_phone: 'No phone number on record, so there is nothing to send to.',
+}
+
+/**
+ * Which states may be messaged, and with what.
+ *
+ * Only two, and both have already opted in. Everything else has no send action at
+ * all — the absence of a button is itself the rule, rather than a check somewhere
+ * that has to be remembered.
+ *
+ * `audience` matches the AudienceKind the compose screen resolves, so the set shown
+ * here and the set that receives the message are computed by the same code.
+ */
+export const MESSAGEABLE: Partial<
+  Record<ConsentState, { audience: string; action: string }>
+> = {
+  eligible: { audience: 'all_eligible', action: 'Message opted-in members' },
+  awaiting_intro: { audience: 'intro_pending', action: 'Send their intro text' },
 }
 
 /** Reduce the five signals to the one that is actually blocking. */
