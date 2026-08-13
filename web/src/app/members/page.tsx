@@ -57,17 +57,20 @@ const FILTER_ORDER: ConsentState[] = [
  * The database has seven status values; day to day the question is only ever
  * "current members", "lapsed", or "everything else the imports dragged in".
  *
- * `other` matters more than it looks: it holds the people who arrived from
- * AdminSkiRacing or an opt-in form without ever being reconciled against the
- * membership list. Ten of them are opted in for texts. They are exactly what the
- * opt-in review queue exists to resolve, so they must stay findable rather than
- * being swept into "inactive".
+ * `non_members` matters more than it looks: it holds the people who arrived from an
+ * AdminSkiRacing import or an opt-in form and were never matched to a membership.
+ * Ten of them are opted in for texts. They are exactly what the opt-in review queue
+ * exists to resolve, so they must stay findable rather than being swept into
+ * "inactive", which would imply they had once been members.
+ *
+ * Note it is the whole group, not only the ones who opted in — combine this with
+ * the texting filter to get "non-members opted in for texts".
  */
 const MEMBERSHIP: Record<string, { label: string; statuses: string[] }> = {
   active: { label: 'Active', statuses: ['active_member', 'officer'] },
   inactive: { label: 'Inactive', statuses: ['inactive'] },
-  other: {
-    label: 'Unreconciled',
+  non_members: {
+    label: 'Non-members',
     statuses: ['asr_import', 'sms_opt_in', 'out_of_region', 'temp_racer', 'non_member'],
   },
 }
