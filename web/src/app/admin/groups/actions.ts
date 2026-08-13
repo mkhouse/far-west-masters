@@ -10,6 +10,7 @@
  */
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
@@ -44,15 +45,62 @@ export async function deleteGroup(formData: FormData) {
   revalidatePath('/admin/groups')
 }
 
-export async function addMember(formData: FormData) {
+/**
+ * Add one or more people to a group.
+ *
+ * Takes every `person_id` in the form, so the picker can submit a whole selection
+ * at once rather than one page load per person.
+ */
+export async function addMembers(formData: FormData) {
   await requireAppUser('admin')
   const groupId = String(formData.get('group_id') ?? '')
-  const personId = String(formData.get('person_id') ?? '')
-  if (!groupId || !personId) return
+  const personIds = formData.getAll('person_id').map(String).filter(Boolean)
+  if (!groupId || personIds.length === 0) return
 
   await supabaseAdmin()
     .from('recipient_group_members')
-    .insert({ group_id: groupId, person_id: personId })
+    // `ignoreDuplicates` because two officers adding the same person at once, or a
+    // resubmitted form, should be a no-op rather than an error.
+    .upsert(
+      personIds.map((person_id) => ({ group_id: groupId, person_id })),
+      { onConflict: 'group_id,person_id', ignoreDuplicates: true }
+    )
+
+  revalidatePath('/admin/groups')
+}
+
+/**
+ * Rename a group, or change its description.
+ *
+ * Note what this does NOT change: `messages.audience_label` on messages already
+ * sent. That is a snapshot of what was chosen at the time, and renaming a group
+ * afterwards must not rewrite what the send log says went where.
+ */
+export async function updateGroup(formData: FormData) {
+  await requireAppUser('admin')
+  const id = String(formData.get('group_id') ?? '')
+  const name = String(formData.get('name') ?? '').trim()
+  if (!id || !name) return
+
+  const { error } = await supabaseAdmin()
+    .from('recipient_groups')
+    .update({
+      name,
+      description: String(formData.get('description') ?? '').trim() || null,
+    })
+    .eq('id', id)
+
+  // Group names are unique. Surface the collision in words rather than as a raw
+  // constraint violation, which reads as the system being broken.
+  if (error) {
+    redirect(
+      `/admin/groups?error=${encodeURIComponent(
+        error.code === '23505'
+          ? `There is already a group called “${name}”.`
+          : `Could not rename the group: ${error.message}`
+      )}`
+    )
+  }
 
   revalidatePath('/admin/groups')
 }

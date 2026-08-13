@@ -16,6 +16,12 @@ import { requireAppUser } from '@/lib/auth'
 /** Built and usable. */
 const AVAILABLE = [
   {
+    href: '/members',
+    title: 'Members',
+    description:
+      'Look anyone up by name, phone or email. Shows whether they can be texted and why, which groups they are in, and everything the club has sent them.',
+  },
+  {
     href: '/admin/groups',
     title: 'Recipient groups',
     description:

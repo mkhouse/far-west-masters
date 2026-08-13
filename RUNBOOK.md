@@ -168,6 +168,24 @@ from that, and both are worth knowing before you do it:
 A reply inbox inside the app would fix both, and is the intended answer when replies
 become common enough to be a nuisance.
 
+### Looking someone up
+
+`/members` answers "is this person in the system, and why aren't they getting
+texts?" Search by name, phone or email — phone matching ignores punctuation, so
+`(530) 555-1234` and `5305551234` both find the same person.
+
+The filters along the top are the consent states, with counts: **can receive
+texts**, **awaiting intro**, **not opted in**, **opted out**, **suppressed**, **no
+phone**. Those six are exhaustive — everyone is in exactly one — so the counts are
+the fastest picture of where the club stands.
+
+Open a member to see the dates behind that state, which groups they are in, every
+message they have been sent with its delivery result, and anything they have texted
+back.
+
+**Read-only for now.** Corrections to a member record still need SQL. Editing
+arrives with the opt-in review queue, along with the audit trail those fields need.
+
 ### The send log
 
 `/messages` is the record of every text the system has sent: what was sent, to which

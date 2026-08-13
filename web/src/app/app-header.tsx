@@ -24,6 +24,9 @@ export async function AppHeader() {
           <Link href="/messages" className="font-medium hover:underline">
             Messages
           </Link>
+          <Link href="/members" className="text-neutral-500 hover:underline">
+            Members
+          </Link>
           <Link href="/admin" className="text-neutral-500 hover:underline">
             Admin
           </Link>

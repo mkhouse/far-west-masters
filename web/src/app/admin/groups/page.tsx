@@ -9,10 +9,16 @@
 import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { addMember, createGroup, deleteGroup, removeMember } from './actions'
+import { createGroup, deleteGroup, removeMember, updateGroup } from './actions'
+import { MemberPicker } from './member-picker'
 
-export default async function GroupsPage() {
+export default async function GroupsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
   await requireAppUser('admin')
+  const { error } = await searchParams
   const db = supabaseAdmin()
 
   // Shape declared explicitly: the nested select confuses Supabase's inferred
@@ -66,6 +72,20 @@ export default async function GroupsPage() {
         to&rdquo; list as soon as they have members.
       </p>
 
+      {error && (
+        <p className="mt-4 rounded-lg border border-fwm-burgundy/40 bg-fwm-burgundy/5 p-3 text-sm text-fwm-burgundy" role="alert">
+          {error}
+        </p>
+      )}
+
+      {/* Renaming does not rewrite history: a message already sent keeps the
+          audience label it was sent to. Worth saying, because it otherwise looks
+          like the rename half-worked. */}
+      <p className="mt-2 text-xs text-neutral-500">
+        Renaming a group does not change what past messages say they were sent to —
+        the send log records the name as it was at the time.
+      </p>
+
       <div className="mt-8 space-y-6">
         {groups.map((g) => {
           const members = g.recipient_group_members ?? []
@@ -77,21 +97,41 @@ export default async function GroupsPage() {
               className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800"
             >
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-medium">
-                    {g.name}
-                    {g.is_test_group && (
-                      <span className="ml-2 rounded bg-neutral-100 px-1.5 py-0.5 text-xs font-normal text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-                        test
-                      </span>
-                    )}
-                  </h2>
-                  {g.description && (
-                    <p className="mt-0.5 text-sm text-neutral-500">
-                      {g.description}
-                    </p>
-                  )}
-                  <p className="mt-1 text-sm text-neutral-500">
+                <div className="min-w-0 flex-1">
+                  {/* Name and description are editable in place. Deliberately not
+                      the test-group flag: that changes where the group sorts and
+                      what compose defaults to, which is a different decision from
+                      correcting a typo. */}
+                  <form action={updateGroup} className="space-y-2">
+                    <input type="hidden" name="group_id" value={g.id} />
+                    <div className="flex items-center gap-2">
+                      <input
+                        name="name"
+                        defaultValue={g.name}
+                        required
+                        className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 font-medium hover:border-neutral-300 focus:border-neutral-400 dark:hover:border-neutral-700"
+                      />
+                      {g.is_test_group && (
+                        <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                          test
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      name="description"
+                      defaultValue={g.description ?? ''}
+                      placeholder="What this group is for"
+                      className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm text-neutral-500 hover:border-neutral-300 focus:border-neutral-400 dark:hover:border-neutral-700"
+                    />
+                    <button
+                      type="submit"
+                      className="ml-2 text-xs text-neutral-500 underline"
+                    >
+                      Save name and description
+                    </button>
+                  </form>
+
+                  <p className="ml-2 mt-2 text-sm text-neutral-500">
                     {members.length} {members.length === 1 ? 'member' : 'members'}
                   </p>
                 </div>
@@ -100,7 +140,7 @@ export default async function GroupsPage() {
                   <input type="hidden" name="group_id" value={g.id} />
                   <button
                     type="submit"
-                    className="text-xs text-neutral-500 underline hover:text-red-700"
+                    className="text-xs text-neutral-500 underline hover:text-fwm-burgundy"
                   >
                     Delete group
                   </button>
@@ -130,31 +170,17 @@ export default async function GroupsPage() {
                 ))}
               </ul>
 
-              <form action={addMember} className="mt-3 flex gap-2">
-                <input type="hidden" name="group_id" value={g.id} />
-                <select
-                  name="person_id"
-                  className="flex-1 rounded-md border border-neutral-300 bg-transparent px-2 py-1.5 text-sm dark:border-neutral-700"
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Add someone…
-                  </option>
-                  {(candidates ?? [])
-                    .filter((p) => !memberIds.has(p.id as string))
-                    .map((p) => (
-                      <option key={p.id as string} value={p.id as string}>
-                        {p.first_name} {p.last_name} ({p.status})
-                      </option>
-                    ))}
-                </select>
-                <button
-                  type="submit"
-                  className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
-                >
-                  Add
-                </button>
-              </form>
+              <MemberPicker
+                groupId={g.id}
+                candidates={(candidates ?? [])
+                  .filter((p) => !memberIds.has(p.id as string))
+                  .map((p) => ({
+                    id: p.id as string,
+                    first_name: p.first_name as string,
+                    last_name: p.last_name as string,
+                    status: p.status as string,
+                  }))}
+              />
             </section>
           )
         })}

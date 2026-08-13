@@ -23,8 +23,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-/** Paths that require a signed-in officer. Everything else is public. */
-const PROTECTED = ['/admin', '/process', '/messages']
+/**
+ * Paths that require a signed-in officer. Everything else is public.
+ *
+ * `/members` is here because it shows member contact details. Forgetting to add a
+ * path is the failure mode to watch for: a new route is public by default, and
+ * nothing complains.
+ */
+const PROTECTED = ['/admin', '/process', '/messages', '/members']
 
 export async function proxy(request: NextRequest) {
   // --- rescue a sign-in code that arrived at the wrong path ---

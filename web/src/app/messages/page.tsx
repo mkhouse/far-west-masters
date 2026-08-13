@@ -40,8 +40,13 @@ interface RecipientRow {
 /** Delivery states Twilio reports for a message that never arrived. */
 const FAILED_STATES = new Set(['failed', 'undelivered'])
 
-export default async function MessagesPage() {
+export default async function MessagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
   const appUser = await getAppUser()
+  const query = ((await searchParams).q ?? '').trim()
 
   // The proxy guarantees a signed-in user, but not an authorized one — a valid
   // Supabase login without an `app_users` row lands here.
@@ -70,13 +75,35 @@ export default async function MessagesPage() {
     .select('*', { count: 'exact', head: true })
 
   // Drafts are excluded: a message nobody received is not part of the send record.
-  const { data: messageData } = await db
+  let messageQuery = db
     .from('messages')
     .select(
       `id, purpose, body, category, audience_label, sent_by, status, segments,
        sent_at, created_at, bypassed_consent_gate`
     )
     .neq('status', 'draft')
+
+  // Search runs in the database, not over the loaded page.
+  //
+  // Filtering client-side would have been simpler, but it would only ever have
+  // searched the most recent hundred messages — and silently. A search that quietly
+  // omits older results is worse than no search, because it answers confidently.
+  //
+  // `or` with `ilike` across the four fields someone would actually remember: what
+  // it was about, what it said, who it went to, who sent it. Commas and parentheses
+  // are stripped from the term because they are PostgREST's own filter syntax and
+  // would otherwise break the query rather than match anything.
+  if (query) {
+    const safe = query.replace(/[,()]/g, ' ').trim()
+    if (safe) {
+      const like = `%${safe}%`
+      messageQuery = messageQuery.or(
+        `purpose.ilike.${like},body.ilike.${like},audience_label.ilike.${like},sent_by.ilike.${like}`
+      )
+    }
+  }
+
+  const { data: messageData } = await messageQuery
     .order('created_at', { ascending: false })
     .limit(HISTORY_LIMIT)
 
@@ -154,27 +181,31 @@ export default async function MessagesPage() {
         Every message this system has sent, who sent it, and what reached a phone.
       </p>
 
-      {/* Placeholder for search (#46). Deliberately styled as unavailable rather
-          than as a disabled input — a text box that ignores typing is worse than
-          an honest note. */}
-      <div className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-neutral-300 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-700">
-        <svg
-          className="h-3.5 w-3.5 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden="true"
+      {/* Search lives in the URL, so a result is a shareable link and the back
+          button behaves. A plain form — no client-side JavaScript. */}
+      <form className="mt-4 flex gap-2">
+        <input
+          name="q"
+          defaultValue={query}
+          placeholder="Search messages, audiences or senders"
+          className="flex-1 rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+        />
+        <button
+          type="submit"
+          className="rounded-md border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700"
         >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-        </svg>
-        Search across sent messages — coming soon
-      </div>
+          Search
+        </button>
+        {query && (
+          <Link href="/messages" className="self-center text-sm text-neutral-500 underline">
+            Clear
+          </Link>
+        )}
+      </form>
 
       {messages.length === 0 ? (
         <p className="mt-6 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
-          Nothing sent yet.
+          {query ? `No messages match “${query}”.` : 'Nothing sent yet.'}
         </p>
       ) : (
         <ul className="mt-4 space-y-3">
@@ -238,9 +269,12 @@ export default async function MessagesPage() {
         </ul>
       )}
 
+      {/* Said plainly, because a truncated result set that looks complete is how
+          someone concludes a message was never sent. */}
       {messages.length === HISTORY_LIMIT && (
         <p className="mt-3 text-xs text-neutral-500">
-          Showing the most recent {HISTORY_LIMIT}.
+          Showing the first {HISTORY_LIMIT}
+          {query ? ' matches — narrow the search to see the rest.' : ' — search to find older messages.'}
         </p>
       )}
     </main>
