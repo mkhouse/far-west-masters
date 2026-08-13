@@ -22,6 +22,7 @@ import {
   formatPhone,
 } from '@/lib/members'
 import { CopyButton } from '../copy-button'
+import { UsssaField } from '../usssa-field'
 
 interface PersonRow {
   id: string
@@ -129,10 +130,13 @@ export default async function MemberPage({
           </span>
         )}
       </h1>
-      <p className="mt-1 text-sm text-neutral-600">
-        {person.status.replace(/_/g, ' ')}
-        {person.yob && ` · born ${person.yob}`}
-        {person.usssa && ` · USSA ${person.usssa}`}
+      <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-neutral-600">
+        <span>{person.status.replace(/_/g, ' ')}</span>
+        {person.yob && <span>· born {person.yob}</span>}
+        <span>· USSA</span>
+        {/* Editable here as well as in the list — this is where you land from a
+            search, and the gap should be fixable wherever it is noticed. */}
+        <UsssaField personId={person.id} value={person.usssa} />
       </p>
 
       {/* --- can they be texted, and why --- */}

@@ -35,6 +35,8 @@ export interface ComposeSettings {
   /** Opt-out line appended to every message. Empty only if Twilio adds its own. */
   optOutText: string
   defaultReplyNotice: string
+  /** The stored intro text, used when the intro audience is selected. */
+  introText: string
   /** Estimated USD per outbound segment — see app_settings, verify against invoices */
   costPerSegmentUsd: number
 }
@@ -88,6 +90,8 @@ export function ComposeForm({
   selectedSeries,
   selectedGroupId,
   filterParams,
+  prefillBody,
+  prefillPurpose,
 }: {
   officers: Officer[]
   settings: ComposeSettings
@@ -99,10 +103,16 @@ export function ComposeForm({
   selectedGroupId?: string
   /** Present when messaging a slice of the members directory. */
   filterParams?: Record<string, string>
+  /** Message text to start from, when the audience has a standard wording. */
+  prefillBody?: string
+  /** Matching label for the log. */
+  prefillPurpose?: string
 }) {
   const recipientCount = audience.recipientCount
   const [category, setCategory] = useState<string>('general')
-  const [body, setBody] = useState('')
+  // Starts from the audience's standard wording when there is one — the intro
+  // text. Editable afterwards: it is a starting point, not a locked template.
+  const [body, setBody] = useState(prefillBody ?? '')
   const [repliesMonitored, setRepliesMonitored] = useState(true)
   const [replyNotice, setReplyNotice] = useState(settings.defaultReplyNotice)
   const [replyTo, setReplyTo] = useState<string>(categoryDefaults.general ?? '')
@@ -269,6 +279,7 @@ export function ComposeForm({
         </span>
         <input
           name="purpose"
+          defaultValue={prefillPurpose ?? ''}
           placeholder="Sugar Bowl start times"
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         />
@@ -513,6 +524,10 @@ function AudiencePicker({
   selectedGroupId?: string
   /** Present when messaging a slice of the members directory. */
   filterParams?: Record<string, string>
+  /** Message text to start from, when the audience has a standard wording. */
+  prefillBody?: string
+  /** Matching label for the log. */
+  prefillPurpose?: string
 }) {
   const value =
     audience.kind === 'group'

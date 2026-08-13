@@ -29,6 +29,7 @@ import {
   type FilterablePerson,
 } from '@/lib/member-filters'
 import { CopyButton } from './copy-button'
+import { UsssaField } from './usssa-field'
 import { CopyEmailsButton } from './copy-emails'
 
 interface PersonRow {
@@ -397,15 +398,11 @@ export default async function MembersPage({
                         </span>
                       )}
                     </td>
-                    {/* A missing number is called out rather than shown as a blank.
-                        Without it a member cannot race, so the gap is the point —
-                        an empty cell reads as "nothing to see". */}
+                    {/* Editable in place: a member without this number cannot
+                        race, and the fix should be possible where the gap is
+                        noticed rather than on another screen. */}
                     <td className="whitespace-nowrap px-3 py-3">
-                      {p.usssa ? (
-                        <span className="tabular-nums">{p.usssa}</span>
-                      ) : (
-                        <span className="font-medium text-fwm-burgundy">Missing</span>
-                      )}
+                      <UsssaField personId={p.id} value={p.usssa} />
                     </td>
                     <td className="whitespace-nowrap px-3 py-3 text-neutral-600">
                       {p.status.replace(/_/g, ' ')}
@@ -449,14 +446,8 @@ export default async function MembersPage({
                       {formatPhone(p.phone)}
                       {p.email && ` · ${p.email}`}
                     </p>
-                    <p className="mt-0.5 text-sm">
-                      {p.usssa ? (
-                        <span className="text-neutral-600">USSA {p.usssa}</span>
-                      ) : (
-                        <span className="font-medium text-fwm-burgundy">
-                          USSA number missing
-                        </span>
-                      )}
+                    <p className="mt-0.5 text-sm text-neutral-600">
+                      {p.usssa ? `USSA ${p.usssa}` : 'USSA number missing'}
                     </p>
                   </Link>
                 </li>

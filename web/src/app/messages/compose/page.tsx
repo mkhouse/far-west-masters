@@ -26,6 +26,9 @@ async function loadSettings(): Promise<ComposeSettings> {
     // the text so the two cannot fall out of step. See migration 0018.
     optOutText: get('sms_optout_text', 'Text STOP to stop'),
     defaultReplyNotice: get('sms_default_reply_notice', 'Replies not monitored.'),
+    // Filled into the message box when the intro audience is chosen — see
+    // migration 0023. Stored so the wording stops drifting between sends.
+    introText: get('sms_intro_text', ''),
     costPerSegmentUsd: parseFloat(get('sms_cost_per_segment_usd', '0.0109')),
   }
 }
@@ -119,6 +122,10 @@ export default async function ComposePage({
           categoryDefaults={categoryDefaults}
           audiences={audiences}
           audience={audience}
+          // Prefilled, not auto-sent. The officer still reads it and presses Send:
+          // a stored template is exactly what drifts out of date unnoticed.
+          prefillBody={audience.kind === 'intro_pending' ? settings.introText : ''}
+          prefillPurpose={audience.kind === 'intro_pending' ? 'Intro text' : ''}
           selectedSeries={params.series}
           selectedGroupId={params.group ?? fallback?.groupId}
           filterParams={filter ? filterToParams(filter) : undefined}
