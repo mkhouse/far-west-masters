@@ -218,7 +218,7 @@ export function ComposeForm({
           <input type="hidden" name="replies_monitored" value={repliesMonitored ? 'on' : ''} />
           <span className="text-sm">
             <span className="font-medium">Nobody is watching for replies</span>
-            <span className="mt-0.5 block text-neutral-500">
+            <span className="mt-0.5 block text-neutral-600">
               Replies are still received and logged, but not forwarded to anyone&rsquo;s
               phone. Each person who replies gets one automatic acknowledgement.
               STOP still works.
@@ -230,7 +230,7 @@ export function ComposeForm({
           <label className="mt-3 block">
             <span className="text-sm font-medium">
               Notice added to the message
-              <span className="ml-2 font-normal text-neutral-500">
+              <span className="ml-2 font-normal text-neutral-600">
                 {replyNotice.length} characters
               </span>
             </span>
@@ -248,7 +248,7 @@ export function ComposeForm({
           the log readable months later. */}
       <label className="block">
         <span className="text-sm font-medium">
-          Purpose <span className="font-normal text-neutral-500">(for the log)</span>
+          Purpose <span className="font-normal text-neutral-600">(for the log)</span>
         </span>
         <input
           name="purpose"
@@ -272,7 +272,7 @@ export function ComposeForm({
         </label>
 
         {autoFixed.length > 0 && (
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-neutral-600">
             Adjusted for SMS: {autoFixed.join(', ')} replaced with plain equivalents.
           </p>
         )}
@@ -281,14 +281,14 @@ export function ComposeForm({
             seeing the reply notice and the opt-out line in place cannot. */}
         {body.trim() && (
           <div className="mt-3 rounded-lg border border-neutral-200 bg-surface bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
-            <p className="text-sm font-medium text-neutral-500">
+            <p className="text-sm font-medium text-neutral-600">
               What arrives on the phone
             </p>
             <p className="mt-2 whitespace-pre-wrap font-mono text-sm">
               {body.trim()}
               {/* The additions greyed, so it is obvious which words the sender
                   typed and which the system is adding on their behalf. */}
-              <span className="text-neutral-500">
+              <span className="text-neutral-600">
                 {composed.slice(body.trim().length)}
               </span>
             </p>
@@ -416,7 +416,7 @@ function CostSummary({
             </span>
             <span title="Approximate. Rates vary by carrier and volume; excludes monthly number and registration fees.">
               <strong>{formatEstimatedCost(total)}</strong>{' '}
-              <span className="text-neutral-500">
+              <span className="text-neutral-600">
                 est. &middot; {formatEstimatedCost(perRecipient)} each
               </span>
             </span>
@@ -429,14 +429,14 @@ function CostSummary({
             </span>
             <span title="Approximate. Rates vary by carrier and volume; excludes monthly number and registration fees.">
               <strong>{formatEstimatedCost(perRecipient)}</strong>{' '}
-              <span className="text-neutral-500">est. each &middot; no recipients yet</span>
+              <span className="text-neutral-600">est. each &middot; no recipients yet</span>
             </span>
           </>
         )}
         {/* Count what was typed, not the total including appended text. The total
             is what determines segments, but showing it here reads as though the
             box already has content when it is empty. */}
-        <span className="text-neutral-500">
+        <span className="text-neutral-600">
           {typedLength} {typedLength === 1 ? 'character' : 'characters'} &middot;{' '}
           {info.remainingInSegment} left in this segment
         </span>
@@ -452,7 +452,7 @@ function CostSummary({
       )}
 
       {emoji > 0 && (
-        <p className="mt-1 text-neutral-500">
+        <p className="mt-1 text-neutral-600">
           {emoji} of {maxEmoji} emoji
         </p>
       )}
@@ -538,7 +538,7 @@ function AudiencePicker({
             <strong>{audience.recipientCount}</strong>{' '}
             {audience.recipientCount === 1 ? 'person' : 'people'}
             {audience.consideredCount > audience.recipientCount && (
-              <span className="text-neutral-500">
+              <span className="text-neutral-600">
                 {' '}
                 of {audience.consideredCount} considered
               </span>
@@ -550,7 +550,7 @@ function AudiencePicker({
             one — "31 have not opted in" is something someone can do something
             about. */}
         {audience.excluded.length > 0 && (
-          <ul className="mt-1 space-y-0.5 text-sm text-neutral-500">
+          <ul className="mt-1 space-y-0.5 text-sm text-neutral-600">
             {audience.excluded.map((e) => (
               <li key={e.reason}>
                 {e.count} excluded &mdash; {e.reason}

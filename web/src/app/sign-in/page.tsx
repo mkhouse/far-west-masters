@@ -27,7 +27,7 @@ export default async function SignInPage({
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
       <h1 className="text-2xl font-semibold tracking-tight">Far West Masters</h1>
-      <p className="mt-1 text-sm text-neutral-500">Officer sign-in</p>
+      <p className="mt-1 text-sm text-neutral-600">Officer sign-in</p>
 
       {/* Confirm the sign-out actually happened. Landing on a login form is
           ambiguous otherwise — it looks the same as a session that expired, or a
@@ -51,7 +51,7 @@ export default async function SignInPage({
         <SignInForm next={params.next ?? '/'} error={params.error} />
       )}
 
-      <p className="mt-8 text-sm text-neutral-500">
+      <p className="mt-8 text-sm text-neutral-600">
         Race results and standings are public and need no sign-in.
       </p>
     </main>

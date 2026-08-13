@@ -53,7 +53,7 @@ const FILTER_ORDER: ConsentState[] = [
 function stateClass(state: ConsentState): string {
   if (state === 'eligible') return 'text-fwm-navy'
   if (state === 'opted_out' || state === 'suppressed') return 'text-fwm-burgundy'
-  return 'text-neutral-500'
+  return 'text-neutral-600'
 }
 
 export default async function MembersPage({
@@ -113,7 +113,7 @@ export default async function MembersPage({
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
       <h1 className="text-xl font-semibold">Members</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <p className="mt-1 text-sm text-neutral-600">
         {everyone.length} people. Search by name, phone or email.
       </p>
 
@@ -136,7 +136,7 @@ export default async function MembersPage({
         {query && (
           <Link
             href={activeState ? `/members?filter=${activeState}` : '/members'}
-            className="self-center text-sm text-neutral-500 underline"
+            className="self-center text-sm text-neutral-600 underline"
           >
             Clear
           </Link>
@@ -206,7 +206,7 @@ export default async function MembersPage({
       )}
 
       {matches.length === 0 ? (
-        <p className="mt-8 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
+        <p className="mt-8 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-600 dark:border-neutral-700">
           Nobody matches {query ? `“${query}”` : 'that filter'}.
         </p>
       ) : (
@@ -223,7 +223,7 @@ export default async function MembersPage({
                     <span className="block truncate font-medium group-hover:underline">
                       {p.first_name} {p.last_name}
                     </span>
-                    <span className="mt-0.5 block text-sm text-neutral-500">
+                    <span className="mt-0.5 block text-sm text-neutral-600">
                       {formatPhone(p.phone)}
                       {p.email && ` · ${p.email}`}
                     </span>
@@ -239,7 +239,7 @@ export default async function MembersPage({
       )}
 
       {matches.length > 0 && matches.length !== everyone.length && (
-        <p className="mt-3 text-sm text-neutral-500">
+        <p className="mt-3 text-sm text-neutral-600">
           Showing {matches.length} of {everyone.length}.
         </p>
       )}

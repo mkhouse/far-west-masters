@@ -137,7 +137,7 @@ export default async function MessagesPage({
       <div className="flex items-baseline justify-between">
         <div>
           <h1 className="text-xl font-semibold">Messages</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-neutral-600">
             Signed in as {appUser.email} ({appUser.role})
           </p>
         </div>
@@ -167,18 +167,18 @@ export default async function MessagesPage({
 
       <dl className="mt-8 grid grid-cols-2 gap-4 text-sm">
         <div className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
-          <dt className="text-neutral-500">People</dt>
+          <dt className="text-neutral-600">People</dt>
           <dd className="mt-1 text-2xl font-semibold">{total ?? '—'}</dd>
         </div>
         <div className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
           {/* Same words as the members directory. Opt-in is the gate, and saying so
               on every screen is the point. */}
-          <dt className="text-neutral-500">Opted-in for texts</dt>
+          <dt className="text-neutral-600">Opted-in for texts</dt>
           <dd className="mt-1 text-2xl font-semibold">{eligible ?? '—'}</dd>
         </div>
       </dl>
 
-      <p className="mt-3 text-sm text-neutral-500">
+      <p className="mt-3 text-sm text-neutral-600">
         The gap is members who have not opted in, or have not been sent an intro
         text yet.{' '}
         <Link href="/members" className="underline">
@@ -188,7 +188,7 @@ export default async function MessagesPage({
       </p>
 
       <h2 className="mt-12 text-sm font-medium text-fwm-navy">Send log</h2>
-      <p className="mt-1 text-sm text-neutral-500">
+      <p className="mt-1 text-sm text-neutral-600">
         Every message this system has sent, who sent it, and what reached a phone.
       </p>
 
@@ -208,14 +208,14 @@ export default async function MessagesPage({
           Search
         </button>
         {query && (
-          <Link href="/messages" className="self-center text-sm text-neutral-500 underline">
+          <Link href="/messages" className="self-center text-sm text-neutral-600 underline">
             Clear
           </Link>
         )}
       </form>
 
       {messages.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
+        <p className="mt-6 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-600 dark:border-neutral-700">
           {query ? `No messages match “${query}”.` : 'Nothing sent yet.'}
         </p>
       ) : (
@@ -236,7 +236,7 @@ export default async function MessagesPage({
                           typed — better a first line than an empty row. */}
                       {m.purpose || m.body.split('\n')[0]}
                     </span>
-                    <span className="shrink-0 text-sm text-neutral-500">
+                    <span className="shrink-0 text-sm text-neutral-600">
                       {new Date(when).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -245,7 +245,7 @@ export default async function MessagesPage({
                     </span>
                   </div>
 
-                  <p className="mt-1 text-sm text-neutral-500">
+                  <p className="mt-1 text-sm text-neutral-600">
                     {m.audience_label ?? 'unknown audience'} ·{' '}
                     <span className="text-neutral-700 dark:text-neutral-300">
                       sent by {m.sent_by ?? 'unknown'}
@@ -254,7 +254,7 @@ export default async function MessagesPage({
                     {m.bypassed_consent_gate && ' · intro text'}
                   </p>
 
-                  <p className="mt-1 text-sm text-neutral-500">
+                  <p className="mt-1 text-sm text-neutral-600">
                     {t.total} {t.total === 1 ? 'recipient' : 'recipients'}
                     {m.segments ? ` · ${m.segments} seg` : ''}
                     {/* Delivery is asynchronous, so "delivered" lags a send by
@@ -283,7 +283,7 @@ export default async function MessagesPage({
       {/* Said plainly, because a truncated result set that looks complete is how
           someone concludes a message was never sent. */}
       {messages.length === HISTORY_LIMIT && (
-        <p className="mt-3 text-sm text-neutral-500">
+        <p className="mt-3 text-sm text-neutral-600">
           Showing the first {HISTORY_LIMIT}
           {query ? ' matches — narrow the search to see the rest.' : ' — search to find older messages.'}
         </p>

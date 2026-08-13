@@ -115,7 +115,7 @@ export default async function MemberPage({
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <p className="text-sm">
-        <Link href="/members" className="text-neutral-500 underline">
+        <Link href="/members" className="text-neutral-600 underline">
           &larr; Members
         </Link>
       </p>
@@ -123,12 +123,12 @@ export default async function MemberPage({
       <h1 className="mt-4 text-xl font-semibold">
         {person.first_name} {person.last_name}
         {person.nickname && (
-          <span className="ml-2 text-base font-normal text-neutral-500">
+          <span className="ml-2 text-base font-normal text-neutral-600">
             &ldquo;{person.nickname}&rdquo;
           </span>
         )}
       </h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <p className="mt-1 text-sm text-neutral-600">
         {person.status.replace(/_/g, ' ')}
         {person.yob && ` · born ${person.yob}`}
         {person.usssa && ` · USSA ${person.usssa}`}
@@ -151,34 +151,34 @@ export default async function MemberPage({
           >
             {CONSENT_STATE_LABEL[state]}
           </p>
-          <p className="mt-1 text-sm text-neutral-500">{CONSENT_STATE_DETAIL[state]}</p>
+          <p className="mt-1 text-sm text-neutral-600">{CONSENT_STATE_DETAIL[state]}</p>
 
           {/* The underlying dates, so the summary above can be checked rather than
               taken on trust. */}
           <dl className="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-sm uppercase tracking-wide text-neutral-500">Phone</dt>
+              <dt className="text-sm uppercase tracking-wide text-neutral-600">Phone</dt>
               <dd className="mt-0.5">{formatPhone(person.phone)}</dd>
             </div>
             <div>
-              <dt className="text-sm uppercase tracking-wide text-neutral-500">Email</dt>
+              <dt className="text-sm uppercase tracking-wide text-neutral-600">Email</dt>
               <dd className="mt-0.5">{person.email ?? '—'}</dd>
             </div>
             <div>
-              <dt className="text-sm uppercase tracking-wide text-neutral-500">
+              <dt className="text-sm uppercase tracking-wide text-neutral-600">
                 Opted in
               </dt>
               <dd className="mt-0.5">{day(person.opt_in_at)}</dd>
             </div>
             <div>
-              <dt className="text-sm uppercase tracking-wide text-neutral-500">
+              <dt className="text-sm uppercase tracking-wide text-neutral-600">
                 Intro sent
               </dt>
               <dd className="mt-0.5">{day(person.intro_sent_at)}</dd>
             </div>
             {person.opted_out_at && (
               <div>
-                <dt className="text-sm uppercase tracking-wide text-neutral-500">
+                <dt className="text-sm uppercase tracking-wide text-neutral-600">
                   Opted out
                 </dt>
                 <dd className="mt-0.5 text-fwm-burgundy">{day(person.opted_out_at)}</dd>
@@ -186,7 +186,7 @@ export default async function MemberPage({
             )}
             {person.sms_always && (
               <div>
-                <dt className="text-sm uppercase tracking-wide text-neutral-500">
+                <dt className="text-sm uppercase tracking-wide text-neutral-600">
                   Always notify
                 </dt>
                 <dd className="mt-0.5">Wants race texts regardless of entry</dd>
@@ -220,11 +220,11 @@ export default async function MemberPage({
         <div className="border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
           <h2 className="text-sm font-medium text-fwm-navy">
             Messages sent
-            <span className="ml-2 font-normal text-neutral-500">{sent.length}</span>
+            <span className="ml-2 font-normal text-neutral-600">{sent.length}</span>
           </h2>
         </div>
         {sent.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-neutral-500">
+          <p className="px-5 py-4 text-sm text-neutral-600">
             Nothing has been sent to this member yet.
           </p>
         ) : (
@@ -235,7 +235,7 @@ export default async function MemberPage({
                   <span className="block truncate">
                     {s.messages?.purpose || s.messages?.body?.split('\n')[0] || 'Message'}
                   </span>
-                  <span className="text-sm text-neutral-500">
+                  <span className="text-sm text-neutral-600">
                     {day(s.messages?.sent_at ?? null)}
                   </span>
                 </Link>
@@ -245,7 +245,7 @@ export default async function MemberPage({
                       ? 'text-fwm-navy'
                       : s.error
                         ? 'text-fwm-burgundy'
-                        : 'text-neutral-500'
+                        : 'text-neutral-600'
                   }`}
                 >
                   {s.delivery_status ?? s.status ?? 'unknown'}
@@ -268,7 +268,7 @@ export default async function MemberPage({
                 <p className={r.is_stop ? 'font-medium text-fwm-burgundy' : ''}>
                   {r.body}
                 </p>
-                <p className="mt-0.5 text-sm text-neutral-500">
+                <p className="mt-0.5 text-sm text-neutral-600">
                   {new Date(r.received_at).toLocaleString()}
                   {r.is_stop && ' · treated as opt-out'}
                 </p>

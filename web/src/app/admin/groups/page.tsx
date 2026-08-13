@@ -61,13 +61,13 @@ export default async function GroupsPage({
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
       <p className="text-sm">
-        <Link href="/admin" className="text-neutral-500 underline">
+        <Link href="/admin" className="text-neutral-600 underline">
           &larr; Admin
         </Link>
       </p>
 
       <h1 className="mt-4 text-xl font-semibold">Messaging groups</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <p className="mt-1 text-sm text-neutral-600">
         Named audiences for the compose screen. Groups appear in the &ldquo;Send
         to&rdquo; list as soon as they have members.
       </p>
@@ -81,7 +81,7 @@ export default async function GroupsPage({
       {/* Renaming does not rewrite history: a message already sent keeps the
           audience label it was sent to. Worth saying, because it otherwise looks
           like the rename half-worked. */}
-      <p className="mt-2 text-sm text-neutral-500">
+      <p className="mt-2 text-sm text-neutral-600">
         Renaming a group does not change what past messages say they were sent to —
         the send log records the name as it was at the time.
       </p>
@@ -121,17 +121,17 @@ export default async function GroupsPage({
                       name="description"
                       defaultValue={g.description ?? ''}
                       placeholder="What this group is for"
-                      className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm text-neutral-500 hover:border-neutral-300 focus:border-neutral-400 dark:hover:border-neutral-700"
+                      className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm text-neutral-600 hover:border-neutral-300 focus:border-neutral-400 dark:hover:border-neutral-700"
                     />
                     <button
                       type="submit"
-                      className="ml-2 text-sm text-neutral-500 underline"
+                      className="ml-2 text-sm text-neutral-600 underline"
                     >
                       Save name and description
                     </button>
                   </form>
 
-                  <p className="ml-2 mt-2 text-sm text-neutral-500">
+                  <p className="ml-2 mt-2 text-sm text-neutral-600">
                     {members.length} {members.length === 1 ? 'member' : 'members'}
                   </p>
                 </div>
@@ -140,7 +140,7 @@ export default async function GroupsPage({
                   <input type="hidden" name="group_id" value={g.id} />
                   <button
                     type="submit"
-                    className="text-sm text-neutral-500 underline hover:text-fwm-burgundy"
+                    className="text-sm text-neutral-600 underline hover:text-fwm-burgundy"
                   >
                     Delete group
                   </button>
@@ -161,7 +161,7 @@ export default async function GroupsPage({
                       <input type="hidden" name="person_id" value={m.person_id} />
                       <button
                         type="submit"
-                        className="text-sm text-neutral-500 underline hover:text-red-700"
+                        className="text-sm text-neutral-600 underline hover:text-red-700"
                       >
                         remove
                       </button>
@@ -213,7 +213,7 @@ export default async function GroupsPage({
             <input type="checkbox" name="is_test_group" className="mt-1" />
             <span>
               Test group
-              <span className="block text-sm text-neutral-500">
+              <span className="block text-sm text-neutral-600">
                 Appears at the top of the audience list, and the compose screen
                 defaults to it.
               </span>
@@ -222,7 +222,7 @@ export default async function GroupsPage({
 
           {/* There is deliberately no "skip the consent checks" option. Every group
               applies the gate — see migration 0020. */}
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-600">
             Everyone in a group still needs to have opted in and had an intro text
             before they can receive a message. Groups choose who is asked, not
             whether consent applies.

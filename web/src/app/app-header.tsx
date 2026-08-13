@@ -24,10 +24,10 @@ export async function AppHeader() {
           <Link href="/messages" className="font-medium hover:underline">
             Messages
           </Link>
-          <Link href="/members" className="text-neutral-500 hover:underline">
+          <Link href="/members" className="text-neutral-600 hover:underline">
             Members
           </Link>
-          <Link href="/admin" className="text-neutral-500 hover:underline">
+          <Link href="/admin" className="text-neutral-600 hover:underline">
             Admin
           </Link>
         </nav>
@@ -36,7 +36,7 @@ export async function AppHeader() {
           {/* Which account, not just that you are signed in. On a shared machine
               those are different questions, and sending a text as the wrong
               officer is not something you can take back. */}
-          <span className="hidden text-neutral-500 sm:inline">{user.email}</span>
+          <span className="hidden text-neutral-600 sm:inline">{user.email}</span>
 
           {/* A form, not a link: sign-out is a POST so that nothing else can
               trigger it on the officer's behalf. See app/sign-out/route.ts */}

@@ -92,7 +92,7 @@ export default async function ComposePage({
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="text-xl font-semibold">Compose message</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <p className="mt-1 text-sm text-neutral-600">
         Signed in as {appUser.email} ({appUser.role})
       </p>
 
@@ -110,7 +110,7 @@ export default async function ComposePage({
 
       {/* Corrected: the app appends the opt-out line, not Twilio. See migration
           0018 — believing otherwise is what left it off real messages for a day. */}
-      <p className="mt-8 text-sm text-neutral-500">
+      <p className="mt-8 text-sm text-neutral-600">
         &ldquo;Text STOP to stop&rdquo; is added to every message and is already
         counted above. Cost is approximate — it excludes the monthly number and
         registration fees, and rates vary by carrier.

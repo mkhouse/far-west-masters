@@ -48,7 +48,7 @@ export default async function AdminPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="text-xl font-semibold">Admin</h1>
-      <p className="mt-1 text-sm text-neutral-500">Signed in as {appUser.email}</p>
+      <p className="mt-1 text-sm text-neutral-600">Signed in as {appUser.email}</p>
 
       <ul className="mt-8 space-y-3">
         {AVAILABLE.map((item) => (
@@ -58,7 +58,7 @@ export default async function AdminPage() {
               className="block rounded-lg border border-neutral-200 bg-surface p-4 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
             >
               <span className="font-medium">{item.title}</span>
-              <span className="mt-1 block text-sm text-neutral-500">
+              <span className="mt-1 block text-sm text-neutral-600">
                 {item.description}
               </span>
             </Link>
@@ -66,15 +66,15 @@ export default async function AdminPage() {
         ))}
       </ul>
 
-      <h2 className="mt-10 text-sm font-medium text-neutral-500">Not built yet</h2>
+      <h2 className="mt-10 text-sm font-medium text-neutral-600">Not built yet</h2>
       <ul className="mt-3 space-y-3">
         {PLANNED.map((item) => (
           <li
             key={item.title}
             className="rounded-lg border border-dashed border-neutral-300 p-4 dark:border-neutral-700"
           >
-            <span className="font-medium text-neutral-500">{item.title}</span>
-            <span className="mt-1 block text-sm text-neutral-500">
+            <span className="font-medium text-neutral-600">{item.title}</span>
+            <span className="mt-1 block text-sm text-neutral-600">
               {item.description}
             </span>
           </li>

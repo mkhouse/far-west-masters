@@ -61,7 +61,7 @@ const AUDIENCE_KIND_LABEL: Record<string, string> = {
 function statusClass(state: string | null): string {
   if (state === 'delivered') return 'text-fwm-navy font-medium'
   if (state && FAILED_STATES.has(state)) return 'text-fwm-burgundy font-medium'
-  return 'text-neutral-500'
+  return 'text-neutral-600'
 }
 
 export default async function MessagePage({
@@ -140,11 +140,11 @@ export default async function MessagePage({
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <p className="text-sm">
-        <Link href="/messages" className="text-neutral-500 underline">
+        <Link href="/messages" className="text-neutral-600 underline">
           &larr; Send log
         </Link>
         <span className="text-neutral-400"> · </span>
-        <Link href="/messages/compose" className="text-neutral-500 underline">
+        <Link href="/messages/compose" className="text-neutral-600 underline">
           Compose another
         </Link>
       </p>
@@ -162,7 +162,7 @@ export default async function MessagePage({
               · <strong>{failed}</strong> failed
             </span>
           )}
-          <span className="mt-1 block text-sm text-neutral-500">
+          <span className="mt-1 block text-sm text-neutral-600">
             &ldquo;Accepted&rdquo; is not the same as delivered — carriers report
             back over the following minutes.
           </span>
@@ -181,7 +181,7 @@ export default async function MessagePage({
           {/* Reached first: it is the outcome, and the reason anyone opens this
               page. To is the input, and answers the follow-up question. */}
           <div>
-            <dt className="text-sm uppercase tracking-wide text-neutral-500">
+            <dt className="text-sm uppercase tracking-wide text-neutral-600">
               Reached
             </dt>
             <dd className="mt-0.5 font-medium">
@@ -192,23 +192,23 @@ export default async function MessagePage({
             </dd>
           </div>
           <div>
-            <dt className="text-sm uppercase tracking-wide text-neutral-500">To</dt>
+            <dt className="text-sm uppercase tracking-wide text-neutral-600">To</dt>
             <dd className="mt-0.5 font-medium">
               {message.audience_label ?? 'unknown audience'}
               {/* How the audience was chosen, not just what it was called. */}
               {message.audience_kind && AUDIENCE_KIND_LABEL[message.audience_kind] && (
-                <span className="block text-sm font-normal italic text-neutral-500">
+                <span className="block text-sm font-normal italic text-neutral-600">
                   {AUDIENCE_KIND_LABEL[message.audience_kind]}
                 </span>
               )}
             </dd>
           </div>
           <div>
-            <dt className="text-sm uppercase tracking-wide text-neutral-500">By</dt>
+            <dt className="text-sm uppercase tracking-wide text-neutral-600">By</dt>
             <dd className="mt-0.5 font-medium">{message.sent_by ?? 'unknown'}</dd>
           </div>
           <div>
-            <dt className="text-sm uppercase tracking-wide text-neutral-500">When</dt>
+            <dt className="text-sm uppercase tracking-wide text-neutral-600">When</dt>
             <dd className="mt-0.5 font-medium">
               {message.sent_at
                 ? new Date(message.sent_at).toLocaleString()
@@ -219,7 +219,7 @@ export default async function MessagePage({
 
         {/* Anything unusual about the send itself, only when it applies. */}
         {(message.bypassed_consent_gate || !message.replies_monitored) && (
-          <div className="border-t border-neutral-200 px-5 py-3 text-sm text-neutral-500 dark:border-neutral-800">
+          <div className="border-t border-neutral-200 px-5 py-3 text-sm text-neutral-600 dark:border-neutral-800">
             {message.bypassed_consent_gate && (
               <p className="text-amber-700 dark:text-amber-400">
                 Intro text — recipients had opted in but not yet been introduced.
@@ -242,10 +242,10 @@ export default async function MessagePage({
           <p className="whitespace-pre-wrap font-mono text-sm">
             {message.body}
             {message.reply_notice && (
-              <span className="text-neutral-500"> {message.reply_notice}</span>
+              <span className="text-neutral-600"> {message.reply_notice}</span>
             )}
           </p>
-          <p className="mt-3 text-sm text-neutral-500">
+          <p className="mt-3 text-sm text-neutral-600">
             {message.segments} {message.segments === 1 ? 'segment' : 'segments'} ·{' '}
             {message.category}
           </p>
@@ -257,7 +257,7 @@ export default async function MessagePage({
         <div className="flex items-baseline justify-between border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
           <h2 className="text-sm font-medium text-fwm-navy">
             Recipients
-            <span className="ml-2 font-normal text-neutral-500">
+            <span className="ml-2 font-normal text-neutral-600">
               {recipients.length}
             </span>
           </h2>
