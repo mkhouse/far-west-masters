@@ -162,7 +162,7 @@ export default async function MessagePage({
               · <strong>{failed}</strong> failed
             </span>
           )}
-          <span className="mt-1 block text-xs text-neutral-500">
+          <span className="mt-1 block text-sm text-neutral-500">
             &ldquo;Accepted&rdquo; is not the same as delivered — carriers report
             back over the following minutes.
           </span>
@@ -170,7 +170,7 @@ export default async function MessagePage({
       )}
 
       {/* --- who, what, when: the sent record --- */}
-      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
         <div className="border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
           <h2 className="text-sm font-medium text-fwm-navy">Sent</h2>
         </div>
@@ -181,7 +181,7 @@ export default async function MessagePage({
           {/* Reached first: it is the outcome, and the reason anyone opens this
               page. To is the input, and answers the follow-up question. */}
           <div>
-            <dt className="text-xs uppercase tracking-wide text-neutral-500">
+            <dt className="text-sm uppercase tracking-wide text-neutral-500">
               Reached
             </dt>
             <dd className="mt-0.5 font-medium">
@@ -192,23 +192,23 @@ export default async function MessagePage({
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-neutral-500">To</dt>
+            <dt className="text-sm uppercase tracking-wide text-neutral-500">To</dt>
             <dd className="mt-0.5 font-medium">
               {message.audience_label ?? 'unknown audience'}
               {/* How the audience was chosen, not just what it was called. */}
               {message.audience_kind && AUDIENCE_KIND_LABEL[message.audience_kind] && (
-                <span className="block text-xs font-normal italic text-neutral-500">
+                <span className="block text-sm font-normal italic text-neutral-500">
                   {AUDIENCE_KIND_LABEL[message.audience_kind]}
                 </span>
               )}
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-neutral-500">By</dt>
+            <dt className="text-sm uppercase tracking-wide text-neutral-500">By</dt>
             <dd className="mt-0.5 font-medium">{message.sent_by ?? 'unknown'}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-neutral-500">When</dt>
+            <dt className="text-sm uppercase tracking-wide text-neutral-500">When</dt>
             <dd className="mt-0.5 font-medium">
               {message.sent_at
                 ? new Date(message.sent_at).toLocaleString()
@@ -219,7 +219,7 @@ export default async function MessagePage({
 
         {/* Anything unusual about the send itself, only when it applies. */}
         {(message.bypassed_consent_gate || !message.replies_monitored) && (
-          <div className="border-t border-neutral-200 px-5 py-3 text-xs text-neutral-500 dark:border-neutral-800">
+          <div className="border-t border-neutral-200 px-5 py-3 text-sm text-neutral-500 dark:border-neutral-800">
             {message.bypassed_consent_gate && (
               <p className="text-amber-700 dark:text-amber-400">
                 Intro text — recipients had opted in but not yet been introduced.
@@ -232,7 +232,7 @@ export default async function MessagePage({
       </section>
 
       {/* --- the message itself --- */}
-      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
         <div className="border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
           <h2 className="text-sm font-medium text-fwm-navy">
             What members received
@@ -245,7 +245,7 @@ export default async function MessagePage({
               <span className="text-neutral-500"> {message.reply_notice}</span>
             )}
           </p>
-          <p className="mt-3 text-xs text-neutral-500">
+          <p className="mt-3 text-sm text-neutral-500">
             {message.segments} {message.segments === 1 ? 'segment' : 'segments'} ·{' '}
             {message.category}
           </p>
@@ -253,7 +253,7 @@ export default async function MessagePage({
       </section>
 
       {/* --- recipients, in full --- */}
-      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
         <div className="flex items-baseline justify-between border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
           <h2 className="text-sm font-medium text-fwm-navy">
             Recipients
@@ -262,7 +262,7 @@ export default async function MessagePage({
             </span>
           </h2>
           {failures.length > 0 && (
-            <span className="text-xs font-medium text-fwm-burgundy">
+            <span className="text-sm font-medium text-fwm-burgundy">
               {failures.length} did not send
             </span>
           )}
@@ -287,14 +287,14 @@ export default async function MessagePage({
                   {/* The reason, not just the fact. "Failed" alone sends someone
                       hunting; error 21610 says they opted out. */}
                   {isFailure && r.error && (
-                    <span className="mt-0.5 block text-xs text-fwm-burgundy">
+                    <span className="mt-0.5 block text-sm text-fwm-burgundy">
                       {r.error}
                       {r.error_code && ` (${r.error_code})`}
                     </span>
                   )}
                 </span>
                 <span
-                  className={`shrink-0 text-xs ${statusClass(r.delivery_status)}`}
+                  className={`shrink-0 text-sm ${statusClass(r.delivery_status)}`}
                 >
                   {r.delivery_status ?? r.status ?? 'unknown'}
                 </span>

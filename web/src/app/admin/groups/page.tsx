@@ -1,5 +1,5 @@
 /**
- * Recipient groups.
+ * Messaging groups.
  *
  * Named audiences an admin maintains — test groups now, officials or board members
  * later. Groups appear in the compose screen's audience picker automatically, so
@@ -66,7 +66,7 @@ export default async function GroupsPage({
         </Link>
       </p>
 
-      <h1 className="mt-4 text-xl font-semibold">Recipient groups</h1>
+      <h1 className="mt-4 text-xl font-semibold">Messaging groups</h1>
       <p className="mt-1 text-sm text-neutral-500">
         Named audiences for the compose screen. Groups appear in the &ldquo;Send
         to&rdquo; list as soon as they have members.
@@ -81,7 +81,7 @@ export default async function GroupsPage({
       {/* Renaming does not rewrite history: a message already sent keeps the
           audience label it was sent to. Worth saying, because it otherwise looks
           like the rename half-worked. */}
-      <p className="mt-2 text-xs text-neutral-500">
+      <p className="mt-2 text-sm text-neutral-500">
         Renaming a group does not change what past messages say they were sent to —
         the send log records the name as it was at the time.
       </p>
@@ -94,7 +94,7 @@ export default async function GroupsPage({
           return (
             <section
               key={g.id}
-              className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800"
+              className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ export default async function GroupsPage({
                         className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 font-medium hover:border-neutral-300 focus:border-neutral-400 dark:hover:border-neutral-700"
                       />
                       {g.is_test_group && (
-                        <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                        <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-sm text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                           test
                         </span>
                       )}
@@ -125,7 +125,7 @@ export default async function GroupsPage({
                     />
                     <button
                       type="submit"
-                      className="ml-2 text-xs text-neutral-500 underline"
+                      className="ml-2 text-sm text-neutral-500 underline"
                     >
                       Save name and description
                     </button>
@@ -140,7 +140,7 @@ export default async function GroupsPage({
                   <input type="hidden" name="group_id" value={g.id} />
                   <button
                     type="submit"
-                    className="text-xs text-neutral-500 underline hover:text-fwm-burgundy"
+                    className="text-sm text-neutral-500 underline hover:text-fwm-burgundy"
                   >
                     Delete group
                   </button>
@@ -153,7 +153,7 @@ export default async function GroupsPage({
                     <span>
                       {m.people?.first_name} {m.people?.last_name}
                       {!m.people?.phone && (
-                        <span className="ml-2 text-xs text-amber-700">no phone</span>
+                        <span className="ml-2 text-sm text-amber-700">no phone</span>
                       )}
                     </span>
                     <form action={removeMember}>
@@ -161,7 +161,7 @@ export default async function GroupsPage({
                       <input type="hidden" name="person_id" value={m.person_id} />
                       <button
                         type="submit"
-                        className="text-xs text-neutral-500 underline hover:text-red-700"
+                        className="text-sm text-neutral-500 underline hover:text-red-700"
                       >
                         remove
                       </button>
@@ -187,7 +187,7 @@ export default async function GroupsPage({
       </div>
 
       {/* --- new group --- */}
-      <section className="mt-10 rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+      <section className="mt-10 rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
         <h2 className="font-medium">New group</h2>
         <form action={createGroup} className="mt-3 space-y-3">
           <label className="block">
@@ -213,7 +213,7 @@ export default async function GroupsPage({
             <input type="checkbox" name="is_test_group" className="mt-1" />
             <span>
               Test group
-              <span className="block text-xs text-neutral-500">
+              <span className="block text-sm text-neutral-500">
                 Appears at the top of the audience list, and the compose screen
                 defaults to it.
               </span>
@@ -222,7 +222,7 @@ export default async function GroupsPage({
 
           {/* There is deliberately no "skip the consent checks" option. Every group
               applies the gate — see migration 0020. */}
-          <p className="text-xs text-neutral-500">
+          <p className="text-sm text-neutral-500">
             Everyone in a group still needs to have opted in and had an intro text
             before they can receive a message. Groups choose who is asked, not
             whether consent applies.

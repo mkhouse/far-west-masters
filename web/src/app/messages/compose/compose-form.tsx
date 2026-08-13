@@ -205,7 +205,7 @@ export function ComposeForm({
       </section>
 
       {/* --- reply handling --- */}
-      <section className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+      <section className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
         <label className="flex items-start gap-3">
           <input
             type="checkbox"
@@ -272,7 +272,7 @@ export function ComposeForm({
         </label>
 
         {autoFixed.length > 0 && (
-          <p className="mt-2 text-xs text-neutral-500">
+          <p className="mt-2 text-sm text-neutral-500">
             Adjusted for SMS: {autoFixed.join(', ')} replaced with plain equivalents.
           </p>
         )}
@@ -280,8 +280,8 @@ export function ComposeForm({
         {/* The message as it will actually arrive. A counter can be argued with;
             seeing the reply notice and the opt-out line in place cannot. */}
         {body.trim() && (
-          <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
-            <p className="text-xs font-medium text-neutral-500">
+          <div className="mt-3 rounded-lg border border-neutral-200 bg-surface bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <p className="text-sm font-medium text-neutral-500">
               What arrives on the phone
             </p>
             <p className="mt-2 whitespace-pre-wrap font-mono text-sm">
@@ -499,7 +499,7 @@ function AudiencePicker({
       : audience.kind + (selectedSeries ? `|${selectedSeries}` : '')
 
   return (
-    <section className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+    <section className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
       <label className="block">
         <span className="text-sm font-medium">Send to</span>
         <select
@@ -550,7 +550,7 @@ function AudiencePicker({
             one — "31 have not opted in" is something someone can do something
             about. */}
         {audience.excluded.length > 0 && (
-          <ul className="mt-1 space-y-0.5 text-xs text-neutral-500">
+          <ul className="mt-1 space-y-0.5 text-sm text-neutral-500">
             {audience.excluded.map((e) => (
               <li key={e.reason}>
                 {e.count} excluded &mdash; {e.reason}
@@ -564,7 +564,7 @@ function AudiencePicker({
             here is an officer assuming it reaches people who have not asked to
             hear from the club. It does not. */}
         {audience.incompleteConsent && (
-          <p className="mt-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          <p className="mt-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
             Everyone here opted in on the form but has not had their intro text yet.
             Sending it completes their consent, and they move into the regular
             audiences afterwards.

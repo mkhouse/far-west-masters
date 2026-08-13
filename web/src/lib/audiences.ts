@@ -77,7 +77,7 @@ function explainExclusions(
     'no phone number': 0,
     'opted out': 0,
     suppressed: 0,
-    'has not opted in': 0,
+    'not opted-in for texts': 0,
     'no intro text sent': 0,
   }
 
@@ -85,7 +85,7 @@ function explainExclusions(
     if (!p.phone) counts['no phone number']++
     else if (p.opted_out_at) counts['opted out']++
     else if (p.sms_never) counts['suppressed']++
-    else if (!p.opt_in_at) counts['has not opted in']++
+    else if (!p.opt_in_at) counts['not opted-in for texts']++
     else if (!p.intro_sent_at) counts['no intro text sent']++
     else eligible++
   }
@@ -129,12 +129,12 @@ export async function listAudiences(): Promise<AudienceOption[]> {
     // Same wording as the members directory, deliberately: one vocabulary for
     // member state everywhere, so opt-in is visibly the thing that decides who can
     // be messaged rather than a rule buried in the code.
-    { kind: 'all_eligible', label: 'All opted-in members' },
+    { kind: 'all_eligible', label: 'All members opted-in for texts' },
     { kind: 'always', label: 'Members who always want race texts' },
     // Not scoped to a race: the trigger is a completed opt-in form, not a race
     // entry. FWM's flow is form first, then intro text — see the note on
     // 'intro_pending' in resolveAudience.
-    { kind: 'intro_pending', label: 'Opted in, needs intro text' }
+    { kind: 'intro_pending', label: 'Opted-in, needs intro text' }
   )
 
   // A series is offerable once at least one of its races has entries.
@@ -218,7 +218,7 @@ export async function resolveAudience(
       const { eligible, excluded } = explainExclusions(people)
       return {
         kind,
-        label: 'All opted-in members',
+        label: 'All members opted-in for texts',
         recipientCount: eligible,
         consideredCount: people.length,
         excluded,
@@ -268,7 +268,7 @@ export async function resolveAudience(
 
       return {
         kind,
-        label: 'Opted in, needs intro text',
+        label: 'Opted-in, needs intro text',
         recipientCount: reachable.length,
         consideredCount: people.length,
         excluded: unreachable > 0

@@ -146,9 +146,14 @@ export default async function MessagesPage({
               from the admin index — this is where someone thinks of them. Shown
               only to admins, because the groups screen requires that role and a
               link that errors is worse than no link. */}
+          {/* An outlined button rather than a bare link: it sat next to a filled
+              Compose button and read as body text, so it was easy to miss. */}
           {appUser.role === 'admin' && (
-            <Link href="/admin/groups" className="text-sm text-neutral-500 hover:underline">
-              Groups
+            <Link
+              href="/admin/groups"
+              className="rounded-lg border border-neutral-300 px-4 py-2 text-sm hover:border-fwm-navy dark:border-neutral-700 dark:hover:border-fwm-navy"
+            >
+              Messaging groups
             </Link>
           )}
           <Link
@@ -161,19 +166,19 @@ export default async function MessagesPage({
       </div>
 
       <dl className="mt-8 grid grid-cols-2 gap-4 text-sm">
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+        <div className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
           <dt className="text-neutral-500">People</dt>
           <dd className="mt-1 text-2xl font-semibold">{total ?? '—'}</dd>
         </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
+        <div className="rounded-lg border border-neutral-200 bg-surface p-4 dark:border-neutral-800">
           {/* Same words as the members directory. Opt-in is the gate, and saying so
               on every screen is the point. */}
-          <dt className="text-neutral-500">Opted in</dt>
+          <dt className="text-neutral-500">Opted-in for texts</dt>
           <dd className="mt-1 text-2xl font-semibold">{eligible ?? '—'}</dd>
         </div>
       </dl>
 
-      <p className="mt-3 text-xs text-neutral-500">
+      <p className="mt-3 text-sm text-neutral-500">
         The gap is members who have not opted in, or have not been sent an intro
         text yet.{' '}
         <Link href="/members" className="underline">
@@ -183,7 +188,7 @@ export default async function MessagesPage({
       </p>
 
       <h2 className="mt-12 text-sm font-medium text-fwm-navy">Send log</h2>
-      <p className="mt-1 text-xs text-neutral-500">
+      <p className="mt-1 text-sm text-neutral-500">
         Every message this system has sent, who sent it, and what reached a phone.
       </p>
 
@@ -223,7 +228,7 @@ export default async function MessagesPage({
               <li key={m.id}>
                 <Link
                   href={`/messages/${m.id}`}
-                  className="group block rounded-lg border border-neutral-200 p-4 transition-colors hover:border-fwm-navy dark:border-neutral-800 dark:hover:border-fwm-navy"
+                  className="group block rounded-lg border border-neutral-200 bg-surface p-4 transition-colors hover:border-fwm-navy dark:border-neutral-800 dark:hover:border-fwm-navy"
                 >
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="truncate font-medium group-hover:underline">
@@ -231,7 +236,7 @@ export default async function MessagesPage({
                           typed — better a first line than an empty row. */}
                       {m.purpose || m.body.split('\n')[0]}
                     </span>
-                    <span className="shrink-0 text-xs text-neutral-500">
+                    <span className="shrink-0 text-sm text-neutral-500">
                       {new Date(when).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -240,7 +245,7 @@ export default async function MessagesPage({
                     </span>
                   </div>
 
-                  <p className="mt-1 text-xs text-neutral-500">
+                  <p className="mt-1 text-sm text-neutral-500">
                     {m.audience_label ?? 'unknown audience'} ·{' '}
                     <span className="text-neutral-700 dark:text-neutral-300">
                       sent by {m.sent_by ?? 'unknown'}
@@ -249,7 +254,7 @@ export default async function MessagesPage({
                     {m.bypassed_consent_gate && ' · intro text'}
                   </p>
 
-                  <p className="mt-1 text-xs text-neutral-500">
+                  <p className="mt-1 text-sm text-neutral-500">
                     {t.total} {t.total === 1 ? 'recipient' : 'recipients'}
                     {m.segments ? ` · ${m.segments} seg` : ''}
                     {/* Delivery is asynchronous, so "delivered" lags a send by
@@ -278,7 +283,7 @@ export default async function MessagesPage({
       {/* Said plainly, because a truncated result set that looks complete is how
           someone concludes a message was never sent. */}
       {messages.length === HISTORY_LIMIT && (
-        <p className="mt-3 text-xs text-neutral-500">
+        <p className="mt-3 text-sm text-neutral-500">
           Showing the first {HISTORY_LIMIT}
           {query ? ' matches — narrow the search to see the rest.' : ' — search to find older messages.'}
         </p>

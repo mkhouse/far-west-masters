@@ -39,9 +39,12 @@ export interface ConsentSignals {
  * anyone can be texted, rather than a rule buried in the code.
  */
 export const CONSENT_STATE_LABEL: Record<ConsentState, string> = {
-  eligible: 'Opted in',
-  awaiting_intro: 'Opted in, needs intro text',
-  not_opted_in: 'Not opted in',
+  // "for texts" is not padding: the club also sends email and a newsletter, and
+  // somebody who opted in to those has not opted in to this. Saying which one
+  // costs three words and removes the ambiguity everywhere the label appears.
+  eligible: 'Opted-in for texts',
+  awaiting_intro: 'Opted-in, needs intro text',
+  not_opted_in: 'Not opted-in for texts',
   opted_out: 'Opted out',
   suppressed: 'Suppressed',
   no_phone: 'No phone number',
@@ -70,7 +73,10 @@ export const CONSENT_STATE_DETAIL: Record<ConsentState, string> = {
 export const MESSAGEABLE: Partial<
   Record<ConsentState, { audience: string; action: string }>
 > = {
-  eligible: { audience: 'all_eligible', action: 'Message opted-in members' },
+  eligible: {
+    audience: 'all_eligible',
+    action: 'Message members opted-in for texts',
+  },
   awaiting_intro: { audience: 'intro_pending', action: 'Send their intro text' },
 }
 

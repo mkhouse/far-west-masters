@@ -135,7 +135,7 @@ export default async function MemberPage({
       </p>
 
       {/* --- can they be texted, and why --- */}
-      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
         <div className="border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
           <h2 className="text-sm font-medium text-fwm-navy">Texting</h2>
         </div>
@@ -157,28 +157,28 @@ export default async function MemberPage({
               taken on trust. */}
           <dl className="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-xs uppercase tracking-wide text-neutral-500">Phone</dt>
+              <dt className="text-sm uppercase tracking-wide text-neutral-500">Phone</dt>
               <dd className="mt-0.5">{formatPhone(person.phone)}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-neutral-500">Email</dt>
+              <dt className="text-sm uppercase tracking-wide text-neutral-500">Email</dt>
               <dd className="mt-0.5">{person.email ?? '—'}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-neutral-500">
+              <dt className="text-sm uppercase tracking-wide text-neutral-500">
                 Opted in
               </dt>
               <dd className="mt-0.5">{day(person.opt_in_at)}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-neutral-500">
+              <dt className="text-sm uppercase tracking-wide text-neutral-500">
                 Intro sent
               </dt>
               <dd className="mt-0.5">{day(person.intro_sent_at)}</dd>
             </div>
             {person.opted_out_at && (
               <div>
-                <dt className="text-xs uppercase tracking-wide text-neutral-500">
+                <dt className="text-sm uppercase tracking-wide text-neutral-500">
                   Opted out
                 </dt>
                 <dd className="mt-0.5 text-fwm-burgundy">{day(person.opted_out_at)}</dd>
@@ -186,7 +186,7 @@ export default async function MemberPage({
             )}
             {person.sms_always && (
               <div>
-                <dt className="text-xs uppercase tracking-wide text-neutral-500">
+                <dt className="text-sm uppercase tracking-wide text-neutral-500">
                   Always notify
                 </dt>
                 <dd className="mt-0.5">Wants race texts regardless of entry</dd>
@@ -198,7 +198,7 @@ export default async function MemberPage({
 
       {/* --- groups --- */}
       {groups.length > 0 && (
-        <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+        <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
           <div className="border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
             <h2 className="text-sm font-medium text-fwm-navy">Groups</h2>
           </div>
@@ -206,7 +206,7 @@ export default async function MemberPage({
             {groups.map((g) => (
               <li
                 key={g.id}
-                className="rounded-full border border-neutral-300 px-3 py-1 text-xs dark:border-neutral-700"
+                className="rounded-full border border-neutral-300 px-3 py-1 text-sm dark:border-neutral-700"
               >
                 {g.name}
               </li>
@@ -216,7 +216,7 @@ export default async function MemberPage({
       )}
 
       {/* --- what they have been sent --- */}
-      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
         <div className="border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
           <h2 className="text-sm font-medium text-fwm-navy">
             Messages sent
@@ -235,12 +235,12 @@ export default async function MemberPage({
                   <span className="block truncate">
                     {s.messages?.purpose || s.messages?.body?.split('\n')[0] || 'Message'}
                   </span>
-                  <span className="text-xs text-neutral-500">
+                  <span className="text-sm text-neutral-500">
                     {day(s.messages?.sent_at ?? null)}
                   </span>
                 </Link>
                 <span
-                  className={`shrink-0 text-xs ${
+                  className={`shrink-0 text-sm ${
                     s.delivery_status === 'delivered'
                       ? 'text-fwm-navy'
                       : s.error
@@ -258,7 +258,7 @@ export default async function MemberPage({
 
       {/* --- what they have said back --- */}
       {replies.length > 0 && (
-        <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+        <section className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
           <div className="border-b border-neutral-200 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/50">
             <h2 className="text-sm font-medium text-fwm-navy">Replies</h2>
           </div>
@@ -268,7 +268,7 @@ export default async function MemberPage({
                 <p className={r.is_stop ? 'font-medium text-fwm-burgundy' : ''}>
                   {r.body}
                 </p>
-                <p className="mt-0.5 text-xs text-neutral-500">
+                <p className="mt-0.5 text-sm text-neutral-500">
                   {new Date(r.received_at).toLocaleString()}
                   {r.is_stop && ' · treated as opt-out'}
                 </p>
@@ -279,7 +279,7 @@ export default async function MemberPage({
       )}
 
       {person.notes && (
-        <section className="mt-6 rounded-lg border border-neutral-200 px-5 py-4 dark:border-neutral-800">
+        <section className="mt-6 rounded-lg border border-neutral-200 bg-surface px-5 py-4 dark:border-neutral-800">
           <h2 className="text-sm font-medium text-fwm-navy">Notes</h2>
           <p className="mt-2 whitespace-pre-wrap text-sm">{person.notes}</p>
         </section>

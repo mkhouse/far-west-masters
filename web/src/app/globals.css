@@ -1,7 +1,20 @@
 @import "tailwindcss";
 
+/* Bigger than the browser default, on purpose.
+
+   The people using this are club volunteers, most of them over fifty, often on a
+   phone in daylight. Everything below is sized in rem, so raising the root scales
+   the whole interface — text, spacing and controls together — rather than leaving
+   large text crammed into small boxes. */
+html {
+  font-size: 17px;
+}
+
 :root {
-  --background: #ffffff;
+  /* A light grey page, so white cards read as raised panels rather than as areas
+     bounded by a hairline. Same pair as the Forerunner email templates. */
+  --background: #f4f4f5;
+  --surface: #ffffff;
   --foreground: #171717;
 
   /* Far West Masters brand colours, the same pair used in the Forerunner emails
@@ -13,6 +26,7 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
   --color-fwm-navy: var(--fwm-navy);
   --color-fwm-burgundy: var(--fwm-burgundy);
@@ -23,6 +37,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
+    /* Cards sit slightly lighter than the page in dark mode, which is the same
+       relationship as white-on-grey, inverted. */
+    --surface: #171717;
     --foreground: #ededed;
 
     /* The print navy and burgundy are close to unreadable on a dark background.

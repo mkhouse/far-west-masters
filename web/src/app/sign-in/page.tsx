@@ -34,13 +34,13 @@ export default async function SignInPage({
           click that did nothing, which is a bad thing to be unsure about on a
           shared laptop. */}
       {params.signed_out ? (
-        <p className="mt-6 rounded-lg border border-neutral-200 p-3 text-sm text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+        <p className="mt-6 rounded-lg border border-neutral-200 bg-surface p-3 text-sm text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
           You are signed out.
         </p>
       ) : null}
 
       {params.sent ? (
-        <div className="mt-8 rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mt-8 rounded-lg border border-neutral-200 bg-surface bg-neutral-50 p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900">
           <p className="font-medium">Check your email</p>
           <p className="mt-1 text-neutral-600 dark:text-neutral-400">
             If that address is registered, a sign-in link is on its way. The link is
@@ -51,7 +51,7 @@ export default async function SignInPage({
         <SignInForm next={params.next ?? '/'} error={params.error} />
       )}
 
-      <p className="mt-8 text-xs text-neutral-500">
+      <p className="mt-8 text-sm text-neutral-500">
         Race results and standings are public and need no sign-in.
       </p>
     </main>

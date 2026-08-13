@@ -108,10 +108,12 @@ export default async function ComposePage({
         />
       </div>
 
-      <p className="mt-8 text-xs text-neutral-500">
-        Twilio adds &ldquo;Text STOP to stop&rdquo; to every message; those
-        characters are already counted above. Cost is approximate — it excludes the
-        monthly number and registration fees, and rates vary by carrier.
+      {/* Corrected: the app appends the opt-out line, not Twilio. See migration
+          0018 — believing otherwise is what left it off real messages for a day. */}
+      <p className="mt-8 text-sm text-neutral-500">
+        &ldquo;Text STOP to stop&rdquo; is added to every message and is already
+        counted above. Cost is approximate — it excludes the monthly number and
+        registration fees, and rates vary by carrier.
       </p>
     </main>
   )

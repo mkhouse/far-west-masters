@@ -85,7 +85,7 @@ export function MemberPicker({
 
   if (candidates.length === 0) {
     return (
-      <p className="mt-3 text-xs text-neutral-500">
+      <p className="mt-3 text-sm text-neutral-500">
         Everyone with a phone number is already in this group.
       </p>
     )
@@ -120,7 +120,7 @@ export function MemberPicker({
                 />
                 <span>
                   {c.first_name} {c.last_name}
-                  <span className="ml-2 text-xs text-neutral-500">{c.status}</span>
+                  <span className="ml-2 text-sm text-neutral-500">{c.status}</span>
                 </span>
               </label>
             </li>
@@ -136,7 +136,7 @@ export function MemberPicker({
       {/* Say when the list is cut short. A silently truncated list is how someone
           concludes a member is not in the system. */}
       {matches.length > VISIBLE_LIMIT && (
-        <p className="mt-1 text-xs text-neutral-500">
+        <p className="mt-1 text-sm text-neutral-500">
           Showing {VISIBLE_LIMIT} of {matches.length} matches — keep typing to narrow.
         </p>
       )}

@@ -148,7 +148,7 @@ export default async function MembersPage({
             send action — looking a racer up is half of what this screen is for. */}
         <Link
           href={`/members${query ? `?q=${encodeURIComponent(query)}` : ''}`}
-          className={`rounded-full border px-3 py-1 text-xs ${
+          className={`rounded-full border px-3 py-1 text-sm ${
             activeState === null
               ? 'border-fwm-navy bg-fwm-navy/10 font-medium text-fwm-navy'
               : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-400'
@@ -172,7 +172,7 @@ export default async function MembersPage({
             <Link
               key={s}
               href={href}
-              className={`rounded-full border px-3 py-1 text-xs ${
+              className={`rounded-full border px-3 py-1 text-sm ${
                 active
                   ? 'border-fwm-navy bg-fwm-navy/10 font-medium text-fwm-navy'
                   : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-400'
@@ -195,7 +195,7 @@ export default async function MembersPage({
           >
             {MESSAGEABLE[activeState]!.action}
           </Link>
-          <span className="text-xs text-neutral-600 dark:text-neutral-400">
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
             {/* The compose screen recomputes the audience, so say so — the number
                 here is a snapshot, and someone opting in between the two screens
                 should not look like a bug. */}
@@ -217,18 +217,18 @@ export default async function MembersPage({
               <li key={p.id}>
                 <Link
                   href={`/members/${p.id}`}
-                  className="group flex items-baseline justify-between gap-4 rounded-lg border border-neutral-200 px-4 py-3 transition-colors hover:border-fwm-navy dark:border-neutral-800 dark:hover:border-fwm-navy"
+                  className="group flex items-baseline justify-between gap-4 rounded-lg border border-neutral-200 bg-surface px-4 py-3 transition-colors hover:border-fwm-navy dark:border-neutral-800 dark:hover:border-fwm-navy"
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-medium group-hover:underline">
                       {p.first_name} {p.last_name}
                     </span>
-                    <span className="mt-0.5 block text-xs text-neutral-500">
+                    <span className="mt-0.5 block text-sm text-neutral-500">
                       {formatPhone(p.phone)}
                       {p.email && ` · ${p.email}`}
                     </span>
                   </span>
-                  <span className={`shrink-0 text-xs ${stateClass(state)}`}>
+                  <span className={`shrink-0 text-sm ${stateClass(state)}`}>
                     {CONSENT_STATE_LABEL[state]}
                   </span>
                 </Link>
@@ -239,7 +239,7 @@ export default async function MembersPage({
       )}
 
       {matches.length > 0 && matches.length !== everyone.length && (
-        <p className="mt-3 text-xs text-neutral-500">
+        <p className="mt-3 text-sm text-neutral-500">
           Showing {matches.length} of {everyone.length}.
         </p>
       )}

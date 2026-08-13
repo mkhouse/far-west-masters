@@ -23,7 +23,7 @@ const AVAILABLE = [
   },
   {
     href: '/admin/groups',
-    title: 'Recipient groups',
+    title: 'Messaging groups',
     description:
       'Named audiences for the compose screen — test groups, officials, board members. Groups appear in the “Send to” list as soon as they have members.',
   },
@@ -55,7 +55,7 @@ export default async function AdminPage() {
           <li key={item.href}>
             <Link
               href={item.href}
-              className="block rounded-lg border border-neutral-200 p-4 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
+              className="block rounded-lg border border-neutral-200 bg-surface p-4 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
             >
               <span className="font-medium">{item.title}</span>
               <span className="mt-1 block text-sm text-neutral-500">
