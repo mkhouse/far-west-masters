@@ -21,6 +21,7 @@ import {
   consentState,
   formatPhone,
 } from '@/lib/members'
+import { CopyButton } from '../copy-button'
 
 interface PersonRow {
   id: string
@@ -158,11 +159,21 @@ export default async function MemberPage({
           <dl className="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-sm uppercase tracking-wide text-neutral-600">Phone</dt>
-              <dd className="mt-0.5">{formatPhone(person.phone)}</dd>
+              <dd className="mt-0.5">
+                {formatPhone(person.phone)}
+                {person.phone && (
+                  <CopyButton value={person.phone} label="phone number" />
+                )}
+              </dd>
             </div>
             <div>
               <dt className="text-sm uppercase tracking-wide text-neutral-600">Email</dt>
-              <dd className="mt-0.5">{person.email ?? '—'}</dd>
+              <dd className="mt-0.5">
+                {person.email ?? '—'}
+                {person.email && (
+                  <CopyButton value={person.email} label="email address" />
+                )}
+              </dd>
             </div>
             <div>
               <dt className="text-sm uppercase tracking-wide text-neutral-600">

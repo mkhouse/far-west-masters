@@ -20,6 +20,7 @@ import {
   formatPhone,
   type ConsentState,
 } from '@/lib/members'
+import { CopyButton } from './copy-button'
 
 interface PersonRow {
   id: string
@@ -49,6 +50,30 @@ const FILTER_ORDER: ConsentState[] = [
   'suppressed',
   'no_phone',
 ]
+
+/**
+ * Membership groupings.
+ *
+ * The database has seven status values; day to day the question is only ever
+ * "current members", "lapsed", or "everything else the imports dragged in".
+ *
+ * `other` matters more than it looks: it holds the people who arrived from
+ * AdminSkiRacing or an opt-in form without ever being reconciled against the
+ * membership list. Ten of them are opted in for texts. They are exactly what the
+ * opt-in review queue exists to resolve, so they must stay findable rather than
+ * being swept into "inactive".
+ */
+const MEMBERSHIP: Record<string, { label: string; statuses: string[] }> = {
+  active: { label: 'Active', statuses: ['active_member', 'officer'] },
+  inactive: { label: 'Inactive', statuses: ['inactive'] },
+  other: {
+    label: 'Unreconciled',
+    statuses: ['asr_import', 'sms_opt_in', 'out_of_region', 'temp_racer', 'non_member'],
+  },
+}
+
+/** What the page shows before anyone touches a filter. */
+const DEFAULT_MEMBERSHIP = 'active'
 
 /**
  * Build a /members URL, dropping empty parameters.
@@ -83,14 +108,26 @@ function stateClass(state: ConsentState): string {
 export default async function MembersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; filter?: string; missing?: string }>
+  searchParams: Promise<{
+    q?: string
+    filter?: string
+    missing?: string
+    membership?: string
+  }>
 }) {
   await requireAppUser()
-  const { q, filter, missing } = await searchParams
+  const { q, filter, missing, membership } = await searchParams
   const db = supabaseAdmin()
 
   const query = (q ?? '').trim()
   const activeState = FILTER_ORDER.find((s) => s === filter) ?? null
+
+  // Defaults to active members. `all` is how you ask for everyone — an absent
+  // parameter means "not chosen yet", which is not the same thing.
+  const activeMembership =
+    membership && (membership === 'all' || MEMBERSHIP[membership])
+      ? membership
+      : DEFAULT_MEMBERSHIP
 
   // A separate dimension from consent, deliberately. Someone can be opted in for
   // texts AND missing the USSA number they need in order to race, and those are
@@ -128,10 +165,23 @@ export default async function MembersPage({
     }
     if (activeState && consentState(p) !== activeState) return false
     if (missingUsssa && p.usssa) return false
+    if (
+      activeMembership !== 'all' &&
+      !MEMBERSHIP[activeMembership].statuses.includes(p.status)
+    ) {
+      return false
+    }
     return true
   })
 
   const missingUsssaCount = everyone.filter((p) => !p.usssa).length
+
+  const membershipCounts = Object.fromEntries(
+    Object.entries(MEMBERSHIP).map(([key, m]) => [
+      key,
+      everyone.filter((p) => m.statuses.includes(p.status)).length,
+    ])
+  )
 
   // Counts for the filter chips, computed over everyone rather than the current
   // result — a filter that says "0" only because of the search term would be
@@ -159,6 +209,7 @@ export default async function MembersPage({
       <form className="flex gap-2">
         {activeState && <input type="hidden" name="filter" value={activeState} />}
         {missingUsssa && <input type="hidden" name="missing" value="usssa" />}
+        <input type="hidden" name="membership" value={activeMembership} />
         <input
           name="q"
           defaultValue={query}
@@ -176,6 +227,7 @@ export default async function MembersPage({
             href={qs({
               filter: activeState ?? '',
               missing: missingUsssa ? 'usssa' : '',
+              membership: activeMembership,
             })}
             className="self-center px-2 text-sm text-neutral-600 underline"
           >
@@ -188,17 +240,41 @@ export default async function MembersPage({
           about consent; the second row is about data the club needs for other
           reasons. They combine — "opted in for texts, and cannot race" is a real
           and useful thing to ask for. */}
-      <p className="mt-4 text-sm font-medium text-neutral-600">Texting</p>
+      <p className="mt-4 text-sm font-medium text-neutral-600">Membership</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        {/* Everyone: the way back to the whole directory, and the only chip with no
-            send action — looking a racer up is half of what this screen is for. */}
+        {Object.entries(MEMBERSHIP).map(([key, m]) => (
+          <Link
+            key={key}
+            href={qs({
+              membership: key,
+              filter: activeState ?? '',
+              q: query,
+              missing: missingUsssa ? 'usssa' : '',
+            })}
+            className={chipClass(activeMembership === key)}
+          >
+            {m.label}{' '}
+            <span className="opacity-60">{membershipCounts[key]}</span>
+          </Link>
+        ))}
         <Link
-          href={`/members${qs({ q: query, missing: missingUsssa ? 'usssa' : '' })}`}
-          className={chipClass(activeState === null)}
+          href={qs({
+            membership: 'all',
+            filter: activeState ?? '',
+            q: query,
+            missing: missingUsssa ? 'usssa' : '',
+          })}
+          className={chipClass(activeMembership === 'all')}
         >
           Everyone <span className="opacity-60">{everyone.length}</span>
         </Link>
+      </div>
 
+      <p className="mt-4 text-sm font-medium text-neutral-600">Texting</p>
+      {/* No "everyone" chip here: each chip toggles, so no filter selected already
+          means all of them. The Membership row above owns the "show me everyone"
+          idea, and having it in two places invited the question of which won. */}
+      <div className="mt-2 flex flex-wrap gap-2">
         {FILTER_ORDER.filter((s) => {
           // Hide states nobody is in. "Opted out 0" and "Suppressed 0" are noise
           // until somebody actually texts STOP, and they appear on their own the
@@ -218,6 +294,7 @@ export default async function MembersPage({
                 filter: active ? '' : s,
                 q: query,
                 missing: missingUsssa ? 'usssa' : '',
+                membership: activeMembership,
               })}
               title={active ? 'Clear this filter' : undefined}
               className={chipClass(active)}
@@ -238,6 +315,7 @@ export default async function MembersPage({
             filter: activeState ?? '',
             q: query,
             missing: missingUsssa ? '' : 'usssa',
+            membership: activeMembership,
           })}
           title={missingUsssa ? 'Clear this filter' : undefined}
           className={chipClass(missingUsssa)}
@@ -301,10 +379,12 @@ export default async function MembersPage({
                     <td className="px-3 py-3">
                       <span className="block whitespace-nowrap">
                         {formatPhone(p.phone)}
+                        {p.phone && <CopyButton value={p.phone} label="phone number" />}
                       </span>
                       {p.email && (
-                        <span className="block max-w-xs truncate text-sm text-neutral-600">
-                          {p.email}
+                        <span className="flex max-w-xs items-center text-sm text-neutral-600">
+                          <span className="truncate">{p.email}</span>
+                          <CopyButton value={p.email} label="email address" />
                         </span>
                       )}
                     </td>
