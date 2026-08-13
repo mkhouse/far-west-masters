@@ -206,16 +206,27 @@ export default async function MembersPage({
           // link to an empty state does not lose its own chip.
           if (s === activeState) return true
           return (counts.get(s) ?? 0) > 0
-        }).map((s) => (
-          <Link
-            key={s}
-            href={qs({ filter: s, q: query, missing: missingUsssa ? 'usssa' : '' })}
-            className={chipClass(s === activeState)}
-          >
-            {CONSENT_STATE_LABEL[s]}{' '}
-            <span className="opacity-60">{counts.get(s) ?? 0}</span>
-          </Link>
-        ))}
+        }).map((s) => {
+          const active = s === activeState
+          return (
+            <Link
+              key={s}
+              // Clicking the active chip clears it. The whole chip is the control —
+              // a small × inside a chip is a target you have to aim at, and these
+              // get used on a phone.
+              href={qs({
+                filter: active ? '' : s,
+                q: query,
+                missing: missingUsssa ? 'usssa' : '',
+              })}
+              title={active ? 'Clear this filter' : undefined}
+              className={chipClass(active)}
+            >
+              {CONSENT_STATE_LABEL[s]}{' '}
+              <span className="opacity-60">{counts.get(s) ?? 0}</span>
+            </Link>
+          )
+        })}
       </div>
 
       <p className="mt-4 text-sm font-medium text-neutral-600">Racing eligibility</p>
@@ -228,11 +239,11 @@ export default async function MembersPage({
             q: query,
             missing: missingUsssa ? '' : 'usssa',
           })}
+          title={missingUsssa ? 'Clear this filter' : undefined}
           className={chipClass(missingUsssa)}
         >
           Missing USSA number{' '}
           <span className="opacity-60">{missingUsssaCount}</span>
-          {missingUsssa && <span className="ml-1.5 opacity-60">&times;</span>}
         </Link>
       </div>
 
