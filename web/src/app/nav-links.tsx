@@ -34,11 +34,13 @@ export function NavLinks() {
           <Link
             key={s.href}
             href={s.href}
-            // `-mb-px` pulls the underline down over the header's own bottom
-            // border, so it reads as a tab indicator rather than a floating rule.
+            // The underline sits just under the word rather than at the bottom of
+            // the bar. Stretched to full height it reads as a rule floating in
+            // space, disconnected from the label it belongs to.
+            //
             // The transparent border on inactive links keeps the row from shifting
             // by a pixel as you move between sections.
-            className={`-mb-px border-b-2 py-3 transition-colors ${
+            className={`border-b-2 pb-1 transition-colors ${
               active
                 ? 'border-fwm-navy font-medium text-fwm-navy'
                 : 'border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-200'

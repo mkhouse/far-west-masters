@@ -21,12 +21,10 @@ export async function AppHeader() {
     // White, not the page grey: the bar needs to read as a fixed frame around the
     // content rather than as part of it.
     <header className="border-b border-neutral-200 bg-surface dark:border-neutral-800">
-      {/* No vertical padding on the row itself: the links carry it, so their
-          underline can reach the bottom edge of the bar. */}
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
         <NavLinks />
 
-        <div className="flex items-center gap-3 py-3 text-sm">
+        <div className="flex items-center gap-3 text-sm">
           {/* Which account, not just that you are signed in. On a shared machine
               those are different questions, and sending a text as the wrong
               officer is not something you can take back. */}
