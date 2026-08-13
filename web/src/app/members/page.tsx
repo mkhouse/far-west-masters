@@ -21,6 +21,7 @@ import {
   type ConsentState,
 } from '@/lib/members'
 import { CopyButton } from './copy-button'
+import { CopyEmailsButton } from './copy-emails'
 
 interface PersonRow {
   id: string
@@ -245,21 +246,28 @@ export default async function MembersPage({
           and useful thing to ask for. */}
       <p className="mt-4 text-sm font-medium text-neutral-600">Membership</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        {Object.entries(MEMBERSHIP).map(([key, m]) => (
-          <Link
-            key={key}
-            href={qs({
-              membership: key,
-              filter: activeState ?? '',
-              q: query,
-              missing: missingUsssa ? 'usssa' : '',
-            })}
-            className={chipClass(activeMembership === key)}
-          >
-            {m.label}{' '}
-            <span className="opacity-60">{membershipCounts[key]}</span>
-          </Link>
-        ))}
+        {Object.entries(MEMBERSHIP).map(([key, m]) => {
+          const active = activeMembership === key
+          return (
+            <Link
+              key={key}
+              // Clicking the active chip deselects it and falls back to everyone,
+              // like the other two rows. Every chip on this screen behaves the same
+              // way, so nobody has to remember which ones toggle.
+              href={qs({
+                membership: active ? 'all' : key,
+                filter: activeState ?? '',
+                q: query,
+                missing: missingUsssa ? 'usssa' : '',
+              })}
+              title={active ? 'Clear this filter' : undefined}
+              className={chipClass(active)}
+            >
+              {m.label}{' '}
+              <span className="opacity-60">{membershipCounts[key]}</span>
+            </Link>
+          )
+        })}
         <Link
           href={qs({
             membership: 'all',
@@ -381,10 +389,17 @@ export default async function MembersPage({
         <>
           {/* Above the list, not below it: the count is context for what you are
               about to read, and at the bottom of three hundred rows nobody sees it. */}
-          <p className="border-b border-neutral-200 px-5 py-2 text-sm text-neutral-600 dark:border-neutral-800">
-            Showing <span className="font-medium">{matches.length}</span> of{' '}
-            {everyone.length}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 px-5 py-2 dark:border-neutral-800">
+            <p className="text-sm text-neutral-600">
+              Showing <span className="font-medium">{matches.length}</span> of{' '}
+              {everyone.length}
+            </p>
+            {/* Acts on the list as filtered, which is the point — the filters are
+                how you build the list you want to email. */}
+            <CopyEmailsButton
+              emails={matches.map((p) => p.email ?? '').filter(Boolean)}
+            />
+          </div>
 
           {/* --- table, on anything wider than a phone --- */}
           <table className="hidden w-full text-left text-sm md:table">
