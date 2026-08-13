@@ -21,6 +21,14 @@ import { redirect } from 'next/navigation'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { resolveAudience, type AudienceKind } from '@/lib/audiences'
+import {
+  FILTER_COLUMNS,
+  applyFilter,
+  filterFromParams,
+  filterToParams,
+  type FilterablePerson,
+  type MemberFilter,
+} from '@/lib/member-filters'
 import { additionsLength, checkSendability, composeBody } from '@/lib/sms/segments'
 import { sendMany, twilioConfig } from '@/lib/sms/twilio'
 
@@ -46,7 +54,7 @@ interface GatePerson {
  */
 async function recipientsFor(
   kind: AudienceKind,
-  opts: { series?: string; groupId?: string }
+  opts: { series?: string; groupId?: string; filter?: MemberFilter }
 ): Promise<{ people: GatePerson[]; incompleteConsent: boolean }> {
   const db = supabaseAdmin()
 
@@ -86,6 +94,23 @@ async function recipientsFor(
       const { data } = await db.from('people').select(GATE).eq('sms_always', true)
       return {
         people: ((data ?? []) as GatePerson[]).filter(passesGate),
+        incompleteConsent: false,
+      }
+    }
+
+    case 'filtered': {
+      // A slice of the members directory. The filter selects candidates; the
+      // consent gate applies on top, unconditionally — so no filter combination
+      // can reach anyone who has not opted in.
+      if (!opts.filter) return { people: [], incompleteConsent: false }
+
+      const { data } = await db.from('people').select(FILTER_COLUMNS)
+      const candidates = applyFilter(
+        (data ?? []) as unknown as FilterablePerson[],
+        opts.filter
+      )
+      return {
+        people: (candidates as unknown as GatePerson[]).filter(passesGate),
         incompleteConsent: false,
       }
     }
@@ -148,6 +173,19 @@ export async function sendMessage(formData: FormData) {
     : String(formData.get('reply_notice') ?? '').trim() || null
   const replyPersonId = String(formData.get('reply_person_id') ?? '') || null
 
+  // The filter that produced this audience, when the send came from the members
+  // directory. Carried as parameters and re-resolved here rather than as a list of
+  // people, so the browser still never decides who receives anything.
+  const filter =
+    kind === 'filtered'
+      ? filterFromParams({
+          membership: String(formData.get('f_membership') ?? ''),
+          filter: String(formData.get('f_texting') ?? ''),
+          missing: String(formData.get('f_missing') ?? ''),
+          q: String(formData.get('f_q') ?? ''),
+        })
+      : undefined
+
   const fail = (msg: string) =>
     redirect(`/messages/compose?error=${encodeURIComponent(msg)}`)
 
@@ -160,7 +198,11 @@ export async function sendMessage(formData: FormData) {
   }
 
   // Re-resolve on the server. Never trust a recipient list from the browser.
-  const { people, incompleteConsent } = await recipientsFor(kind, { series, groupId })
+  const { people, incompleteConsent } = await recipientsFor(kind, {
+    series,
+    groupId,
+    filter,
+  })
   if (!people.length) fail('That audience has nobody in it right now.')
 
   // Re-check the limits too. The client shows them, but the client can be stale.
@@ -240,7 +282,7 @@ export async function sendMessage(formData: FormData) {
     )
   }
 
-  const audience = await resolveAudience(kind, { series, groupId })
+  const audience = await resolveAudience(kind, { series, groupId, filter })
 
   // Who is sending, in a form a person can read months from now. Stored on the
   // message rather than looked up later: `created_by` points into the auth schema,
@@ -270,6 +312,10 @@ export async function sendMessage(formData: FormData) {
       audience_label: audience.label,
       group_id: groupId ?? null,
       series: series ?? null,
+      // The filter spec, so the log can say exactly which slice was messaged and
+      // the same set could be rebuilt later. `audience` is the jsonb column that
+      // has been unused since the initial schema; this is what it was for.
+      audience: filter ? filterToParams(filter) : null,
       bypassed_consent_gate: incompleteConsent,
       replies_monitored: repliesMonitored,
       reply_notice: replyNotice,

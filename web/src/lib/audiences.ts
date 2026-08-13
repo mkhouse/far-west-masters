@@ -15,6 +15,13 @@
 import 'server-only'
 
 import { supabaseAdmin } from './supabase/admin'
+import {
+  FILTER_COLUMNS,
+  applyFilter,
+  describeFilter,
+  type FilterablePerson,
+  type MemberFilter,
+} from './member-filters'
 
 export type AudienceKind =
   | 'group' // a named group an admin maintains: test groups, officials, board
@@ -22,6 +29,7 @@ export type AudienceKind =
   | 'series' // people entered in a race weekend
   | 'intro_pending' // opted in, but not yet sent the intro text that completes it
   | 'always' // members who asked to hear about races regardless of entry
+  | 'filtered' // a slice of the members directory, described by its filters
 
 export interface AudienceOption {
   kind: AudienceKind
@@ -160,10 +168,10 @@ export async function listAudiences(): Promise<AudienceOption[]> {
 /** Resolve an audience to a recipient count and an account of who was excluded. */
 export async function resolveAudience(
   kind: AudienceKind,
-  opts: { series?: string; groupId?: string } = {}
+  opts: { series?: string; groupId?: string; filter?: MemberFilter } = {}
 ): Promise<AudienceResult> {
   const db = supabaseAdmin()
-  const { series, groupId } = opts
+  const { series, groupId, filter } = opts
 
   switch (kind) {
     case 'group': {
@@ -237,6 +245,45 @@ export async function resolveAudience(
         consideredCount: people.length,
         excluded,
         incompleteConsent: false,
+      }
+    }
+
+    case 'filtered': {
+      // A slice of the members directory — "non-members, opted-in for texts".
+      //
+      // The filter chooses candidates; the consent gate then applies on top,
+      // unconditionally. That order is the whole safety property: no combination
+      // of filters can widen who is reachable, only narrow it. Someone who has not
+      // opted in cannot be selected into this audience by any means.
+      //
+      // Note it is re-resolved at send time rather than frozen when chosen, exactly
+      // like every other audience. The count can move if somebody opts in between
+      // the two screens, which is correct — the alternative is texting a list that
+      // was true five minutes ago.
+      if (!filter) {
+        return {
+          kind, label: 'Filtered members', recipientCount: 0, consideredCount: 0,
+          excluded: [], incompleteConsent: false,
+          unavailableReason: 'No filter given',
+        }
+      }
+
+      const { data } = await db.from('people').select(FILTER_COLUMNS)
+      const candidates = applyFilter(
+        (data ?? []) as unknown as FilterablePerson[],
+        filter
+      )
+      const { eligible, excluded } = explainExclusions(candidates)
+
+      return {
+        kind,
+        label: describeFilter(filter),
+        recipientCount: eligible,
+        consideredCount: candidates.length,
+        excluded,
+        incompleteConsent: false,
+        unavailableReason:
+          candidates.length === 0 ? 'Nobody matches that filter' : undefined,
       }
     }
 

@@ -9,6 +9,7 @@
 import { getAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { listAudiences, resolveAudience, type AudienceKind } from '@/lib/audiences'
+import { filterFromParams, filterToParams } from '@/lib/member-filters'
 import { ComposeForm, type ComposeSettings, type Officer } from './compose-form'
 
 /** Read the operational settings, falling back to documented defaults. */
@@ -32,7 +33,16 @@ async function loadSettings(): Promise<ComposeSettings> {
 export default async function ComposePage({
   searchParams,
 }: {
-  searchParams: Promise<{ audience?: string; series?: string; group?: string }>
+  searchParams: Promise<{
+    audience?: string
+    series?: string
+    group?: string
+    // Carried through from the members directory when messaging a filtered set.
+    membership?: string
+    filter?: string
+    missing?: string
+    q?: string
+  }>
 }) {
   const params = await searchParams
   const appUser = await getAppUser()
@@ -82,9 +92,15 @@ export default async function ComposePage({
   // safe landing place if someone opens this screen and starts typing.
   const fallback = audiences[0]
   const selectedKind = (params.audience as AudienceKind) ?? fallback?.kind ?? 'all_eligible'
+
+  // A filtered audience is not in the picker — it exists only for the send you
+  // arrived with, described by the filters that produced it.
+  const filter = selectedKind === 'filtered' ? filterFromParams(params) : undefined
+
   const audience = await resolveAudience(selectedKind, {
     series: params.series,
     groupId: params.group ?? (params.audience ? undefined : fallback?.groupId),
+    filter,
   })
 
   const settings = await loadSettings()
@@ -105,6 +121,7 @@ export default async function ComposePage({
           audience={audience}
           selectedSeries={params.series}
           selectedGroupId={params.group ?? fallback?.groupId}
+          filterParams={filter ? filterToParams(filter) : undefined}
         />
       </div>
 

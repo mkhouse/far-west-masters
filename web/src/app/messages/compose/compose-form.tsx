@@ -87,6 +87,7 @@ export function ComposeForm({
   audience,
   selectedSeries,
   selectedGroupId,
+  filterParams,
 }: {
   officers: Officer[]
   settings: ComposeSettings
@@ -96,6 +97,8 @@ export function ComposeForm({
   audience: AudienceResult
   selectedSeries?: string
   selectedGroupId?: string
+  /** Present when messaging a slice of the members directory. */
+  filterParams?: Record<string, string>
 }) {
   const recipientCount = audience.recipientCount
   const [category, setCategory] = useState<string>('general')
@@ -161,6 +164,16 @@ export function ComposeForm({
       <input type="hidden" name="audience_kind" value={audience.kind} />
       <input type="hidden" name="group_id" value={selectedGroupId ?? ''} />
       <input type="hidden" name="series" value={selectedSeries ?? ''} />
+      {/* The filter travels as parameters, not as a list of people. The server
+          re-resolves it, so this cannot decide who receives anything. */}
+      {filterParams && (
+        <>
+          <input type="hidden" name="f_membership" value={filterParams.membership ?? ''} />
+          <input type="hidden" name="f_texting" value={filterParams.filter ?? ''} />
+          <input type="hidden" name="f_missing" value={filterParams.missing ?? ''} />
+          <input type="hidden" name="f_q" value={filterParams.q ?? ''} />
+        </>
+      )}
       {/* --- who this goes to; first, because it changes everything below --- */}
       <AudiencePicker
         audiences={audiences}
@@ -492,6 +505,8 @@ function AudiencePicker({
   audience: AudienceResult
   selectedSeries?: string
   selectedGroupId?: string
+  /** Present when messaging a slice of the members directory. */
+  filterParams?: Record<string, string>
 }) {
   const value =
     audience.kind === 'group'
@@ -513,6 +528,13 @@ function AudiencePicker({
           }}
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         >
+          {/* A filtered audience is not a standing option — it exists only for the
+              send you arrived with, so it is listed as the current selection and
+              nowhere else. Choosing anything else abandons the filter, which is
+              what someone changing the audience means. */}
+          {audience.kind === 'filtered' && (
+            <option value="filtered">From members: {audience.label}</option>
+          )}
           {audiences.map((a) => (
             <option
               key={a.kind + (a.groupId ?? a.series ?? '')}

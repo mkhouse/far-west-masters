@@ -20,6 +20,14 @@ import {
   formatPhone,
   type ConsentState,
 } from '@/lib/members'
+import {
+  MEMBERSHIP,
+  applyFilter,
+  describeFilter,
+  filterFromParams,
+  filterToParams,
+  type FilterablePerson,
+} from '@/lib/member-filters'
 import { CopyButton } from './copy-button'
 import { CopyEmailsButton } from './copy-emails'
 
@@ -51,33 +59,6 @@ const FILTER_ORDER: ConsentState[] = [
   'suppressed',
   'no_phone',
 ]
-
-/**
- * Membership groupings.
- *
- * The database has seven status values; day to day the question is only ever
- * "current members", "lapsed", or "everything else the imports dragged in".
- *
- * `non_members` matters more than it looks: it holds the people who arrived from an
- * AdminSkiRacing import or an opt-in form and were never matched to a membership.
- * Ten of them are opted in for texts. They are exactly what the opt-in review queue
- * exists to resolve, so they must stay findable rather than being swept into
- * "inactive", which would imply they had once been members.
- *
- * Note it is the whole group, not only the ones who opted in — combine this with
- * the texting filter to get "non-members opted in for texts".
- */
-const MEMBERSHIP: Record<string, { label: string; statuses: string[] }> = {
-  active: { label: 'Active', statuses: ['active_member', 'officer'] },
-  inactive: { label: 'Inactive', statuses: ['inactive'] },
-  non_members: {
-    label: 'Non-members',
-    statuses: ['asr_import', 'sms_opt_in', 'out_of_region', 'temp_racer', 'non_member'],
-  },
-}
-
-/** What the page shows before anyone touches a filter. */
-const DEFAULT_MEMBERSHIP = 'active'
 
 /**
  * Build a /members URL, dropping empty parameters.
@@ -123,21 +104,12 @@ export default async function MembersPage({
   const { q, filter, missing, membership } = await searchParams
   const db = supabaseAdmin()
 
-  const query = (q ?? '').trim()
-  const activeState = FILTER_ORDER.find((s) => s === filter) ?? null
-
-  // Defaults to active members. `all` is how you ask for everyone — an absent
-  // parameter means "not chosen yet", which is not the same thing.
-  const activeMembership =
-    membership && (membership === 'all' || MEMBERSHIP[membership])
-      ? membership
-      : DEFAULT_MEMBERSHIP
-
-  // A separate dimension from consent, deliberately. Someone can be opted in for
-  // texts AND missing the USSA number they need in order to race, and those are
-  // different problems for different people to chase — so the two filters combine
-  // rather than replacing each other.
-  const missingUsssa = missing === 'usssa'
+  // One filter object, shared with the send path. The directory and the audience
+  // it produces are computed by the same code — if they diverged, a message would
+  // go somewhere other than the list it was chosen from.
+  const currentFilter = filterFromParams({ q, filter, missing, membership })
+  const { query, texting: activeState, missingUsssa } = currentFilter
+  const activeMembership = currentFilter.membership
 
   // Everyone, then filtered in memory. At ~300 members that is one small query and
   // no pagination to get wrong; if this club ever reaches thousands, the search
@@ -152,31 +124,10 @@ export default async function MembersPage({
 
   const everyone = (data ?? []) as unknown as PersonRow[]
 
-  // Search matches name, phone and email. Phone matching strips punctuation from
-  // both sides, so "(530) 555-1234", "5305551234" and "+15305551234" all find the
-  // same person — that is how numbers actually get typed.
-  const digits = query.replace(/\D/g, '')
-  const needle = query.toLowerCase()
-
-  const matches = everyone.filter((p) => {
-    if (query) {
-      const name = `${p.first_name} ${p.last_name}`.toLowerCase()
-      const hitName = name.includes(needle)
-      const hitEmail = (p.email ?? '').toLowerCase().includes(needle)
-      const hitPhone =
-        digits.length >= 3 && (p.phone ?? '').replace(/\D/g, '').includes(digits)
-      if (!hitName && !hitEmail && !hitPhone) return false
-    }
-    if (activeState && consentState(p) !== activeState) return false
-    if (missingUsssa && p.usssa) return false
-    if (
-      activeMembership !== 'all' &&
-      !MEMBERSHIP[activeMembership].statuses.includes(p.status)
-    ) {
-      return false
-    }
-    return true
-  })
+  const matches = applyFilter(
+    everyone as unknown as FilterablePerson[],
+    currentFilter
+  ) as unknown as PersonRow[]
 
   const missingUsssaCount = everyone.filter((p) => !p.usssa).length
 
@@ -351,29 +302,34 @@ export default async function MembersPage({
           const narrowed =
             activeMembership !== 'all' || missingUsssa || query.length > 0
 
-          if (narrowed) {
-            return (
-              <p className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/50">
-                Messaging a filtered subset is not possible yet — an audience is
-                worked out from consent alone when you send. Clear the other filters
-                to message everyone {CONSENT_STATE_LABEL[activeState].toLowerCase()}.
-              </p>
-            )
-          }
+          // Narrowed by membership, USSA or a search: send to exactly this slice.
+          // The filter travels as parameters and is re-resolved server-side, so
+          // the count below is what the page computed, not what decides delivery.
+          const href = narrowed
+            ? `/messages/compose?${new URLSearchParams({
+                audience: 'filtered',
+                ...Object.fromEntries(
+                  Object.entries(filterToParams(currentFilter)).filter(([, v]) => v)
+                ),
+              })}`
+            : `/messages/compose?audience=${MESSAGEABLE[activeState]!.audience}`
 
           return (
             <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-fwm-navy/30 bg-fwm-navy/5 px-4 py-3">
               <Link
-                href={`/messages/compose?audience=${MESSAGEABLE[activeState]!.audience}`}
+                href={href}
                 className="rounded-md bg-fwm-navy px-4 py-2 text-sm font-medium text-white"
               >
-                {MESSAGEABLE[activeState]!.action}
+                {narrowed
+                  ? `Message these ${matches.length}`
+                  : MESSAGEABLE[activeState]!.action}
               </Link>
               <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                {/* The compose screen recomputes the audience, so say so — someone
-                    opting in between these two screens should not look like a bug. */}
-                Goes to everyone in this state at the moment you send, which is{' '}
-                {counts.get(activeState)} right now.
+                {/* The audience is recomputed when you send, so someone opting in
+                    between these two screens should not look like a bug. */}
+                {narrowed
+                  ? `${describeFilter(currentFilter)} — recounted when you send.`
+                  : `Goes to everyone in this state at the moment you send, which is ${counts.get(activeState)} right now.`}
               </span>
             </div>
           )
