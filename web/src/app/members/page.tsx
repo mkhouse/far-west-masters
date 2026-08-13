@@ -357,11 +357,21 @@ export default async function MembersPage({
         </p>
       ) : (
         <>
+          {/* Above the list, not below it: the count is context for what you are
+              about to read, and at the bottom of three hundred rows nobody sees it. */}
+          <p className="border-b border-neutral-200 px-5 py-2 text-sm text-neutral-600 dark:border-neutral-800">
+            Showing <span className="font-medium">{matches.length}</span> of{' '}
+            {everyone.length}
+          </p>
+
           {/* --- table, on anything wider than a phone --- */}
           <table className="hidden w-full text-left text-sm md:table">
             <thead className="border-b border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/50">
               <tr>
-                <th className="px-5 py-2.5 font-medium">Name</th>
+                {/* Row numbers, so a list can be counted and referred to out loud
+                    — "the fourth one down" is how people actually talk about it. */}
+                <th className="w-12 px-5 py-2.5 text-right font-medium">#</th>
+                <th className="px-3 py-2.5 font-medium">Name</th>
                 {/* Phone and email are one idea — how to reach them — so they share
                     a column rather than two half-empty ones. */}
                 <th className="px-3 py-2.5 font-medium">Contact</th>
@@ -372,11 +382,14 @@ export default async function MembersPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-              {matches.map((p) => {
+              {matches.map((p, i) => {
                 const state = consentState(p)
                 return (
                   <tr key={p.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-900/40">
-                    <td className="whitespace-nowrap px-5 py-3 font-medium">
+                    <td className="px-5 py-3 text-right tabular-nums text-neutral-400">
+                      {i + 1}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 font-medium">
                       {p.first_name} {p.last_name}
                     </td>
                     <td className="px-3 py-3">
@@ -423,13 +436,16 @@ export default async function MembersPage({
 
           {/* --- stacked, on a phone --- */}
           <ul className="divide-y divide-neutral-200 md:hidden dark:divide-neutral-800">
-            {matches.map((p) => {
+            {matches.map((p, i) => {
               const state = consentState(p)
               return (
                 <li key={p.id}>
                   <Link href={`/members/${p.id}`} className="block px-5 py-3">
                     <div className="flex items-baseline justify-between gap-3">
                       <span className="truncate font-medium">
+                        <span className="mr-2 tabular-nums font-normal text-neutral-400">
+                          {i + 1}
+                        </span>
                         {p.first_name} {p.last_name}
                       </span>
                       <span className={`shrink-0 text-sm ${stateClass(state)}`}>
@@ -457,11 +473,6 @@ export default async function MembersPage({
         </>
       )}
 
-      {matches.length > 0 && matches.length !== everyone.length && (
-        <p className="border-t border-neutral-200 px-5 py-3 text-sm text-neutral-600 dark:border-neutral-800">
-          Showing {matches.length} of {everyone.length}.
-        </p>
-      )}
       </section>
     </main>
   )
