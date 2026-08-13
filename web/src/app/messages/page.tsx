@@ -133,7 +133,7 @@ export default async function MessagesPage({
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
+    <main className="mx-auto max-w-6xl px-6 py-12">
       <div className="flex items-baseline justify-between">
         <div>
           <h1 className="text-xl font-semibold">Messages</h1>
@@ -252,7 +252,7 @@ export default async function MessagesPage({
 
                   return (
                     <tr key={m.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-900/40">
-                      <td className="max-w-xs px-5 py-3">
+                      <td className="max-w-sm px-5 py-3">
                         <span className="block truncate font-medium">
                           {/* Falls back to the message itself when no purpose was
                               typed — better a first line than an empty cell. */}
@@ -264,10 +264,12 @@ export default async function MessagesPage({
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-neutral-700 dark:text-neutral-300">
+                      {/* Both wrap only as a last resort: a name broken over four
+                          lines makes the row taller than everything in it. */}
+                      <td className="whitespace-nowrap px-3 py-3 text-neutral-700 dark:text-neutral-300">
                         {m.audience_label ?? 'unknown'}
                       </td>
-                      <td className="px-3 py-3 text-neutral-700 dark:text-neutral-300">
+                      <td className="whitespace-nowrap px-3 py-3 text-neutral-700 dark:text-neutral-300">
                         {m.sent_by ?? 'unknown'}
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 text-neutral-600">

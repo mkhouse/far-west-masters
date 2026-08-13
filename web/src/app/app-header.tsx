@@ -19,7 +19,7 @@ export async function AppHeader() {
 
   return (
     <header className="border-b border-neutral-200 dark:border-neutral-800">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
         <nav className="flex items-center gap-4 text-sm">
           <Link href="/messages" className="font-medium hover:underline">
             Messages
