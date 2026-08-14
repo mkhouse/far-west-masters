@@ -45,13 +45,22 @@ export async function setUsssa(
   const trimmed = raw.trim()
   if (!trimmed) return { ok: false, error: 'Enter a USSA number.' }
 
-  // Digits only. USSA numbers are printed on cards with spaces and sometimes a
-  // stray dash, so those are stripped rather than rejected — retyping a number
-  // because of a space is exactly the friction that stops the gap being filled.
-  const digits = trimmed.replace(/[\s-]/g, '')
+  // USSA numbers carry a letter prefix — F, X, E and P all appear in real
+  // AdminSkiRacing exports — and that is how they are printed on a card, so it is
+  // what someone will type.
+  //
+  // The prefix is deliberately discarded (Melissa, 2026-08-12): the column is
+  // bigint, the digits alone identify a racer, and every match against a roster
+  // export is on the digits. Rejecting the input instead would mean retyping a
+  // number to remove a character we are about to ignore anyway.
+  const cleaned = trimmed.replace(/[\s-]/g, '')
+  const digits = cleaned.replace(/^[A-Za-z]+/, '')
 
-  if (digits && !/^\d+$/.test(digits)) {
-    return { ok: false, error: 'A USSA number is digits only.' }
+  if (!/^\d+$/.test(digits)) {
+    return {
+      ok: false,
+      error: 'That does not look like a USSA number — expected digits, optionally with a letter prefix.',
+    }
   }
 
   const db = supabaseAdmin()
