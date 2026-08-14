@@ -168,6 +168,36 @@ from that, and both are worth knowing before you do it:
 A reply inbox inside the app would fix both, and is the intended answer when replies
 become common enough to be a nuisance.
 
+### The opt-in form
+
+Members opt in at **/opt-in** — a public page, the only one in the system that does
+not need a sign-in. It replaces the Airtable form, and the wording is taken from it
+deliberately: that text is what was described to Twilio when the toll-free number
+was verified, so the two need to stay in step. It is editable in `app_settings`
+(`opt_in_consent_label`, `opt_in_intro_promise`) rather than in code.
+
+**What happens on submission:**
+
+| | |
+|---|---|
+| The phone number matches a member — any status | Linked, consent recorded, and the intro text sent immediately |
+| No match | Held as pending for review; nothing created, nothing sent |
+
+The form promises an introductory message "shortly after", which is why the matched
+case is automatic rather than waiting for an officer.
+
+Three things worth knowing:
+
+- **A text can only ever be sent to a number already in the member database.** The
+  form cannot be used to message an arbitrary number.
+- **Someone who previously texted STOP and then fills in the form is opted back in.**
+  Filling in a consent form is a clearer signal than an older opt-out.
+- **The automatic intro appears in the send log** like any other message, attributed
+  to "Opt-in form (automatic)" so nobody thinks an officer sent it.
+
+Unmatched submissions accumulate until the review queue is built. Until then they
+can be read in the `opt_in_submissions` table.
+
 ### Looking someone up
 
 `/members` answers "is this person in the system, and why aren't they getting

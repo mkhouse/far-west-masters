@@ -45,6 +45,7 @@ const AUDIENCE_KIND_LABEL: Record<string, string> = {
   all_eligible: 'all eligible members',
   series: 'race series',
   intro_pending: 'opted in, awaiting intro text',
+  opt_in_auto: 'automatic intro, sent by the opt-in form',
   // Retained so historical messages still describe themselves. The audience was
   // renamed and rescoped in task #48.
   series_intro: 'intro texts (former series-scoped audience)',
