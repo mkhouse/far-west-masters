@@ -32,7 +32,60 @@ import { NextResponse, type NextRequest } from 'next/server'
  */
 const PROTECTED = ['/admin', '/process', '/messages', '/members']
 
+/**
+ * The hostname that serves nothing but the opt-in form.
+ *
+ * Members are asked for their phone number on this page, and the address bar is
+ * part of that ask. "fwm-apps.mkinthehouse.com" invites the question "who is
+ * mkinthehouse and why do they want my number" — a bad question to raise on a
+ * consent form. A dedicated host at least keeps the officer tooling out of sight;
+ * moving it to farwestmasters.org (#23) is the real fix.
+ *
+ * Matched by prefix so that any environment — preview deployments included —
+ * behaves the same way.
+ */
+const OPT_IN_HOST_PREFIX = 'optin.'
+
+/** Paths that must keep working on the opt-in host: the form, and Next's own. */
+function allowedOnOptInHost(path: string): boolean {
+  return (
+    path === '/' ||
+    path === '/opt-in' ||
+    path.startsWith('/_next/') ||
+    path === '/favicon.ico'
+  )
+}
+
 export async function proxy(request: NextRequest) {
+  // --- the opt-in host serves one page and nothing else ---
+  //
+  // A rewrite rather than a redirect, so the address stays at the root of the
+  // domain: the form is the whole point of that hostname, and "/opt-in" appended to
+  // "optin.…" reads as a mistake.
+  //
+  // Everything else on that host goes to the form rather than 404ing. Someone
+  // typing a stray path there is a member looking for the form, not an officer
+  // looking for the app — and the officer tooling should not be reachable from a
+  // hostname handed out to the public, even though every page of it requires a
+  // sign-in anyway.
+  const host = request.headers.get('host') ?? ''
+  if (host.startsWith(OPT_IN_HOST_PREFIX)) {
+    const path = request.nextUrl.pathname
+
+    if (path === '/') {
+      const form = request.nextUrl.clone()
+      form.pathname = '/opt-in'
+      return NextResponse.rewrite(form)
+    }
+
+    if (!allowedOnOptInHost(path)) {
+      const root = request.nextUrl.clone()
+      root.pathname = '/'
+      root.search = ''
+      return NextResponse.redirect(root)
+    }
+  }
+
   // --- rescue a sign-in code that arrived at the wrong path ---
   //
   // Only /auth/callback can exchange a magic-link code for a session. But the code

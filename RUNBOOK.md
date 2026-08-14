@@ -170,8 +170,14 @@ become common enough to be a nuisance.
 
 ### The opt-in form
 
-Members opt in at **/opt-in** — a public page, the only one in the system that does
-not need a sign-in. It replaces the Airtable form, and the wording is taken from it
+Members opt in at **optin.mkinthehouse.com** — a public page, the only one in the
+system that does not need a sign-in. It also answers at `/opt-in` on the main app
+domain; the dedicated hostname exists because the address bar is part of what a
+member is being asked to trust when handing over a phone number.
+
+That host serves the form and nothing else: `/` is rewritten to it, and any other
+path redirects back. The officer tooling is not reachable from a hostname handed
+out to the public, even though every page of it requires a sign-in anyway. It replaces the Airtable form, and the wording is taken from it
 deliberately: that text is what was described to Twilio when the toll-free number
 was verified, so the two need to stay in step. It is editable in `app_settings`
 (`opt_in_consent_label`, `opt_in_intro_promise`) rather than in code.
