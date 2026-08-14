@@ -186,17 +186,35 @@ was verified, so the two need to stay in step. It is editable in `app_settings`
 The form promises an introductory message "shortly after", which is why the matched
 case is automatic rather than waiting for an officer.
 
-Three things worth knowing:
+Decisions built into it, all of them deliberate:
 
 - **A text can only ever be sent to a number already in the member database.** The
   form cannot be used to message an arbitrary number.
 - **Someone who previously texted STOP and then fills in the form is opted back in.**
   Filling in a consent form is a clearer signal than an older opt-out.
+- **Consent is never reset.** Submitting twice leaves the original `opt_in_at`
+  standing, because that date is the evidence of when they agreed.
+- **The intro text is sent only to someone who has not had one**, so a repeat
+  submission cannot text them again.
 - **The automatic intro appears in the send log** like any other message, attributed
-  to "Opt-in form (automatic)" so nobody thinks an officer sent it.
+  to "Opt-in form (automatic)" so nobody thinks an officer sent it. It is marked as
+  consent-incomplete, which is correct: that send is what completes it.
+- **A missing USSA number is filled in** from the form when one is supplied, but an
+  existing number is never overwritten.
+- **Repeat submissions from the same number within 10 minutes are ignored** — that
+  is somebody pressing the button twice.
+- **Spam is handled with a hidden honeypot field, not a CAPTCHA.** A CAPTCHA defeats
+  exactly the older members this form exists to reach. A bot gets a normal-looking
+  thank-you rather than being told it was caught.
+- **The thank-you page never says whether the person was recognised.** A public form
+  should not report who is or is not a member.
 
 Unmatched submissions accumulate until the review queue is built. Until then they
 can be read in the `opt_in_submissions` table.
+
+**To test the form as though you were new**, use
+`supabase/local/reset-my-opt-in-for-testing.sql`. Submitting as somebody already
+introduced does nothing visible, by design.
 
 ### Looking someone up
 
