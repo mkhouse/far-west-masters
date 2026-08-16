@@ -132,8 +132,10 @@ export interface DiffEntry {
   member: MemberRow
   personId: string | null
   matchedBy: MatchMethod | null
-  /** Contact details this import would change on the person record. */
+  /** Blanks this import would fill. Applied. */
   changes: FieldChange[]
+  /** Where ASR disagrees with a value we hold. Reported, never applied. */
+  differences: FieldChange[]
 }
 
 export interface ImportDiff {
@@ -186,44 +188,82 @@ export function matchPerson(
 }
 
 /**
- * Which contact details this import would change on an existing person.
+ * Which contact details this import would FILL IN on an existing person.
  *
- * THE RULE (Melissa): if what we hold differs from ASR and the person HAS opted in
- * for texts, keep ours — ours came from the member themselves, through the opt-in
- * form. If they have NOT opted in, take ASR's, because ASR is then the more recently
- * maintained record.
+ * THE RULE: fill a blank, never overwrite a value.
  *
- * A missing value on our side is always filled, opted in or not: filling a blank
- * takes nothing away.
+ * An earlier version kept our value only when the person had opted in for texts, and
+ * took ASR's otherwise. Melissa spotted the flaw on 2026-08-16 while reading a
+ * preview: email was collected through the opt-in form long before this system
+ * existed, so an address on file is very often the member's own — and for exactly the
+ * people whose `opt_in_at` never came across in the migration, which is who that rule
+ * would have overwritten. There is no way now to tell a member-supplied address from
+ * an imported one.
+ *
+ * So the import stops guessing. It fills gaps, which takes nothing away from anyone,
+ * and leaves every existing value alone. Where ASR disagrees, that is reported
+ * separately (see `contactDifferences`) for a person to act on, and ASR's own value is
+ * always kept in `asr_phone` / `asr_email` regardless, so nothing is lost.
  */
 export function contactChanges(
   member: MemberRow,
   person: ExistingPerson
 ): FieldChange[] {
   const changes: FieldChange[] = []
-  const optedIn = !!person.opt_in_at
 
-  if (member.phone && member.phone !== person.phone) {
-    if (!person.phone || !optedIn) {
-      changes.push({ field: 'phone', from: person.phone, to: member.phone })
-    }
+  if (member.phone && !person.phone) {
+    changes.push({ field: 'phone', from: null, to: member.phone })
   }
 
   const email = member.email.trim()
-  if (email && email.toLowerCase() !== (person.email ?? '').toLowerCase()) {
-    if (!person.email || !optedIn) {
-      changes.push({ field: 'email', from: person.email, to: email })
-    }
+  if (email && !person.email) {
+    changes.push({ field: 'email', from: null, to: email })
   }
 
-  // A missing USSA number is filled from the roster; an existing one is never
-  // overwritten here. Changing it can detach somebody from their own race history,
-  // which is a decision for member admin (#59), not for a bulk import.
+  // Never overwritten either: changing a USSA number can detach somebody from their
+  // own race history, which belongs in member admin (#59), not in a bulk import.
   if (member.usssa != null && person.usssa == null) {
     changes.push({ field: 'usssa', from: null, to: String(member.usssa) })
   }
 
   return changes
+}
+
+/**
+ * Where ASR disagrees with a value we already hold.
+ *
+ * Reported, never applied. These are the interesting rows — a member who has moved
+ * from a work address to a personal one, or a number that has changed — but which of
+ * the two is right is a judgement, and often the answer is ours: the member typed it
+ * into the opt-in form themselves.
+ *
+ * Surfacing them means the officer can act on the ones that matter without the import
+ * quietly deciding for them.
+ */
+export function contactDifferences(
+  member: MemberRow,
+  person: ExistingPerson
+): FieldChange[] {
+  const differences: FieldChange[] = []
+
+  if (member.phone && person.phone && member.phone !== person.phone) {
+    differences.push({ field: 'phone', from: person.phone, to: member.phone })
+  }
+
+  const email = member.email.trim()
+  if (email && person.email && email.toLowerCase() !== person.email.toLowerCase()) {
+    differences.push({ field: 'email', from: person.email, to: email })
+  }
+
+  if (member.usssa != null && person.usssa != null && member.usssa !== person.usssa) {
+    differences.push({
+      field: 'usssa',
+      from: String(person.usssa),
+      to: String(member.usssa),
+    })
+  }
+
+  return differences
 }
 
 /**
@@ -253,7 +293,13 @@ export function buildDiff(
     const found = matchPerson(member, people)
 
     if (!found) {
-      diff.unmatched.push({ member, personId: null, matchedBy: null, changes: [] })
+      diff.unmatched.push({
+        member,
+        personId: null,
+        matchedBy: null,
+        changes: [],
+        differences: [],
+      })
       continue
     }
 
@@ -264,10 +310,11 @@ export function buildDiff(
       personId: found.person.id,
       matchedBy: found.matchedBy,
       changes,
+      differences: contactDifferences(member, found.person),
     }
 
     if (!currentMember.has(found.person.id)) diff.joined.push(entry)
-    else if (changes.length > 0) diff.updated.push(entry)
+    else if (changes.length > 0 || entry.differences.length > 0) diff.updated.push(entry)
     else diff.unchanged++
   }
 
@@ -304,4 +351,22 @@ export function entriesWithChanges(diff: ImportDiff): DiffEntry[] {
 /** How many field changes in total, for the summary figure. */
 export function changeCount(diff: ImportDiff): number {
   return entriesWithChanges(diff).reduce((n, e) => n + e.changes.length, 0)
+}
+
+/** Everyone where ASR holds something different from us. Reported, not applied. */
+export function entriesWithDifferences(diff: ImportDiff): DiffEntry[] {
+  return [...diff.joined, ...diff.updated].filter((e) => e.differences.length > 0)
+}
+
+/**
+ * A stable name for one proposed overwrite, so the preview and the apply step can
+ * refer to the same thing.
+ *
+ * Person id and field only — deliberately NOT the value. Apply re-derives every
+ * difference from the file, then applies the ticked ones, so this identifies WHICH
+ * correction was accepted while the value itself still comes from the export. A
+ * tampered form can decline a change or accept one; it cannot invent a new value.
+ */
+export function differenceKey(personId: string, field: string): string {
+  return `${personId}:${field}`
 }

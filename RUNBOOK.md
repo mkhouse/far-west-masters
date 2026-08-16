@@ -113,11 +113,14 @@ What the preview tells you, and what to look at:
 |---|---|
 | **Memberships added** | Expected to be everyone on a first import, and a handful on later ones |
 | **People not in the club yet** | Listed by name, and created when you apply. Read these — a misspelling here becomes a second record for one human |
-| **Details updated** | Phone and email corrections. Ours wins if the member has opted in for texts, because ours came from them; ASR's wins if they have not |
+| **Gaps filled** | Missing phone, email or USSA numbers filled in from ASR. Only blanks |
+| **Where ASR differs** | Listed and **left alone**. Email was collected through the opt-in form long before ASR was imported, so what we hold is often the member's own answer. ASR's version is kept in `asr_email` / `asr_phone` if you want it |
 | **Absent from this file** | Held for the season but missing from the export. **Left alone.** Usually a refund or a correction in ASR, which is not something an import should decide |
 
-**The USSA number is never overwritten**, only filled when blank. Changing it can
-detach somebody from their own race history.
+**Nothing already on file is ever overwritten** — not email, not phone, not the USSA
+number. The import fills gaps and reports disagreements; deciding between two values
+is a judgement, and often ours is the member's own answer. Changing a USSA number in
+particular can detach somebody from their own race history.
 
 **Nothing medical or residential is imported.** The export carries allergies —
 including insurance and patient record numbers for at least one member — plus

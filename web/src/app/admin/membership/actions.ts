@@ -19,6 +19,7 @@ import { missingColumns, parseAsrCsv } from '@/lib/asr-csv'
 import {
   REQUIRED_COLUMNS,
   buildDiff,
+  differenceKey,
   toMemberRows,
   type ExistingPerson,
   type ImportDiff,
@@ -108,7 +109,18 @@ async function analyse(
  * against them. A membership row pointing at a person who does not exist yet is the
  * one failure that would need unpicking by hand.
  */
-export async function applyImport(csv: string, seasonRaw: string): Promise<ApplyResult> {
+export async function applyImport(
+  csv: string,
+  seasonRaw: string,
+  /**
+   * Which of the reported differences to accept, as personId:field.
+   *
+   * Empty by default, because not overwriting is the safe default: what we hold is
+   * often the member's own answer from the opt-in form. Ticking one is a deliberate
+   * act, taken while looking at both values.
+   */
+  accepted: string[] = []
+): Promise<ApplyResult> {
   const officer = await requireAppUser()
   const season = seasonRaw.trim()
 
@@ -157,12 +169,27 @@ export async function applyImport(csv: string, seasonRaw: string): Promise<Apply
     created.set(`${m.firstName}|${m.lastName}|${m.usssa ?? ''}`, data.id as string)
   }
 
-  // --- contact corrections on people we already hold ---
+  // --- filling gaps, plus whichever overwrites were ticked ---
+  //
+  // Differences are re-derived here rather than taken from the form. The ticked list
+  // says WHICH correction was accepted; the value always comes from the file.
+  const accept = new Set(accepted)
+  let overwritten = 0
+
   for (const entry of [...diff.joined, ...diff.updated]) {
-    if (!entry.personId || entry.changes.length === 0) continue
+    if (!entry.personId) continue
+
+    const chosen = entry.differences.filter((d) =>
+      accept.has(differenceKey(entry.personId as string, d.field))
+    )
+    overwritten += chosen.length
+
+    if (entry.changes.length === 0 && chosen.length === 0) continue
 
     const updates: Record<string, unknown> = { updated_at: now }
-    for (const change of entry.changes) updates[change.field] = change.to
+    for (const change of [...entry.changes, ...chosen]) {
+      updates[change.field] = change.field === 'usssa' ? Number(change.to) : change.to
+    }
     // Always record what ASR holds, separately from the working values.
     updates.asr_phone = entry.member.phone
     updates.asr_email = entry.member.email || null
@@ -239,7 +266,9 @@ export async function applyImport(csv: string, seasonRaw: string): Promise<Apply
     `${diff.joined.length + created.size} membership${diff.joined.length + created.size === 1 ? '' : 's'} added`,
   ]
   if (created.size > 0) parts.push(`${created.size} new people created`)
-  if (diff.updated.length > 0) parts.push(`${diff.updated.length} contact detail(s) updated`)
+  const filled = [...diff.joined, ...diff.updated].reduce((n, e) => n + e.changes.length, 0)
+  if (filled > 0) parts.push(`${filled} missing detail(s) filled in`)
+  if (overwritten > 0) parts.push(`${overwritten} correction(s) applied`)
   if (diff.unchanged > 0) parts.push(`${diff.unchanged} unchanged`)
   if (diff.missing.length > 0) {
     parts.push(`${diff.missing.length} absent from the file and left alone`)

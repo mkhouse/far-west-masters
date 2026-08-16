@@ -20,7 +20,12 @@ import {
   type ApplyResult,
   type PreviewResult,
 } from './actions'
-import { changeCount, entriesWithChanges } from '@/lib/membership-import'
+import {
+  changeCount,
+  differenceKey,
+  entriesWithChanges,
+  entriesWithDifferences,
+} from '@/lib/membership-import'
 
 export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
   const [pending, startTransition] = useTransition()
@@ -29,10 +34,20 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
   const [fileName, setFileName] = useState<string | null>(null)
   const [preview, setPreview] = useState<PreviewResult | null>(null)
   const [applied, setApplied] = useState<ApplyResult | null>(null)
+  /**
+   * Which reported differences to accept, as personId:field.
+   *
+   * Empty to start: not overwriting is the safe default, because what we hold is
+   * often the member's own answer from the opt-in form. But many of these are a work
+   * address being replaced by a personal one, which is exactly the case where ASR is
+   * fresher — so the choice is per row rather than a rule.
+   */
+  const [accepted, setAccepted] = useState<Set<string>>(new Set())
 
   function onFile(file: File | undefined) {
     setPreview(null)
     setApplied(null)
+    setAccepted(new Set())
     if (!file) {
       setCsv(null)
       setFileName(null)
@@ -136,7 +151,7 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
           <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
             <Stat label="Rows in file" value={diff.rowsInFile} />
             <Stat label="Memberships added" value={diff.joined.length + diff.unmatched.length} />
-            <Stat label="Details corrected" value={changeCount(diff)} />
+            <Stat label="Gaps filled" value={changeCount(diff)} />
             <Stat label="Unchanged" value={diff.unchanged} />
           </dl>
 
@@ -163,7 +178,7 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
               their corrections still need showing. */}
           {entriesWithChanges(diff).length > 0 && (
             <Section
-              title={`${changeCount(diff)} contact detail(s) would be corrected on ${entriesWithChanges(diff).length} people`}
+              title={`${changeCount(diff)} missing detail(s) would be filled in, on ${entriesWithChanges(diff).length} people`}
             >
               <ul className="mt-1 space-y-0.5">
                 {entriesWithChanges(diff).map((u, i) => (
@@ -176,6 +191,81 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                     ))}
                   </li>
                 ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* Not applied unless ticked. Which value is right is a judgement the
+              system genuinely cannot make: what we hold is often the member's own
+              answer from the opt-in form, and what ASR holds is often a personal
+              address replacing a work one. So it asks. */}
+          {entriesWithDifferences(diff).length > 0 && (
+            <Section
+              title={`${entriesWithDifferences(diff).length} people where AdminSkiRacing holds something different`}
+            >
+              <p className="mt-1 text-neutral-600">
+                Nothing here is changed unless you tick it. What we hold may be the
+                member&rsquo;s own answer from the opt-in form; what AdminSkiRacing
+                holds is often a personal address replacing a work one.
+              </p>
+
+              <div className="mt-2 flex gap-3 text-sm">
+                <button
+                  type="button"
+                  className="text-fwm-navy underline"
+                  onClick={() =>
+                    setAccepted(
+                      new Set(
+                        entriesWithDifferences(diff).flatMap((e) =>
+                          e.differences.map((d) => differenceKey(e.personId!, d.field))
+                        )
+                      )
+                    )
+                  }
+                >
+                  Take all of AdminSkiRacing&rsquo;s
+                </button>
+                <button
+                  type="button"
+                  className="text-neutral-600 underline"
+                  onClick={() => setAccepted(new Set())}
+                >
+                  Keep all of ours
+                </button>
+              </div>
+
+              <ul className="mt-2 space-y-1">
+                {entriesWithDifferences(diff).map((u) =>
+                  u.differences.map((c) => {
+                    const key = differenceKey(u.personId!, c.field)
+                    return (
+                      <li key={key}>
+                        <label className="flex cursor-pointer items-start gap-2">
+                          <input
+                            type="checkbox"
+                            className="mt-1"
+                            checked={accepted.has(key)}
+                            onChange={() =>
+                              setAccepted((prev) => {
+                                const next = new Set(prev)
+                                if (next.has(key)) next.delete(key)
+                                else next.add(key)
+                                return next
+                              })
+                            }
+                          />
+                          <span>
+                            {u.member.firstName} {u.member.lastName}
+                            <span className="text-neutral-600">
+                              {' '}· {c.field}: <s>{c.from ?? '—'}</s> &rarr;{' '}
+                              <strong>{c.to}</strong>
+                            </span>
+                          </span>
+                        </label>
+                      </li>
+                    )
+                  })
+                )}
               </ul>
             </Section>
           )}
@@ -204,11 +294,17 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
             type="button"
             disabled={pending}
             onClick={() =>
-              startTransition(async () => setApplied(await applyImport(csv!, season)))
+              startTransition(async () =>
+              setApplied(await applyImport(csv!, season, [...accepted]))
+            )
             }
             className="mt-4 rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
           >
-            {pending ? 'Importing…' : `Import ${season}`}
+            {pending
+              ? 'Importing…'
+              : accepted.size > 0
+                ? `Import ${season}, taking ${accepted.size} correction${accepted.size === 1 ? '' : 's'}`
+                : `Import ${season}`}
           </button>
         </div>
       )}

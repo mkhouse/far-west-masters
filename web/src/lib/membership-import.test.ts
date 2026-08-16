@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildDiff,
   contactChanges,
+  contactDifferences,
   matchPerson,
   parseAsrDate,
   changeCount,
@@ -149,45 +150,88 @@ describe('matchPerson', () => {
   })
 })
 
-describe('contactChanges — whose details win', () => {
-  // The rule: ours came from the member themselves if they opted in, so it stands.
-  // If they never opted in, ASR is the more recently maintained record.
-  it('keeps our number for somebody who has opted in', () => {
-    const p = person({ phone: '+15305559999', opt_in_at: '2026-01-01T00:00:00Z' })
-    expect(contactChanges(member(), p).map((c) => c.field)).not.toContain('phone')
-  })
+describe('contactChanges — fill blanks, never overwrite', () => {
+  // THE RULE CHANGED on 2026-08-16. It used to keep our value only when the person
+  // had opted in for texts, and take ASR's otherwise. Melissa spotted the flaw while
+  // reading a preview: email was collected through the opt-in form long before this
+  // system existed, so an address on file is very often the member's own — including
+  // for people whose opt_in_at never came across in the migration, who are exactly
+  // the ones the old rule would have overwritten.
 
-  it('takes ASR’s number for somebody who has not opted in', () => {
-    const p = person({ phone: '+15305559999', opt_in_at: null })
-    expect(contactChanges(member(), p)).toContainEqual({
-      field: 'phone',
-      from: '+15305559999',
-      to: '+15305551234',
+  it('fills a missing email', () => {
+    expect(contactChanges(member(), person({ email: null }))).toContainEqual({
+      field: 'email',
+      from: null,
+      to: 'ada@example.com',
     })
   })
 
-  // Filling a blank takes nothing away, so it happens either way.
-  it('fills a missing number even for somebody who has opted in', () => {
-    const p = person({ phone: null, opt_in_at: '2026-01-01T00:00:00Z' })
-    expect(contactChanges(member(), p).map((c) => c.field)).toContain('phone')
+  it('fills a missing phone number', () => {
+    expect(contactChanges(member(), person({ phone: null })).map((c) => c.field)).toContain('phone')
   })
 
-  it('applies the same rule to email', () => {
-    const optedIn = person({ email: 'old@example.com', opt_in_at: '2026-01-01T00:00:00Z' })
-    const notOptedIn = person({ email: 'old@example.com' })
-    expect(contactChanges(member(), optedIn).map((c) => c.field)).not.toContain('email')
-    expect(contactChanges(member(), notOptedIn).map((c) => c.field)).toContain('email')
+  it('fills a missing USSA number', () => {
+    expect(contactChanges(member(), person({ usssa: null })).map((c) => c.field)).toContain('usssa')
+  })
+
+  it('never overwrites an email we already hold', () => {
+    const p = person({ email: 'from-the-optin-form@example.com', opt_in_at: null })
+    expect(contactChanges(member(), p).map((c) => c.field)).not.toContain('email')
+  })
+
+  it('never overwrites a phone number we already hold', () => {
+    const p = person({ phone: '+15305559999', opt_in_at: null })
+    expect(contactChanges(member(), p).map((c) => c.field)).not.toContain('phone')
+  })
+
+  it('never overwrites a USSA number we already hold', () => {
+    expect(contactChanges(member(), person({ usssa: 111 })).map((c) => c.field)).not.toContain('usssa')
+  })
+
+  // Opting in is no longer part of the rule at all. It used to be the thing that
+  // protected a value, and protecting only opted-in people was the bug.
+  it('protects a value whether or not the person has opted in', () => {
+    const optedIn = person({ email: 'ours@example.com', opt_in_at: '2026-01-01T00:00:00Z' })
+    const never = person({ email: 'ours@example.com', opt_in_at: null })
+    expect(contactChanges(member(), optedIn)).toEqual([])
+    expect(contactChanges(member(), never)).toEqual([])
   })
 
   it('reports nothing when everything already agrees', () => {
     expect(contactChanges(member(), person())).toEqual([])
   })
+})
 
-  it('fills a missing USSA number but never overwrites one', () => {
-    expect(contactChanges(member(), person({ usssa: null })).map((c) => c.field)).toContain('usssa')
-    // Changing an existing number can detach somebody from their own race history.
-    // That belongs in member admin (#59), not in a bulk import.
-    expect(contactChanges(member(), person({ usssa: 111 })).map((c) => c.field)).not.toContain('usssa')
+describe('contactDifferences — reported, never applied', () => {
+  it('reports an email ASR disagrees with', () => {
+    const p = person({ email: 'ours@example.com' })
+    expect(contactDifferences(member(), p)).toContainEqual({
+      field: 'email',
+      from: 'ours@example.com',
+      to: 'ada@example.com',
+    })
+  })
+
+  it('reports a differing phone number and USSA number', () => {
+    const p = person({ phone: '+15305559999', usssa: 111 })
+    const fields = contactDifferences(member(), p).map((c) => c.field)
+    expect(fields).toContain('phone')
+    expect(fields).toContain('usssa')
+  })
+
+  // A gap is not a disagreement. Filling one is reported as a change, not as a
+  // difference, or the same person would appear in both lists.
+  it('does not report a blank as a difference', () => {
+    const p = person({ email: null, phone: null, usssa: null })
+    expect(contactDifferences(member(), p)).toEqual([])
+  })
+
+  it('ignores case when comparing email', () => {
+    expect(contactDifferences(member(), person({ email: 'ADA@EXAMPLE.COM' }))).toEqual([])
+  })
+
+  it('reports nothing when everything agrees', () => {
+    expect(contactDifferences(member(), person())).toEqual([])
   })
 })
 
@@ -216,11 +260,21 @@ describe('buildDiff — what would change', () => {
     expect(diff.updated).toEqual([])
   })
 
-  it('lists an existing member only when something would change', () => {
-    const stale = person({ id: 'ada', phone: '+15305559999' })
-    const diff = buildDiff([member()], [stale], new Set(['ada']))
+  it('lists an existing member when a gap would be filled', () => {
+    const gap = person({ id: 'ada', phone: null })
+    const diff = buildDiff([member()], [gap], new Set(['ada']))
     expect(diff.updated).toHaveLength(1)
     expect(diff.updated[0].changes[0].field).toBe('phone')
+  })
+
+  // A difference is not applied, but it must still surface the person — otherwise it
+  // would disappear into the "unchanged" count and never be seen.
+  it('lists an existing member whose details merely differ from ASR', () => {
+    const differing = person({ id: 'ada', phone: '+15305559999' })
+    const diff = buildDiff([member()], [differing], new Set(['ada']))
+    expect(diff.updated).toHaveLength(1)
+    expect(diff.updated[0].changes).toEqual([])
+    expect(diff.updated[0].differences[0].field).toBe('phone')
   })
 
   it('reports somebody nobody matches as unmatched', () => {
@@ -268,12 +322,13 @@ describe('what the preview reports', () => {
   // The bug this exists for: on a FIRST import everybody lands in `joined`, so
   // counting only `updated` reported zero contact changes while thirteen were about
   // to be applied to real member records.
-  it('counts corrections on people who are joining, not only on existing members', () => {
+  it('counts gaps filled on people who are joining, not only on existing members', () => {
+    // ada holds an email already, so only the missing USSA number is filled — and
+    // the differing email is reported separately rather than applied.
     const diff = buildDiff([member()], [ada], new Set())
     expect(diff.updated).toHaveLength(0)
     expect(entriesWithChanges(diff)).toHaveLength(1)
-    // email corrected, USSA filled
-    expect(changeCount(diff)).toBe(2)
+    expect(changeCount(diff)).toBe(1)
   })
 
   it('counts corrections on existing members too', () => {
