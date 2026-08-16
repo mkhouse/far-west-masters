@@ -14,7 +14,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { findMatch } from './opt-in-review'
+import { findMatch, resolvePhone } from './opt-in-review'
 
 interface StubPerson {
   id: string
@@ -179,5 +179,94 @@ describe('findMatch', () => {
     expect(
       await findMatch(submission({ phone: null, phone_raw: '', email: '', usssa: null }))
     ).toBeNull()
+  })
+})
+
+describe('resolvePhone — which number wins', () => {
+  // The rule: the number typed into the form beats the number on file. Somebody
+  // filling in a page headed "register your mobile number" is saying where they want
+  // texts, and that is more recent and more direct than an imported value.
+  //
+  // This is pure, so unlike the matcher above it needs no stub at all.
+
+  it('takes the number from the form over the one on file', () => {
+    const decided = resolvePhone(
+      { phone: '+15305551234' },
+      { phone: '+15305559999', phone_raw: '(530) 555-9999' }
+    )
+    expect(decided.phone).toBe('+15305559999')
+    expect(decided.changed).toBe(true)
+    expect(decided.from).toBe('+15305551234')
+  })
+
+  it('reports no change when the two agree', () => {
+    const decided = resolvePhone(
+      { phone: '+15305551234' },
+      { phone: '+15305551234', phone_raw: '(530) 555-1234' }
+    )
+    expect(decided.phone).toBe('+15305551234')
+    expect(decided.changed).toBe(false)
+    expect(decided.from).toBeNull()
+  })
+
+  // Filling a blank is not replacing anything. Reporting it as a change would put a
+  // "number updated" note on a record that never had one.
+  it('fills a missing number without calling it a change', () => {
+    const decided = resolvePhone(
+      { phone: null },
+      { phone: '+15305559999', phone_raw: '(530) 555-9999' }
+    )
+    expect(decided.phone).toBe('+15305559999')
+    expect(decided.changed).toBe(false)
+  })
+
+  it('keeps the number on file when the form gives nothing usable', () => {
+    const decided = resolvePhone(
+      { phone: '+15305551234' },
+      { phone: null, phone_raw: 'not a number' }
+    )
+    expect(decided.phone).toBe('+15305551234')
+    expect(decided.changed).toBe(false)
+  })
+
+  it('normalises the raw text when no normalised number was stored', () => {
+    const decided = resolvePhone(
+      { phone: '+15305551234' },
+      { phone: null, phone_raw: '1 (530) 555-9999' }
+    )
+    expect(decided.phone).toBe('+15305559999')
+    expect(decided.changed).toBe(true)
+  })
+
+  describe('the officer override', () => {
+    it('keeps the number on file when asked to', () => {
+      const decided = resolvePhone(
+        { phone: '+15305551234' },
+        { phone: '+15305559999', phone_raw: '(530) 555-9999' },
+        true
+      )
+      expect(decided.phone).toBe('+15305551234')
+      expect(decided.changed).toBe(false)
+    })
+
+    it('still fills a blank, since there is nothing to keep', () => {
+      const decided = resolvePhone(
+        { phone: null },
+        { phone: '+15305559999', phone_raw: '(530) 555-9999' },
+        true
+      )
+      expect(decided.phone).toBe('+15305559999')
+    })
+  })
+
+  it('never reports a from-number without reporting a change', () => {
+    // The note written to the submission is built from `from`, so a stray value here
+    // would record a phone number that never moved.
+    const cases = [
+      resolvePhone({ phone: null }, { phone: '+15305559999', phone_raw: 'x' }),
+      resolvePhone({ phone: '+15305551234' }, { phone: null, phone_raw: 'x' }),
+      resolvePhone({ phone: '+15305551234' }, { phone: '+15305551234', phone_raw: 'x' }),
+    ]
+    for (const c of cases) expect(c.from).toBeNull()
   })
 })

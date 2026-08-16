@@ -58,6 +58,14 @@ export interface PendingSubmission extends Submission {
   /** A member this submission appears to be, found just now — not when it arrived. */
   match: MatchedPerson | null
   matchedBy: MatchMethod | null
+  /**
+   * What linking would do to the member's phone number.
+   *
+   * Computed here rather than in the card so the screen and the action apply the
+   * same rule. A button that says one thing while the action does another is the
+   * failure this whole module is arranged to avoid.
+   */
+  phoneChange: PhoneDecision | null
 }
 
 const PERSON_COLUMNS =
@@ -148,10 +156,65 @@ export async function listPending(): Promise<PendingSubmission[]> {
       ...sub,
       match: found?.person ?? null,
       matchedBy: found?.matchedBy ?? null,
+      phoneChange: found ? resolvePhone(found.person, sub) : null,
     })
   }
 
   return out
+}
+
+export interface PhoneDecision {
+  /** The number to store and to send the intro to. Null only if there is none. */
+  phone: string | null
+  /** True when an existing number is being replaced, which is worth recording. */
+  changed: boolean
+  /** The number being replaced, for the record. Null unless `changed`. */
+  from: string | null
+}
+
+/**
+ * Which number wins when the form disagrees with the record.
+ *
+ * THE FORM WINS, and that is the point. The opt-in page asks members to "register
+ * your mobile number" — somebody typing a different number from the one on file is
+ * telling us where they want texts, and that statement is more recent and more
+ * direct than anything imported from AdminSkiRacing or typed in years ago. It is the
+ * same principle as the import rule: the member's own answer beats a synced one.
+ *
+ * There is a practical edge too. Twilio blocks opt-outs per NUMBER. Somebody who
+ * texted STOP from an old handset and has now filled in the form with a new one can
+ * only be reached on the new number — keeping the old one means the intro is refused
+ * at the carrier and they never hear back.
+ *
+ * This can only arise in the review queue. The public form matches ON the phone
+ * number, so there the two cannot disagree; matching on email or USSA is what makes
+ * a mismatch possible.
+ *
+ * `keepExisting` is the officer's override, for when the new number is visibly a
+ * typo. Without #59's member admin there is no other way to undo a bad overwrite, so
+ * the escape hatch earns its place for now.
+ */
+export function resolvePhone(
+  person: { phone: string | null },
+  sub: { phone: string | null; phone_raw: string },
+  keepExisting = false
+): PhoneDecision {
+  // Normalise again rather than trusting the stored value — same reasoning as
+  // findMatch: a number that failed to normalise under an older version should not
+  // stay unusable.
+  const submitted = sub.phone ?? toE164(sub.phone_raw)
+
+  // Nothing usable on the form: whatever is on file stands.
+  if (!submitted) return { phone: person.phone, changed: false, from: null }
+
+  // Filling a blank is not replacing anything, so it is not reported as a change.
+  if (!person.phone) return { phone: submitted, changed: false, from: null }
+
+  if (keepExisting || submitted === person.phone) {
+    return { phone: person.phone, changed: false, from: null }
+  }
+
+  return { phone: submitted, changed: true, from: person.phone }
 }
 
 /** How many are waiting, for the badge on the admin index. */

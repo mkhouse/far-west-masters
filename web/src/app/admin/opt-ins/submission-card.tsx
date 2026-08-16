@@ -22,6 +22,7 @@ import {
   type ActionResult,
 } from './actions'
 import type { PendingSubmission } from '@/lib/opt-in-review'
+import { formatPhone } from '@/lib/members'
 
 /** How each match was made, said plainly. */
 const MATCHED_BY: Record<string, string> = {
@@ -49,7 +50,7 @@ export function SubmissionCard({ submission }: { submission: PendingSubmission }
   const [reason, setReason] = useState('')
   const [rejecting, setRejecting] = useState(false)
 
-  const { match, matchedBy } = submission
+  const { match, matchedBy, phoneChange } = submission
 
   function run(
     action: (fd: FormData) => Promise<ActionResult>,
@@ -129,6 +130,17 @@ export function SubmissionCard({ submission }: { submission: PendingSubmission }
         )}
       </p>
 
+      {/* The number is changing. Said before the click, not reported after it: a
+          member's mobile number moving is consequential, and the officer should be
+          agreeing to it rather than discovering it. */}
+      {phoneChange?.changed && (
+        <p className="mt-2 rounded-md border border-neutral-200 px-3 py-2 text-sm dark:border-neutral-800">
+          On file as <strong>{formatPhone(phoneChange.from)}</strong>, and this form
+          gives <strong>{formatPhone(phoneChange.phone)}</strong>. Linking will use the
+          number from the form — that is where they have asked to be texted.
+        </p>
+      )}
+
       {result?.error && (
         <p className="mt-3 rounded-md border border-fwm-burgundy/40 bg-fwm-burgundy/5 px-3 py-2 text-sm text-fwm-burgundy">
           {result.error}
@@ -168,16 +180,33 @@ export function SubmissionCard({ submission }: { submission: PendingSubmission }
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
           {match ? (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => run(linkSubmission)}
-              className="rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
-            >
-              {pending
-                ? 'Linking…'
-                : `Link to ${match.first_name} ${match.last_name} and send intro`}
-            </button>
+            <>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => run(linkSubmission)}
+                className="rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
+              >
+                {pending
+                  ? 'Linking…'
+                  : phoneChange?.changed
+                    ? `Link to ${match.first_name} ${match.last_name}, use the new number, send intro`
+                    : `Link to ${match.first_name} ${match.last_name} and send intro`}
+              </button>
+              {/* The escape hatch, offered only when there is something to escape.
+                  Until member admin exists (#59) there is no other way to undo a
+                  number changed by a typo on a public form. */}
+              {phoneChange?.changed && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => run(linkSubmission, { keep_phone: 'on' })}
+                  className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm disabled:opacity-40 dark:border-neutral-700"
+                >
+                  Link but keep {formatPhone(phoneChange.from)}
+                </button>
+              )}
+            </>
           ) : (
             <button
               type="button"

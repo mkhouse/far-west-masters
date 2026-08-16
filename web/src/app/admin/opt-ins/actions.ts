@@ -23,7 +23,8 @@ import { revalidatePath } from 'next/cache'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { sendIntro } from '@/lib/intro'
-import { findMatch, getSubmission } from '@/lib/opt-in-review'
+import { findMatch, getSubmission, resolvePhone } from '@/lib/opt-in-review'
+import { formatPhone } from '@/lib/members'
 import { toE164 } from '@/lib/phone'
 
 export interface ActionResult {
@@ -53,6 +54,9 @@ function refresh() {
 export async function linkSubmission(formData: FormData): Promise<ActionResult> {
   const officer = await requireAppUser()
   const id = String(formData.get('submission_id') ?? '')
+  // The officer's override, for a number that is visibly a typo. Absent by default:
+  // the form's number wins unless somebody says otherwise. See resolvePhone.
+  const keepExistingPhone = formData.get('keep_phone') === 'on'
 
   const sub = await getSubmission(id)
   if (!sub) return { ok: false, error: 'That submission has already been dealt with.' }
@@ -83,9 +87,13 @@ export async function linkSubmission(formData: FormData): Promise<ActionResult> 
   // changed their mind. That is a clearer signal than the old opt-out.
   if (person.opted_out_at) updates.opted_out_at = null
   if (!person.usssa && sub.usssa) updates.usssa = sub.usssa
-  // Fill a missing phone number from the form, so the intro has somewhere to go.
-  const phone = person.phone ?? sub.phone ?? toE164(sub.phone_raw)
-  if (!person.phone && phone) updates.phone = phone
+
+  // The number they just gave us wins over the one on file — see resolvePhone for
+  // why. This is the only place the two can disagree, because the public form
+  // matches on phone and the review queue can match on email or USSA.
+  const decided = resolvePhone(person, sub, keepExistingPhone)
+  const phone = decided.phone
+  if (phone && phone !== person.phone) updates.phone = phone
 
   await db.from('people').update(updates).eq('id', person.id)
 
@@ -107,8 +115,36 @@ export async function linkSubmission(formData: FormData): Promise<ActionResult> 
     officer: officer.email ?? 'an officer',
   })
 
+  // Recorded AFTER the send, not before: sendIntro writes the submission's note to
+  // say whether the text went out, and would overwrite anything put there first.
+  //
+  // A member's phone number changing must never be silent. This is the interim
+  // record — #59's consent audit trail replaces it with something that also says who
+  // and when for every consequential field, not just this one.
+  const phoneNote = decided.changed
+    ? `Mobile updated from ${formatPhone(decided.from)} to ${formatPhone(decided.phone)} — the number given on the form.`
+    : null
+
+  if (phoneNote) {
+    const { data: row } = await db
+      .from('opt_in_submissions')
+      .select('note')
+      .eq('id', id)
+      .maybeSingle()
+
+    await db
+      .from('opt_in_submissions')
+      .update({ note: row?.note ? `${phoneNote} ${row.note}` : phoneNote })
+      .eq('id', id)
+  }
+
   refresh()
-  return { ok: true, message: `Linked to ${person.first_name} ${person.last_name}. ${outcome}` }
+  return {
+    ok: true,
+    message: `Linked to ${person.first_name} ${person.last_name}. ${
+      phoneNote ? `${phoneNote} ` : ''
+    }${outcome}`,
+  }
 }
 
 /**

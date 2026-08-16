@@ -246,6 +246,14 @@ Notes on the decisions built in:
 - **Consent is dated to the submission, not to the review.** The member agreed when
   they filled in the form; the delay is ours, and stamping an officer's convenience
   onto a member's decision would make the record wrong.
+- **The number on the form wins over the number on file.** The opt-in page asks
+  members to register the mobile they want texts on, so a different number is a
+  deliberate statement, more recent and more direct than anything imported from
+  AdminSkiRacing. It also matters practically: Twilio blocks opt-outs *per number*, so
+  somebody who texted STOP from an old handset can only be reached on the new one.
+  The card says which number will be used before you click, and offers "keep the
+  number on file" for when the new one is visibly a typo. The change is recorded on
+  the submission until #59's audit trail replaces that.
 - **A rejection needs a reason.** Six months on, "rejected" with no explanation is
   indistinguishable from a mistake, and the same junk submission gets re-examined
   every time somebody opens the queue.
