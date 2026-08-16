@@ -79,13 +79,22 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
           The Event Roster CSV from AdminSkiRacing. Every download holds the whole
           list, so importing the same file twice changes nothing.
         </p>
-        <input
-          id="file"
-          type="file"
-          accept=".csv,text/csv"
-          onChange={(e) => onFile(e.target.files?.[0])}
-          className="mt-2 block w-full text-sm"
-        />
+        {/* The browser's own control reads "Choose File / no file selected", which
+            is neither the club's language nor legible. The input itself is kept —
+            it is the accessible, keyboard-operable thing — and only its button is
+            restyled, with the chosen file named beside it. */}
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <input
+            id="file"
+            type="file"
+            accept=".csv,text/csv"
+            onChange={(e) => onFile(e.target.files?.[0])}
+            className="block text-sm text-transparent file:mr-0 file:cursor-pointer file:rounded-md file:border file:border-neutral-300 file:bg-transparent file:px-3 file:py-1.5 file:text-sm file:text-neutral-900 hover:file:bg-neutral-100 dark:file:border-neutral-700 dark:file:text-neutral-100 dark:hover:file:bg-neutral-900"
+          />
+          <span className="text-sm text-neutral-600">
+            {fileName ?? 'No file chosen yet'}
+          </span>
+        </div>
 
         <button
           type="button"

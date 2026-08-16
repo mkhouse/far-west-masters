@@ -57,6 +57,9 @@ export default async function MembershipImportPage() {
       {/* Said before the upload, not after: it explains why the season field is
           prefilled the way it is, and why a first import of a new year is expected
           to show everybody joining. */}
+      {/* Three cases, not two. `isFallback` is false both when the current season
+          has been imported AND when nothing has ever been imported, so branching on
+          it alone claimed memberships existed on a database with none in it. */}
       <p className="mt-4 rounded-md border border-neutral-200 bg-surface px-3 py-2 text-sm dark:border-neutral-800">
         We are in <strong>{freshness.currentSeason}</strong>.{' '}
         {freshness.isFallback ? (
@@ -66,8 +69,19 @@ export default async function MembershipImportPage() {
             starts each year as not renewed, and the first import of the season is
             what brings the renewals across.
           </>
+        ) : freshness.lastImportedAt ? (
+          <>
+            Memberships for it have been imported
+            {freshness.daysOld !== null &&
+              ` — ${freshness.daysOld === 0 ? 'today' : `${freshness.daysOld} days ago`}`}
+            . Import again to pick up anyone who has joined since.
+          </>
         ) : (
-          <>Memberships for it have been imported.</>
+          <>
+            Nothing has been imported yet, so nobody counts as a current member and
+            the directory shows Active as zero. Importing the export below is what
+            fills it in.
+          </>
         )}
       </p>
 
