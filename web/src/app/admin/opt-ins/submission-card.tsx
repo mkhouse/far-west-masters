@@ -44,7 +44,14 @@ function formatWhen(iso: string): string {
   return `${when} (${days} days ago)`
 }
 
-export function SubmissionCard({ submission }: { submission: PendingSubmission }) {
+export function SubmissionCard({
+  submission,
+  onResolved,
+}: {
+  submission: PendingSubmission
+  /** Told what happened, so the outcome outlives this card. See submission-list. */
+  onResolved: (result: ActionResult) => void
+}) {
   const [pending, startTransition] = useTransition()
   const [result, setResult] = useState<ActionResult | null>(null)
   const [reason, setReason] = useState('')
@@ -59,20 +66,14 @@ export function SubmissionCard({ submission }: { submission: PendingSubmission }
     const fd = new FormData()
     fd.set('submission_id', submission.id)
     for (const [k, v] of Object.entries(extra)) fd.set(k, v)
-    startTransition(async () => setResult(await action(fd)))
-  }
-
-  // Once handled, the row stays put showing what happened rather than vanishing.
-  // A card that disappears leaves no confirmation of which one was just approved.
-  if (result?.ok) {
-    return (
-      <li className="rounded-lg border border-fwm-navy/40 bg-fwm-navy/5 p-4">
-        <p className="font-medium">
-          {submission.first_name} {submission.last_name}
-        </p>
-        <p className="mt-1 text-sm">{result.message}</p>
-      </li>
-    )
+    startTransition(async () => {
+      const outcome = await action(fd)
+      setResult(outcome)
+      // The list owns the record of what happened: revalidation removes this row
+      // from the server data and unmounts the card, which is how the confirmation
+      // message used to disappear before it could be read.
+      onResolved(outcome)
+    })
   }
 
   return (

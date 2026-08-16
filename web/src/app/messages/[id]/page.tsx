@@ -16,6 +16,7 @@
 import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { isPermanentFailure } from '@/lib/delivery'
 
 interface RecipientRow {
   phone: string
@@ -26,9 +27,6 @@ interface RecipientRow {
   segments: number | null
   people: { first_name: string; last_name: string } | null
 }
-
-/** Delivery states Twilio reports for a message that never arrived. */
-const FAILED_STATES = new Set(['failed', 'undelivered'])
 
 /**
  * How the audience was chosen, in plain words.
@@ -62,7 +60,7 @@ const AUDIENCE_KIND_LABEL: Record<string, string> = {
  */
 function statusClass(state: string | null): string {
   if (state === 'delivered') return 'text-fwm-navy font-medium'
-  if (state && FAILED_STATES.has(state)) return 'text-fwm-burgundy font-medium'
+  if (isPermanentFailure(state)) return 'text-fwm-burgundy font-medium'
   return 'text-neutral-600'
 }
 
@@ -127,7 +125,7 @@ export default async function MessagePage({
 
   const recipients = (recipientData ?? []) as unknown as RecipientRow[]
   const failures = recipients.filter(
-    (r) => r.error || FAILED_STATES.has(r.delivery_status ?? '')
+    (r) => r.error || isPermanentFailure(r.delivery_status)
   )
   const delivered = recipients.filter((r) => r.delivery_status === 'delivered')
 

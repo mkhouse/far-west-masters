@@ -14,7 +14,7 @@
 import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
 import { listPending } from '@/lib/opt-in-review'
-import { SubmissionCard } from './submission-card'
+import { SubmissionList } from './submission-list'
 
 export default async function OptInReviewPage() {
   await requireAppUser()
@@ -35,23 +35,7 @@ export default async function OptInReviewPage() {
         their consent.
       </p>
 
-      {pending.length === 0 ? (
-        <p className="mt-8 rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-600 dark:border-neutral-700">
-          Nothing waiting. Submissions that match a member on their mobile number are
-          linked and introduced automatically — only the rest arrive here.
-        </p>
-      ) : (
-        <>
-          <p className="mt-8 text-sm text-neutral-600">
-            {pending.length} waiting, oldest first
-          </p>
-          <ul className="mt-3 space-y-3">
-            {pending.map((submission) => (
-              <SubmissionCard key={submission.id} submission={submission} />
-            ))}
-          </ul>
-        </>
-      )}
+      <SubmissionList pending={pending} />
 
       {/* Said once, here, rather than assumed. Whoever picks this up next should know
           why they are being asked to click rather than the system just doing it. */}
