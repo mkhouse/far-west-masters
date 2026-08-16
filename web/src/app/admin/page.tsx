@@ -30,6 +30,12 @@ const AVAILABLE = [
       'People who filled in the form and could not be matched to a member automatically. They have consented and are waiting to be introduced.',
   },
   {
+    href: '/admin/membership',
+    title: 'Membership import',
+    description:
+      'Bring the season’s membership across from AdminSkiRacing. Whether somebody is a member is a lookup against that, not something kept by hand here.',
+  },
+  {
     href: '/admin/groups',
     title: 'Messaging groups',
     description:

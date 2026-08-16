@@ -37,6 +37,9 @@ function person(over: Partial<FilterablePerson> = {}): FilterablePerson {
     intro_sent_at: '2026-01-02T00:00:00Z',
     opted_out_at: null,
     sms_never: false,
+    // Holds a membership for the season being shown. Set by the caller from
+    // lib/membership.ts in the real thing — see the membership grouping tests.
+    is_member: true,
     ...over,
   }
 }
@@ -87,30 +90,100 @@ describe('filterFromParams', () => {
 })
 
 describe('applyFilter — membership groupings', () => {
-  it('counts officers as active, since they are members too', () => {
-    const people = [person({ status: 'active_member' }), person({ status: 'officer' })]
-    expect(applyFilter(people, { ...ALL, membership: 'active' })).toHaveLength(2)
+  // CHANGED IN TASK #52, and this is the point of the change. "Active" used to mean
+  // a value on the person, which was wrong for 63 people when checked against the
+  // AdminSkiRacing export. It now means holding a membership for the season being
+  // shown — a row in the memberships table, imported from ASR.
+  //
+  // people.status still says what KIND of person somebody is, which is what separates
+  // a member who has not renewed from somebody who was never a member at all.
+
+  it('counts anyone holding a membership as active, whatever their status says', () => {
+    const people = [
+      person({ status: 'active_member', is_member: true }),
+      person({ status: 'officer', is_member: true }),
+      // The case that was previously wrong: status says inactive, ASR says they paid.
+      person({ status: 'inactive', is_member: true }),
+      person({ status: 'asr_import', is_member: true }),
+    ]
+    expect(applyFilter(people, { ...ALL, membership: 'active' })).toHaveLength(4)
   })
 
-  it('gathers every non-member status under one grouping', () => {
-    const people = MEMBERSHIP.non_members.statuses.map((status) => person({ status }))
-    expect(applyFilter(people, { ...ALL, membership: 'non_members' })).toHaveLength(
-      people.length
+  it('does not count somebody as active because their status says so', () => {
+    // The other half of the same bug: marked active_member, never actually joined.
+    const people = [person({ status: 'active_member', is_member: false })]
+    expect(applyFilter(people, { ...ALL, membership: 'active' })).toHaveLength(0)
+    expect(applyFilter(people, { ...ALL, membership: 'inactive' })).toHaveLength(1)
+  })
+
+  it('treats a member who has not renewed as inactive', () => {
+    const people = [
+      person({ status: 'active_member', is_member: false }),
+      person({ status: 'officer', is_member: false }),
+      person({ status: 'inactive', is_member: false }),
+    ]
+    expect(applyFilter(people, { ...ALL, membership: 'inactive' })).toHaveLength(3)
+  })
+
+  it('treats somebody who was never a member as a non-member', () => {
+    const people = ['sms_opt_in', 'out_of_region', 'temp_racer', 'non_member'].map((status) =>
+      person({ status, is_member: false })
     )
+    expect(applyFilter(people, { ...ALL, membership: 'non_members' })).toHaveLength(4)
+  })
+
+  // On 1 September membership lapses and nobody holds a row for the new season, so
+  // everybody leaves "Active" without anything running. This is that, in one test.
+  it('empties Active when nobody holds a membership for the season', () => {
+    const people = [
+      person({ status: 'active_member', is_member: false }),
+      person({ status: 'officer', is_member: false }),
+      person({ status: 'sms_opt_in', is_member: false }),
+    ]
+    expect(applyFilter(people, { ...ALL, membership: 'active' })).toHaveLength(0)
+    // And everybody is still somewhere — they have not vanished from the directory.
+    const elsewhere =
+      applyFilter(people, { ...ALL, membership: 'inactive' }).length +
+      applyFilter(people, { ...ALL, membership: 'non_members' }).length
+    expect(elsewhere).toBe(3)
   })
 
   it('returns everyone when the grouping is "all"', () => {
     const people = [
-      person({ status: 'active_member' }),
-      person({ status: 'inactive' }),
-      person({ status: 'sms_opt_in' }),
+      person({ status: 'active_member', is_member: true }),
+      person({ status: 'inactive', is_member: false }),
+      person({ status: 'sms_opt_in', is_member: false }),
     ]
     expect(applyFilter(people, ALL)).toHaveLength(3)
   })
 
-  it('keeps the groupings disjoint, so nobody is counted twice', () => {
-    const statuses = Object.values(MEMBERSHIP).flatMap((g) => g.statuses)
-    expect(new Set(statuses).size).toBe(statuses.length)
+  it('puts every person in exactly one grouping', () => {
+    // No overlap and no gap: the three chips must account for the directory.
+    const people = [
+      person({ status: 'active_member', is_member: true }),
+      person({ status: 'officer', is_member: true }),
+      person({ status: 'active_member', is_member: false }),
+      person({ status: 'inactive', is_member: false }),
+      person({ status: 'asr_import', is_member: false }),
+      person({ status: 'sms_opt_in', is_member: false }),
+      person({ status: 'out_of_region', is_member: false }),
+      person({ status: 'temp_racer', is_member: false }),
+    ]
+
+    for (const p of people) {
+      const hits = Object.keys(MEMBERSHIP).filter(
+        (key) => applyFilter([p], { ...ALL, membership: key }).length === 1
+      )
+      expect(hits, `${p.status} / member=${p.is_member}`).toHaveLength(1)
+    }
+  })
+
+  it('treats a person with no membership lookup as not a member', () => {
+    // A caller that has not looked up memberships is not entitled to call anybody a
+    // current member, so an absent flag must read as false rather than as unknown.
+    const p = person({ status: 'active_member' })
+    delete (p as { is_member?: boolean }).is_member
+    expect(applyFilter([p], { ...ALL, membership: 'active' })).toHaveLength(0)
   })
 })
 
@@ -179,10 +252,10 @@ describe('applyFilter — texting state and USSA', () => {
 
   it('combines every filter as AND', () => {
     const people = [
-      person({ status: 'active_member', usssa: null, last_name: 'Lovelace' }),
-      person({ status: 'inactive', usssa: null, last_name: 'Lovelace' }),
-      person({ status: 'active_member', usssa: 1234567, last_name: 'Lovelace' }),
-      person({ status: 'active_member', usssa: null, last_name: 'Hopper' }),
+      person({ is_member: true, usssa: null, last_name: 'Lovelace' }),
+      person({ is_member: false, usssa: null, last_name: 'Lovelace' }),
+      person({ is_member: true, usssa: 1234567, last_name: 'Lovelace' }),
+      person({ is_member: true, usssa: null, last_name: 'Hopper' }),
     ]
     const found = applyFilter(people, {
       membership: 'active',

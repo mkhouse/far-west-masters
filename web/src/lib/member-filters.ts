@@ -12,13 +12,44 @@ import 'server-only'
 
 import { consentState, type ConsentState } from './members'
 
-/** Membership groupings, matching the chips on the directory. */
-export const MEMBERSHIP: Record<string, { label: string; statuses: string[] }> = {
-  active: { label: 'Active', statuses: ['active_member', 'officer'] },
-  inactive: { label: 'Inactive', statuses: ['inactive'] },
+/**
+ * Statuses describing somebody the club treats as a member, current or lapsed.
+ *
+ * This is deliberately NOT "are they a member now" — that question is answered by
+ * the memberships table, imported from AdminSkiRacing. What `people.status` still
+ * usefully says is what KIND of person this is: a member who may or may not have
+ * renewed, versus somebody who was never one.
+ */
+const MEMBER_KIND = new Set(['active_member', 'inactive', 'officer', 'asr_import'])
+
+/**
+ * Membership groupings, matching the chips on the directory.
+ *
+ * "Active" means holding a membership for the season being shown — a row in
+ * `memberships` — NOT a value on the person. That is the change made in task #52,
+ * and it is what fixes the 63 people whose status contradicted the ASR export.
+ *
+ * Membership renews annually and lapses on 1 September, so on that date everybody
+ * leaves "Active" without anything running: nobody holds a row for the new season
+ * until they renew and the next import brings them across.
+ */
+export const MEMBERSHIP: Record<
+  string,
+  { label: string; matches: (p: FilterablePerson) => boolean }
+> = {
+  active: {
+    label: 'Active',
+    matches: (p) => p.is_member === true,
+  },
+  inactive: {
+    label: 'Inactive',
+    // A member who has not renewed for the season being shown.
+    matches: (p) => !p.is_member && MEMBER_KIND.has(p.status),
+  },
   non_members: {
     label: 'Non-members',
-    statuses: ['asr_import', 'sms_opt_in', 'out_of_region', 'temp_racer', 'non_member'],
+    // Never a member: opted in for texts, out of region, a temporary racer.
+    matches: (p) => !p.is_member && !MEMBER_KIND.has(p.status),
   },
 }
 
@@ -43,6 +74,14 @@ export const FILTER_COLUMNS =
 export interface FilterablePerson {
   /** Set by the caller from lib/intro-failures.ts, where it matters. */
   intro_failed?: boolean
+  /**
+   * Holds a membership for the season being shown.
+   *
+   * Set by the caller from lib/membership.ts. Absent means "not a member", which is
+   * the correct reading everywhere: a caller that has not looked up memberships is
+   * not entitled to call anybody a current member.
+   */
+  is_member?: boolean
   id: string
   first_name: string
   last_name: string
@@ -116,10 +155,7 @@ export function applyFilter(
     }
     if (f.texting && consentState(p) !== f.texting) return false
     if (f.missingUsssa && p.usssa) return false
-    if (
-      f.membership !== 'all' &&
-      !MEMBERSHIP[f.membership].statuses.includes(p.status)
-    ) {
+    if (f.membership !== 'all' && !MEMBERSHIP[f.membership].matches(p)) {
       return false
     }
     return true

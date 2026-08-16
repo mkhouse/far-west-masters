@@ -10,6 +10,8 @@ import { getAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { listAudiences, resolveAudience, type AudienceKind } from '@/lib/audiences'
 import { filterFromParams, filterToParams } from '@/lib/member-filters'
+import { membershipContext } from '@/lib/membership'
+import { MembershipBanner } from '../../membership-banner'
 import { ComposeForm, type ComposeSettings, type Officer } from './compose-form'
 
 /** Read the operational settings, falling back to documented defaults. */
@@ -108,8 +110,12 @@ export default async function ComposePage({
 
   const settings = await loadSettings()
 
+  // A stale membership list means an audience missing anyone who joined recently.
+  const { freshness } = await membershipContext()
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
+      <MembershipBanner freshness={freshness} />
       <h1 className="text-xl font-semibold">Compose message</h1>
       <p className="mt-1 text-sm text-neutral-600">
         Signed in as {appUser.email} ({appUser.role})

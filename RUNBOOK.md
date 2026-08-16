@@ -73,13 +73,55 @@ signed in. Prefer the invitation.
 
 ### Before the season
 
-1. Create the season with its scoring rules (best-N, points scale, age groups).
-2. Enter the race schedule.
-3. For each race, add the **live-timing race id**. Links arrive by the Monday before
+1. Import the season's membership from AdminSkiRacing — see **Importing membership**.
+   Until that is done nobody counts as a current member, which is correct but means
+   the directory shows last season until it happens.
+2. Create the season with its scoring rules (best-N, points scale, age groups).
+3. Enter the race schedule.
+4. For each race, add the **live-timing race id**. Links arrive by the Monday before
    a race at the latest, and the system can look the id up from the date and venue —
    confirm the suggestion rather than typing it.
-4. Mark any race that does **not** count toward standings — Nationals in particular,
+5. Mark any race that does **not** count toward standings — Nationals in particular,
    which is scored and published by usalpinemasters.org.
+
+### Importing membership
+
+**/admin/membership.** Membership lives in AdminSkiRacing — a lapsed member becomes
+active by joining there, with its own fee — so this system imports the answer rather
+than keeping one of its own. It had been keeping one, badly: measured against the
+2025-2026 export, 63 people carried the wrong status.
+
+**Download the Event Roster CSV from ASR, upload it, type the season, review, apply.**
+The preview writes nothing.
+
+**Import it again every few weeks through the season.** People join all winter, and
+each download is the whole list rather than just the new names, so re-importing is
+safe and changes nothing for anyone already in. Between 15 October and 1 April the
+app says so if the last import is more than two weeks old, with a banner on the
+members directory and the compose screen. Nobody sees a banner if nobody opens the
+app, so that is a reminder rather than a guarantee.
+
+**Membership renews annually and lapses on 1 September.** Nothing runs and nothing is
+reset: membership is a row keyed by season, so on that date nobody holds one for the
+new year and everybody is correctly not-a-member until they renew. From then until
+the first import, the directory shows the previous season's memberships with a note
+saying which year it is showing, rather than looking inexplicably empty.
+
+What the preview tells you, and what to look at:
+
+| | |
+|---|---|
+| **Memberships added** | Expected to be everyone on a first import, and a handful on later ones |
+| **People not in the club yet** | Listed by name, and created when you apply. Read these — a misspelling here becomes a second record for one human |
+| **Details updated** | Phone and email corrections. Ours wins if the member has opted in for texts, because ours came from them; ASR's wins if they have not |
+| **Absent from this file** | Held for the season but missing from the export. **Left alone.** Usually a refund or a correction in ASR, which is not something an import should decide |
+
+**The USSA number is never overwritten**, only filled when blank. Changing it can
+detach somebody from their own race history.
+
+**Nothing medical or residential is imported.** The export carries allergies —
+including insurance and patient record numbers for at least one member — plus
+emergency contacts and home addresses. Those are not read at all.
 
 ### Race day
 
@@ -496,6 +538,9 @@ files — and so that what is *not* guaranteed is equally visible.
 | **The consent gate** | `web/src/lib/audiences.test.ts` | Nobody who has not opted in, has not had the intro text, has opted out, is suppressed, or has no phone number can appear in any sendable audience. Groups are not an exception (migration 0020). A filter can only narrow an audience, never widen it. `intro_pending` is the only audience flagged as incomplete consent, and everyone in it has still opted in. The database queries are asserted too, so a predicate cannot quietly go missing. |
 | **Consent states** | `web/src/lib/members.test.ts` | The five database signals reduce to one blocking reason, in the same order the gate applies them. Exactly two states have a send action, and both have already opted in. |
 | **SMS cost and assembly** | `web/src/lib/sms/segments.test.ts` | Segment boundaries exactly, including the UCS-2 cliff a curly apostrophe triggers. The opt-out line is appended once, never twice, and the character budget matches the message actually sent. |
+| **Membership import** | `web/src/lib/membership-import.test.ts` | Matching on USSA, then email, then phone; whose contact details win; and that re-importing the same cumulative export changes nothing the second time. |
+| **Season calendar** | `web/src/lib/season.test.ts`, `membership.test.ts` | The membership year turns over on 1 September; the racing season window wraps the new year correctly; the staleness warning fires only in season, and when nothing has been imported at all. |
+| **CSV parsing** | `web/src/lib/asr-csv.test.ts` | Newlines inside quoted fields do not corrupt the row or the ones after it — the trap that has now appeared in two different exports. |
 | **Failed intros** | `web/src/lib/intro-failures.test.ts` | Somebody whose intro was permanently rejected is marked as such, and somebody who has since been introduced successfully is not — however many failures sit behind them. |
 | **Delivery outcomes** | `web/src/lib/delivery.test.ts` | Only `failed` and `undelivered` count as final, so an intro still in flight is never re-sent; and only intro sends can un-introduce somebody, so an ordinary race text bouncing never drops a member out of every audience. |
 | **Opt-in matching** | `web/src/lib/opt-in-review.test.ts` | A submission is matched to a member on mobile, then email, then USSA number — in that order, because a USSA number typed on a public form is the one most likely to be a digit out. A number that failed to normalise is tried again rather than left lost. Nothing matches on a value the submission never gave. |

@@ -14,6 +14,8 @@ import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { introFailures, withIntroFailures } from '@/lib/intro-failures'
+import { membersForSeason, membershipContext } from '@/lib/membership'
+import { MembershipBanner } from '../membership-banner'
 import {
   CONSENT_STATE_LABEL,
   MESSAGEABLE,
@@ -47,6 +49,8 @@ interface PersonRow {
   sms_never: boolean
   /** Derived per request, not stored — see lib/intro-failures.ts. */
   intro_failed?: boolean
+  /** Holds a membership for the season being shown — see lib/membership.ts. */
+  is_member?: boolean
 }
 
 /**
@@ -129,10 +133,17 @@ export default async function MembersPage({
   // Decorate with failed intros before anything filters or counts, so "needs intro
   // text" and "intro text failed" are separated everywhere on this page rather than
   // in one place and not another.
+  // Whether somebody is a member is a lookup against the memberships table, not a
+  // value on the person — see task #52. `display` is usually the current season, and
+  // falls back to the most recent imported one between 1 September and the first
+  // import of the new year, so the directory is never inexplicably empty.
+  const { display, freshness } = await membershipContext()
+  const currentMembers = await membersForSeason(display.season)
+
   const everyone = withIntroFailures(
     (data ?? []) as unknown as PersonRow[],
     await introFailures()
-  ) as unknown as PersonRow[]
+  ).map((p) => ({ ...p, is_member: currentMembers.has(p.id) })) as unknown as PersonRow[]
 
   const matches = applyFilter(
     everyone as unknown as FilterablePerson[],
@@ -144,7 +155,7 @@ export default async function MembersPage({
   const membershipCounts = Object.fromEntries(
     Object.entries(MEMBERSHIP).map(([key, m]) => [
       key,
-      everyone.filter((p) => m.statuses.includes(p.status)).length,
+      everyone.filter((p) => m.matches(p as unknown as FilterablePerson)).length,
     ])
   )
 
@@ -159,6 +170,8 @@ export default async function MembersPage({
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
+      <MembershipBanner freshness={freshness} />
+
       <h1 className="text-xl font-semibold">Members</h1>
       <p className="mt-1 text-sm text-neutral-600">
         {everyone.length} people. Search by name, phone or email.
