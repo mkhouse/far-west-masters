@@ -1,7 +1,12 @@
-import 'server-only'
-
 /**
  * Phone normalisation.
+ *
+ * Deliberately NOT marked `server-only`, unlike most of lib/ — see lib/format.ts for
+ * the same reasoning. There is no key, request or database here, only string
+ * handling, and marking it server-only twice blocked code that had every right to
+ * use it: first the phone number shown on a review card, then the membership import
+ * preview. A guard that only ever stops legitimate callers is not protecting
+ * anything.
  *
  * Twilio needs E.164 (+15305551234). People type anything: the two roster exports
  * alone contained seven shapes — bare digits, dashes, parentheses, spaces, a

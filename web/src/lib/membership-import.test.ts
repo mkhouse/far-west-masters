@@ -13,6 +13,8 @@ import {
   contactChanges,
   matchPerson,
   parseAsrDate,
+  changeCount,
+  entriesWithChanges,
   toMemberRows,
   type ExistingPerson,
   type MemberRow,
@@ -257,5 +259,33 @@ describe('buildDiff — what would change', () => {
     expect(second.updated).toEqual([])
     expect(second.missing).toEqual([])
     expect(second.unchanged).toBe(1)
+  })
+})
+
+describe('what the preview reports', () => {
+  const ada = { id: 'ada', first_name: 'Ada', last_name: 'Lovelace', usssa: null, phone: '+15305551234', email: 'old@example.com', opt_in_at: null }
+
+  // The bug this exists for: on a FIRST import everybody lands in `joined`, so
+  // counting only `updated` reported zero contact changes while thirteen were about
+  // to be applied to real member records.
+  it('counts corrections on people who are joining, not only on existing members', () => {
+    const diff = buildDiff([member()], [ada], new Set())
+    expect(diff.updated).toHaveLength(0)
+    expect(entriesWithChanges(diff)).toHaveLength(1)
+    // email corrected, USSA filled
+    expect(changeCount(diff)).toBe(2)
+  })
+
+  it('counts corrections on existing members too', () => {
+    const diff = buildDiff([member()], [ada], new Set(['ada']))
+    expect(diff.updated).toHaveLength(1)
+    expect(entriesWithChanges(diff)).toHaveLength(1)
+  })
+
+  it('reports nothing when nothing would change', () => {
+    const settled = { ...ada, email: 'ada@example.com', usssa: 5276696 }
+    const diff = buildDiff([member()], [settled], new Set(['ada']))
+    expect(entriesWithChanges(diff)).toEqual([])
+    expect(changeCount(diff)).toBe(0)
   })
 })

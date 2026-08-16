@@ -20,6 +20,7 @@ import {
   type ApplyResult,
   type PreviewResult,
 } from './actions'
+import { changeCount, entriesWithChanges } from '@/lib/membership-import'
 
 export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
   const [pending, startTransition] = useTransition()
@@ -135,7 +136,7 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
           <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
             <Stat label="Rows in file" value={diff.rowsInFile} />
             <Stat label="Memberships added" value={diff.joined.length + diff.unmatched.length} />
-            <Stat label="Details updated" value={diff.updated.length} />
+            <Stat label="Details corrected" value={changeCount(diff)} />
             <Stat label="Unchanged" value={diff.unchanged} />
           </dl>
 
@@ -158,10 +159,14 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
             </Section>
           )}
 
-          {diff.updated.length > 0 && (
-            <Section title={`${diff.updated.length} contact details would change`}>
+          {/* Across joined AND updated. On a first import everybody is joining, and
+              their corrections still need showing. */}
+          {entriesWithChanges(diff).length > 0 && (
+            <Section
+              title={`${changeCount(diff)} contact detail(s) would be corrected on ${entriesWithChanges(diff).length} people`}
+            >
               <ul className="mt-1 space-y-0.5">
-                {diff.updated.map((u, i) => (
+                {entriesWithChanges(diff).map((u, i) => (
                   <li key={i}>
                     {u.member.firstName} {u.member.lastName}
                     {u.changes.map((c) => (

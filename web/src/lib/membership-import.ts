@@ -287,3 +287,21 @@ export function buildDiff(
 
   return diff
 }
+
+/**
+ * Every entry this import would change contact details on, whether the person is
+ * joining now or was already a member.
+ *
+ * Exists because the preview got this wrong: on a FIRST import everyone lands in
+ * `joined`, so counting only `updated` reported zero contact changes while thirteen
+ * were about to be applied. A preview that under-reports what it will do defeats the
+ * point of having one.
+ */
+export function entriesWithChanges(diff: ImportDiff): DiffEntry[] {
+  return [...diff.joined, ...diff.updated].filter((e) => e.changes.length > 0)
+}
+
+/** How many field changes in total, for the summary figure. */
+export function changeCount(diff: ImportDiff): number {
+  return entriesWithChanges(diff).reduce((n, e) => n + e.changes.length, 0)
+}
