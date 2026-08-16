@@ -23,8 +23,7 @@
 import { redirect } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { toE164 } from '@/lib/phone'
-import { composeBody } from '@/lib/sms/segments'
-import { sendOne, twilioConfig } from '@/lib/sms/twilio'
+import { sendIntro } from '@/lib/intro'
 
 /** How recently the same number must have submitted to be treated as a repeat. */
 const DUPLICATE_WINDOW_MINUTES = 10
@@ -128,105 +127,16 @@ export async function submitOptIn(formData: FormData) {
   // Only when they have not had one. The intro is what completes consent, and
   // sending it twice to somebody re-submitting the form would be noise.
   if (!member.intro_sent_at && !member.sms_never) {
-    await sendIntro(member.id, phone!, (submission?.id as string) ?? null)
+    await sendIntro({
+      personId: member.id as string,
+      phone: phone!,
+      submissionId: (submission?.id as string) ?? null,
+      audienceKind: 'opt_in_auto',
+      // No officer sent it. Named rather than left blank, so the log does not imply
+      // somebody did.
+      sentBy: 'Opt-in form (automatic)',
+    })
   }
 
   redirect('/opt-in?done=1')
-}
-
-/**
- * Send one intro text and record it like any other message.
- *
- * It goes through the same tables as a message an officer sends, so the send log
- * shows it, delivery is tracked, and nothing about it is invisible just because
- * nobody pressed a button.
- */
-async function sendIntro(personId: string, phone: string, submissionId: string | null) {
-  const db = supabaseAdmin()
-  const tw = twilioConfig()
-  if ('missing' in tw) return
-
-  const { data: settings } = await db.from('app_settings').select('key, value')
-  const setting = (k: string, d: string) =>
-    settings?.find((r) => r.key === k)?.value ?? d
-
-  const body = setting('sms_intro_text', '')
-  if (!body) return
-
-  const text = composeBody(body, {
-    optOutText: setting('sms_optout_text', 'Text STOP to stop'),
-  })
-
-  const { data: message } = await db
-    .from('messages')
-    .insert({
-      body,
-      category: 'general',
-      purpose: 'Intro text — opt-in form',
-      audience_kind: 'opt_in_auto',
-      audience_label: 'Opt-in form — automatic intro',
-      // Consent is incomplete at this instant by definition: they have opted in and
-      // this send is what supplies the other half.
-      bypassed_consent_gate: true,
-      // No officer sent it. Named rather than left blank, so the log does not
-      // imply somebody did.
-      sent_by: 'Opt-in form (automatic)',
-      status: 'sending',
-      replies_monitored: false,
-      segments: 1,
-    })
-    .select('id')
-    .single()
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  const statusCallback = siteUrl?.startsWith('https://')
-    ? `${siteUrl}/api/twilio/status`
-    : undefined
-
-  const result = await sendOne(tw.config, phone, text, statusCallback)
-
-  if (message) {
-    await db.from('message_recipients').insert({
-      message_id: message.id,
-      person_id: personId,
-      phone,
-      twilio_sid: result.sid ?? null,
-      status: result.error ? 'failed' : (result.status ?? 'queued'),
-      delivery_status: result.status ?? null,
-      error: result.error ?? null,
-      error_code: result.errorCode ?? null,
-      segments: result.segments ?? null,
-      sent_at: result.error ? null : new Date().toISOString(),
-    })
-
-    await db
-      .from('messages')
-      .update({
-        status: result.error ? 'failed' : 'sent',
-        sent_at: new Date().toISOString(),
-      })
-      .eq('id', message.id)
-  }
-
-  // Only mark them introduced if Twilio accepted it. A failed send introduced
-  // nobody, and marking it would quietly promote them into the regular audiences
-  // having never heard from the club.
-  if (!result.error) {
-    await db
-      .from('people')
-      .update({ intro_sent_at: new Date().toISOString() })
-      .eq('id', personId)
-      .is('intro_sent_at', null)
-  }
-
-  if (submissionId) {
-    await db
-      .from('opt_in_submissions')
-      .update({
-        note: result.error
-          ? `Intro text failed: ${result.error}`
-          : 'Intro text sent automatically',
-      })
-      .eq('id', submissionId)
-  }
 }

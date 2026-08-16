@@ -12,6 +12,7 @@
 
 import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
+import { countPending } from '@/lib/opt-in-review'
 
 /** Built and usable. */
 const AVAILABLE = [
@@ -20,6 +21,12 @@ const AVAILABLE = [
     title: 'Members',
     description:
       'Look anyone up by name, phone or email. Shows whether they can be texted and why, which groups they are in, and everything the club has sent them.',
+  },
+  {
+    href: '/admin/opt-ins',
+    title: 'Opt-in submissions',
+    description:
+      'People who filled in the form and could not be matched to a member automatically. They have consented and are waiting to be introduced.',
   },
   {
     href: '/admin/groups',
@@ -45,6 +52,11 @@ export default async function AdminPage() {
   // someone is signed in; role is enforced here, next to the data.
   const appUser = await requireAppUser('admin')
 
+  // The count is the whole point of surfacing this here: a review queue nobody is
+  // told about is the same as no review queue, and the people in it have already
+  // consented and are waiting to hear from the club.
+  const pendingOptIns = await countPending()
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="text-xl font-semibold">Admin</h1>
@@ -57,7 +69,14 @@ export default async function AdminPage() {
               href={item.href}
               className="block rounded-lg border border-neutral-200 bg-surface p-4 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
             >
-              <span className="font-medium">{item.title}</span>
+              <span className="flex items-baseline justify-between gap-3">
+                <span className="font-medium">{item.title}</span>
+                {item.href === '/admin/opt-ins' && pendingOptIns > 0 && (
+                  <span className="shrink-0 rounded-full bg-fwm-navy/10 px-2 py-0.5 text-sm font-medium text-fwm-navy">
+                    {pendingOptIns} waiting
+                  </span>
+                )}
+              </span>
               <span className="mt-1 block text-sm text-neutral-600">
                 {item.description}
               </span>

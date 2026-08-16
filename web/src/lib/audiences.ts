@@ -70,8 +70,12 @@ export interface AudienceResult {
  *
  * Ordered by how the gate actually applies, so the counts do not double-count: a
  * person with no phone is reported once, not also as "no opt-in".
+ *
+ * Exported for tests. This function IS the consent gate — every audience below runs
+ * its candidates through it — so it is the thing most worth pinning down, and it is
+ * pure, which makes it testable without a database. See audiences.test.ts.
  */
-function explainExclusions(
+export function explainExclusions(
   people: Array<{
     phone: string | null
     opted_out_at: string | null

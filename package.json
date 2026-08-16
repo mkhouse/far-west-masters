@@ -11,16 +11,19 @@
     "dev": "npm run dev --workspace web",
     "build": "npm run build --workspace web",
     "typecheck": "npm run typecheck --workspaces --if-present",
-
+    "test": "vitest run",
+    "test:watch": "vitest",
     "parity": "npm run parity --workspace @fwm/results-engine",
     "standings": "npm run standings --workspace @fwm/results-engine",
     "cups": "npm run cups --workspace @fwm/results-engine",
-
     "backup:airtable": "node migration/airtable-backup.mjs",
     "archive:results": "node migration/archive-results.mjs",
     "detect:points-scale": "node migration/detect-points-scale.mjs"
   },
   "engines": {
     "node": ">=20.9"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
   }
 }

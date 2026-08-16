@@ -215,12 +215,54 @@ Decisions built into it, all of them deliberate:
 - **The thank-you page never says whether the person was recognised.** A public form
   should not report who is or is not a member.
 
-Unmatched submissions accumulate until the review queue is built. Until then they
-can be read in the `opt_in_submissions` table.
-
 **To test the form as though you were new**, use
 `supabase/local/reset-my-opt-in-for-testing.sql`. Submitting as somebody already
 introduced does nothing visible, by design.
+
+### Reviewing opt-in submissions
+
+**/admin/opt-ins**, with a count on the admin index so it cannot be forgotten.
+Everything the form could not match waits here, oldest first.
+
+This matters most for exactly the people the form is best at reaching. Somebody
+joining the club is registering with AdminSkiRacing at that moment, so they are
+genuinely not in `people` yet — they consent, they are thanked, and without this
+screen they hear nothing.
+
+Each submission shows what the person typed and, where one is found, the member they
+appear to be and why. **The match is worked out fresh every time the page loads and
+again when you act on it**, not stored when the submission arrived: the membership
+import may since have created the very person the form said was missing, and
+approving on the old answer would produce a duplicate.
+
+| Action | What it does |
+|---|---|
+| **Link to a member** | Records their consent, dated to when they submitted the form, and sends the intro text |
+| **Add as new** | Creates a person with status `sms_opt_in` — opted in for texts, not a member — and sends the intro text |
+| **Reject** | Records the decision and a required reason. Nothing is created, nothing is sent |
+
+Notes on the decisions built in:
+
+- **Consent is dated to the submission, not to the review.** The member agreed when
+  they filled in the form; the delay is ours, and stamping an officer's convenience
+  onto a member's decision would make the record wrong.
+- **A rejection needs a reason.** Six months on, "rejected" with no explanation is
+  indistinguishable from a mistake, and the same junk submission gets re-examined
+  every time somebody opens the queue.
+- **Nothing is deleted.** A rejected submission stays as part of the record of what
+  was decided.
+- **A person is only ever created by an officer pressing the button.** It would be
+  tidier to do it automatically, and it would also turn the public form into a way to
+  make the club text any number somebody typed into it. The review is the defence.
+- **If the intro text fails, the record is still saved** and the screen says so. The
+  person is not yet in the regular audiences, and the text can be re-sent.
+- **New people are `sms_opt_in`, not a membership status.** Whether they are a member
+  is AdminSkiRacing's answer, and the membership import will match them on phone or
+  email if they join.
+
+**To test it**, use `supabase/local/seed-pending-optin.sql` — it inserts a synthetic
+pending submission against your own mobile number, so approving it texts you rather
+than a member.
 
 ### Looking someone up
 
@@ -388,10 +430,72 @@ that otherwise exists in one place, on ageing infrastructure.
 > **Note:** the free Supabase plan has **no backups** and pauses a project after a
 > week of inactivity. Upgrade to Pro before relying on this system for a season.
 
+## Tests
+
+```bash
+npm test
+```
+
+That runs everything, from the repository root, in about a second. `npm run test:watch`
+re-runs on save while you work. The runner is [Vitest](https://vitest.dev); the
+configuration is `vitest.config.mts`.
+
+### What is covered
+
+These are the rules that are expensive to get wrong. The list is worth keeping current
+as tests are added, so that what is guaranteed can be seen without reading the test
+files — and so that what is *not* guaranteed is equally visible.
+
+| Area | File | What it pins down |
+|---|---|---|
+| **The consent gate** | `web/src/lib/audiences.test.ts` | Nobody who has not opted in, has not had the intro text, has opted out, is suppressed, or has no phone number can appear in any sendable audience. Groups are not an exception (migration 0020). A filter can only narrow an audience, never widen it. `intro_pending` is the only audience flagged as incomplete consent, and everyone in it has still opted in. The database queries are asserted too, so a predicate cannot quietly go missing. |
+| **Consent states** | `web/src/lib/members.test.ts` | The five database signals reduce to one blocking reason, in the same order the gate applies them. Exactly two states have a send action, and both have already opted in. |
+| **SMS cost and assembly** | `web/src/lib/sms/segments.test.ts` | Segment boundaries exactly, including the UCS-2 cliff a curly apostrophe triggers. The opt-out line is appended once, never twice, and the character budget matches the message actually sent. |
+| **Opt-in matching** | `web/src/lib/opt-in-review.test.ts` | A submission is matched to a member on mobile, then email, then USSA number — in that order, because a USSA number typed on a public form is the one most likely to be a digit out. A number that failed to normalise is tried again rather than left lost. Nothing matches on a value the submission never gave. |
+| **Phone normalisation** | `web/src/lib/phone.test.ts` | Every shape found in the roster exports normalises to the same number. Anything that is not a ten-digit North American number is refused rather than half-accepted. |
+| **Directory filters** | `web/src/lib/member-filters.test.ts` | The filters that decide what the directory shows are the same ones that decide who a message reaches. Groupings stay disjoint; an unknown value in the URL narrows rather than widens. |
+
+### How we know the tests are load-bearing
+
+A test written by reading the implementation can end up asserting whatever the code
+already does, bug included — and reading it again will not reveal that. So the suite
+was checked by breaking the code on purpose: 26 plausible defects injected one at a
+time, each run against the tests, each reverted afterwards. All 26 were caught.
+
+Three of them were **not** caught on the first pass — all three were query predicates,
+including one that would have sent intro texts to people who never opted in. That is
+why the stub database now records each predicate and the tests assert them. If you add
+tests here, it is worth breaking the code once to check they fail; the script used is
+disposable, and the exercise takes a couple of minutes.
+
+What mutation testing cannot tell you: whether an *expected value* is right. Where a
+test encodes a design decision rather than an external fact — the order of the consent
+checks, the exact wording in `describeFilter` — the test and the code can be wrong
+together. The SMS segment limits and E.164 rules are grounded outside the code
+(`migration/sms-limits.md`, the GSM and E.164 specifications); the ordering rules are
+not.
+
+### What is not covered, and why
+
+Worth knowing before trusting a green run:
+
+- **Postgres itself.** The tests assert that each query asks for the right people, but
+  they run against a stub — nothing proves the database comes back with the right rows.
+  Closing this needs integration tests against a local Supabase.
+- **Server actions.** Sending, opt-in submission and roster import all touch the
+  database and are verified by hand today.
+- **Anything rendered.** No component or end-to-end tests. The opt-in form is the
+  obvious candidate for Playwright when the app settles.
+- **The scoring engine.** Covered instead by the parity harness below, which is a
+  stronger check than unit tests would be: it compares against every published result
+  since 2009.
+
 ## Maintenance
 
 Rarely needed, but this is what it looks like:
 
+- **Run the tests** — `npm test`. Fast enough that there is no reason not to, before
+  and after any change.
 - **Verify the scoring still agrees with history** — `npm run parity`,
   `npm run standings`, `npm run cups` in `results-engine/`. Run these after any change
   to scoring code. They compare against every published FWM result since 2009.

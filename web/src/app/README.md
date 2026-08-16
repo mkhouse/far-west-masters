@@ -93,6 +93,18 @@ Both verify Twilio's signature against the URL of the request itself rather than
 configured value — a wrong setting there once silently killed both, and a rejected
 webhook looks exactly like Twilio never calling.
 
+## Tests
+
+`npm test` from the repository root. Nothing under `app/` is tested directly — the
+routes here are thin, and the rules worth pinning down live in `src/lib`: the consent
+gate, consent states, SMS segment counting, phone normalisation and the directory
+filters. RUNBOOK.md lists what each area covers, and what is deliberately not covered.
+
+The one thing to know while working in this directory: **the consent gate is tested,
+and it should stay that way.** If you add an audience, a send path, or anything that
+resolves a set of people to text, add the case to `src/lib/audiences.test.ts` that
+proves it cannot reach somebody who has not opted in.
+
 ## Not built yet
 
 `process/page.tsx` is a placeholder for race-result processing. The scoring engine

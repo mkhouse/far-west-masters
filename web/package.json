@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
-    "test:segments": "tsx scripts/test-segments.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fwm/results-engine": "*",
