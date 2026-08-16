@@ -118,6 +118,16 @@ export interface ExistingPerson {
   email: string | null
   /** Whether they have opted in for texts, which decides whose phone number wins. */
   opt_in_at: string | null
+  /**
+   * What AdminSkiRacing last told us, kept separately from the working values.
+   *
+   * Refreshed on every import for every matched member, whether or not anything else
+   * about them changes — that is the whole point of the columns. They were not, at
+   * first, so a disagreement an officer declined left ASR's version recorded nowhere
+   * but the CSV, while the screen promised it had been kept.
+   */
+  asr_phone?: string | null
+  asr_email?: string | null
 }
 
 export type MatchMethod = 'usssa' | 'email' | 'phone'
@@ -382,4 +392,9 @@ export function entriesWithDifferences(diff: ImportDiff): DiffEntry[] {
  */
 export function differenceKey(personId: string, field: string): string {
   return `${personId}:${field}`
+}
+
+/** How many disagreements this import is asking about. */
+export function differenceCount(diff: ImportDiff): number {
+  return entriesWithDifferences(diff).reduce((n, e) => n + e.differences.length, 0)
 }

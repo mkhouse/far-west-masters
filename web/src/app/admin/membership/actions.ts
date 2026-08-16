@@ -19,6 +19,7 @@ import { missingColumns, parseAsrCsv } from '@/lib/asr-csv'
 import {
   REQUIRED_COLUMNS,
   buildDiff,
+  differenceCount,
   differenceKey,
   toMemberRows,
   type ExistingPerson,
@@ -83,7 +84,7 @@ async function analyse(
 
   const { data } = await db
     .from('people')
-    .select('id, first_name, last_name, usssa, phone, email, opt_in_at')
+    .select('id, first_name, last_name, usssa, phone, email, opt_in_at, asr_phone, asr_email')
 
   const people = (data ?? []) as unknown as ExistingPerson[]
   const currentMember = await membersForSeason(season.trim())
@@ -176,6 +177,8 @@ export async function applyImport(
   const accept = new Set(accepted)
   let overwritten = 0
 
+  const byId = new Map((analysis.people ?? []).map((p) => [p.id, p]))
+
   for (const entry of [...diff.joined, ...diff.updated]) {
     if (!entry.personId) continue
 
@@ -184,16 +187,30 @@ export async function applyImport(
     )
     overwritten += chosen.length
 
-    if (entry.changes.length === 0 && chosen.length === 0) continue
-
-    const updates: Record<string, unknown> = { updated_at: now }
+    const updates: Record<string, unknown> = {}
     for (const change of [...entry.changes, ...chosen]) {
       updates[change.field] = change.field === 'usssa' ? Number(change.to) : change.to
     }
-    // Always record what ASR holds, separately from the working values.
-    updates.asr_phone = entry.member.phone
-    updates.asr_email = entry.member.email || null
 
+    // What ASR holds, recorded for EVERY matched member — not only for those whose
+    // record is otherwise changing.
+    //
+    // Previously this rode along with the other updates, so a disagreement an officer
+    // declined left ASR's version nowhere but the original CSV, while the preview
+    // said it had been kept alongside. Written only when it has actually moved, so a
+    // repeat import still touches almost nothing.
+    const person = byId.get(entry.personId)
+    const asrEmail = entry.member.email || null
+    if (entry.member.phone !== (person?.asr_phone ?? null)) {
+      updates.asr_phone = entry.member.phone
+    }
+    if (asrEmail !== (person?.asr_email ?? null)) {
+      updates.asr_email = asrEmail
+    }
+
+    if (Object.keys(updates).length === 0) continue
+
+    updates.updated_at = now
     await db.from('people').update(updates).eq('id', entry.personId)
   }
 
@@ -252,6 +269,8 @@ export async function applyImport(
     members_updated: diff.updated.length,
     members_missing: diff.missing.length,
     people_unmatched: diff.unmatched.length,
+    corrections_offered: differenceCount(diff),
+    corrections_accepted: overwritten,
     note:
       diff.missing.length > 0
         ? `${diff.missing.length} member(s) held for this season were absent from this export and were left alone.`

@@ -15,7 +15,9 @@ import {
   matchPerson,
   parseAsrDate,
   changeCount,
+  differenceCount,
   entriesWithChanges,
+  entriesWithDifferences,
   toMemberRows,
   type ExistingPerson,
   type MemberRow,
@@ -376,5 +378,34 @@ describe('the preview carries whether the member opted in', () => {
     const b = buildDiff([member()], [never], new Set())
     expect(a.joined[0].changes).toEqual(b.joined[0].changes)
     expect(a.joined[0].differences).toEqual(b.joined[0].differences)
+  })
+})
+
+describe('differenceCount', () => {
+  // Recorded on the import run alongside how many were accepted. The gap between the
+  // two is what was deliberately left alone, which is as much a decision as taking
+  // one — and "6 of 15" says that where "6" does not.
+  // Matched on the USSA number, so the row IS about this person — and differing on
+  // everything else. Somebody who differs on every identifier does not match at all,
+  // and then there is nothing to disagree about.
+  const holding = { id: 'ada', first_name: 'Ada', last_name: 'L', usssa: 5276696, phone: '+15305559999', email: 'ours@example.com', opt_in_at: null }
+
+  it('counts every field ASR disagrees on, not every person', () => {
+    const diff = buildDiff([member()], [holding], new Set())
+    expect(entriesWithDifferences(diff)).toHaveLength(1)
+    // One person, two disagreements: phone and email.
+    expect(differenceCount(diff)).toBe(2)
+  })
+
+  it('counts nothing when everything agrees', () => {
+    const settled = { ...holding, phone: '+15305551234', email: 'ada@example.com' }
+    expect(differenceCount(buildDiff([member()], [settled], new Set()))).toBe(0)
+  })
+
+  it('does not count a gap being filled as a disagreement', () => {
+    const blank = { ...holding, phone: null, email: null }
+    const diff = buildDiff([member()], [blank], new Set())
+    expect(changeCount(diff)).toBe(2)
+    expect(differenceCount(diff)).toBe(0)
   })
 })

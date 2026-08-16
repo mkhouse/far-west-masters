@@ -26,7 +26,7 @@ export default async function MembershipImportPage() {
 
   const { data: history } = await db
     .from('membership_imports')
-    .select('season, imported_at, imported_by_label, rows_in_file, members_new, members_updated, members_missing')
+    .select('season, imported_at, imported_by_label, rows_in_file, members_new, members_updated, members_missing, corrections_offered, corrections_accepted')
     .order('imported_at', { ascending: false })
     .limit(10)
 
@@ -38,6 +38,8 @@ export default async function MembershipImportPage() {
     members_new: number
     members_updated: number
     members_missing: number
+    corrections_offered: number
+    corrections_accepted: number
   }>
 
   return (
@@ -105,6 +107,10 @@ export default async function MembershipImportPage() {
                 {r.rows_in_file} rows · {r.members_new} added
                 {r.members_updated > 0 && ` · ${r.members_updated} updated`}
                 {r.members_missing > 0 && ` · ${r.members_missing} absent`}
+                {/* Both halves: declining a correction is as much a decision as
+                    taking one, and "6 of 15" says that where "6" does not. */}
+                {r.corrections_offered > 0 &&
+                  ` · ${r.corrections_accepted} of ${r.corrections_offered} corrections taken`}
               </span>
             </li>
           ))}
