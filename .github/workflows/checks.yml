@@ -1,0 +1,56 @@
+# Typecheck, tests and lint on every push.
+#
+# WHAT THIS IS FOR, AND WHAT IT IS NOT FOR.
+#
+# This catches logic regressions in about half a minute — a broken consent gate, a
+# scoring change that moves a result, a test that no longer compiles. It runs on the
+# repository root, where npm installs every workspace.
+#
+# It does NOT stand in for the Vercel build. Vercel builds with its root directory set
+# to web/, so it installs only web's dependencies — a narrower environment than this
+# one. That difference is real: a devDependency declared only at the root resolves here
+# and fails there, which is exactly how two deploys broke on 2026-08-16. The preview
+# deployment is the check for that, and this workflow cannot replace it.
+#
+# So: green here means the code is correct. Green on Vercel means it also builds in the
+# environment it actually ships to. Both are worth having, for different reasons.
+
+name: checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches local development. Deliberately not chasing whatever Vercel
+          # defaults to — reproducing a CI failure on your own machine matters more
+          # here than matching the build environment, which Vercel checks itself.
+          node-version: '20'
+          cache: npm
+
+      # `ci` rather than `install`: installs exactly what package-lock.json records
+      # and fails if the lockfile is out of step with package.json, which is a real
+      # error worth failing on rather than silently resolving.
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # The consent gate, SMS segment counting, phone normalisation, the directory
+      # filters and opt-in matching. See the Tests section of RUNBOOK.md for what
+      # each area covers — and what it deliberately does not.
+      - name: Tests
+        run: npm test
+
+      # Warnings do not fail the build; errors do. Worth keeping that way — a lint
+      # warning blocking a deploy on race morning would be the wrong trade.
+      - name: Lint
+        run: npm run lint --workspace web
