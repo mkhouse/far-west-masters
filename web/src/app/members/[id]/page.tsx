@@ -19,8 +19,8 @@ import {
   CONSENT_STATE_DETAIL,
   CONSENT_STATE_LABEL,
   consentState,
-  formatPhone,
 } from '@/lib/members'
+import { formatPhone } from '@/lib/format'
 import { CopyButton } from '../copy-button'
 import { UsssaField } from '../usssa-field'
 

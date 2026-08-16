@@ -24,7 +24,7 @@ import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { sendIntro } from '@/lib/intro'
 import { findMatch, getSubmission, resolvePhone } from '@/lib/opt-in-review'
-import { formatPhone } from '@/lib/members'
+import { formatPhone } from '@/lib/format'
 import { toE164 } from '@/lib/phone'
 
 export interface ActionResult {

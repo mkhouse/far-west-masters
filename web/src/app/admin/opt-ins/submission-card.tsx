@@ -22,7 +22,7 @@ import {
   type ActionResult,
 } from './actions'
 import type { PendingSubmission } from '@/lib/opt-in-review'
-import { formatPhone } from '@/lib/members'
+import { formatPhone } from '@/lib/format'
 
 /** How each match was made, said plainly. */
 const MATCHED_BY: Record<string, string> = {

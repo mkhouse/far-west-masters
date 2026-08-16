@@ -17,9 +17,9 @@ import {
   CONSENT_STATE_LABEL,
   MESSAGEABLE,
   consentState,
-  formatPhone,
   type ConsentState,
 } from '@/lib/members'
+import { formatPhone } from '@/lib/format'
 import {
   MEMBERSHIP,
   applyFilter,

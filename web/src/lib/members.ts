@@ -89,15 +89,3 @@ export function consentState(p: ConsentSignals): ConsentState {
   if (!p.intro_sent_at) return 'awaiting_intro'
   return 'eligible'
 }
-
-/**
- * Format a phone number for reading, not for dialling.
- *
- * Stored as E.164 because that is what Twilio needs; +15305551234 is hard to read
- * and hard to check against a number someone reads out over the phone.
- */
-export function formatPhone(phone: string | null): string {
-  if (!phone) return '—'
-  const m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(phone)
-  return m ? `(${m[1]}) ${m[2]}-${m[3]}` : phone
-}
