@@ -204,9 +204,12 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
               title={`${entriesWithDifferences(diff).length} people where AdminSkiRacing holds something different`}
             >
               <p className="mt-1 text-neutral-600">
-                Nothing here is changed unless you tick it. What we hold may be the
-                member&rsquo;s own answer from the opt-in form; what AdminSkiRacing
-                holds is often a personal address replacing a work one.
+                Nothing here is changed unless you tick it. Whether the member has
+                opted in is what decides: somebody who opted in typed their address
+                into the form themselves, so ours is their own answer. Somebody who
+                never did has an address from a historic import, and
+                AdminSkiRacing&rsquo;s is usually fresher — often a personal address
+                replacing a work one.
               </p>
 
               <div className="mt-2 flex gap-3 text-sm">
@@ -225,6 +228,25 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                 >
                   Take all of AdminSkiRacing&rsquo;s
                 </button>
+                {/* The rule stated as one click. Still every row on screen, still
+                    every tick reversible — this only saves the clicks. */}
+                <button
+                  type="button"
+                  className="text-fwm-navy underline"
+                  onClick={() =>
+                    setAccepted(
+                      new Set(
+                        entriesWithDifferences(diff)
+                          .filter((e) => !e.optedIn)
+                          .flatMap((e) =>
+                            e.differences.map((d) => differenceKey(e.personId!, d.field))
+                          )
+                      )
+                    )
+                  }
+                >
+                  Take theirs only where the member never opted in
+                </button>
                 <button
                   type="button"
                   className="text-neutral-600 underline"
@@ -235,7 +257,9 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
               </div>
 
               <ul className="mt-2 space-y-1">
-                {entriesWithDifferences(diff).map((u) =>
+                {[...entriesWithDifferences(diff)]
+                  .sort((a, b) => Number(a.optedIn) - Number(b.optedIn))
+                  .map((u) =>
                   u.differences.map((c) => {
                     const key = differenceKey(u.personId!, c.field)
                     return (
@@ -256,6 +280,16 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                           />
                           <span>
                             {u.member.firstName} {u.member.lastName}
+                            {/* The deciding fact, next to the decision. */}
+                            <span
+                              className={`ml-2 rounded-full px-1.5 py-0.5 text-xs ${
+                                u.optedIn
+                                  ? 'bg-fwm-navy/10 text-fwm-navy'
+                                  : 'bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+                              }`}
+                            >
+                              {u.optedIn ? 'opted in — ours is theirs' : 'never opted in'}
+                            </span>
                             <span className="text-neutral-600">
                               {' '}· {c.field}: <s>{c.from ?? '—'}</s> &rarr;{' '}
                               <strong>{c.to}</strong>

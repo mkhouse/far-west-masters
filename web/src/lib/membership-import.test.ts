@@ -344,3 +344,37 @@ describe('what the preview reports', () => {
     expect(changeCount(diff)).toBe(0)
   })
 })
+
+describe('the preview carries whether the member opted in', () => {
+  // It is the fact that decides a disagreement, so it has to reach the screen where
+  // the decision is made. Measured on the 2025-2026 export: nine of fifteen
+  // disagreements were with people who had opted in through Airtable, and for those
+  // the address on file is their own answer.
+  const optedIn = { id: 'in', first_name: 'Ada', last_name: 'L', usssa: 5276696, phone: '+15305551234', email: 'ours@example.com', opt_in_at: '2026-01-01T00:00:00Z' }
+  const never = { ...optedIn, id: 'out', opt_in_at: null }
+
+  it('reports an opted-in member as such', () => {
+    const diff = buildDiff([member()], [optedIn], new Set())
+    expect(diff.joined[0].optedIn).toBe(true)
+  })
+
+  it('reports a member who never opted in as such', () => {
+    const diff = buildDiff([member()], [never], new Set())
+    expect(diff.joined[0].optedIn).toBe(false)
+  })
+
+  it('reports somebody not in the club at all as not opted in', () => {
+    const diff = buildDiff([member()], [], new Set())
+    expect(diff.unmatched[0].optedIn).toBe(false)
+  })
+
+  // Opting in decides how a disagreement is PRESENTED; it must not decide what is
+  // applied. That was the old rule, and silently keeping the value is what hid nine
+  // of these from view.
+  it('does not change what would be applied', () => {
+    const a = buildDiff([member()], [optedIn], new Set())
+    const b = buildDiff([member()], [never], new Set())
+    expect(a.joined[0].changes).toEqual(b.joined[0].changes)
+    expect(a.joined[0].differences).toEqual(b.joined[0].differences)
+  })
+})

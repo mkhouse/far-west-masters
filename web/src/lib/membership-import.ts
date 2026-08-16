@@ -136,6 +136,17 @@ export interface DiffEntry {
   changes: FieldChange[]
   /** Where ASR disagrees with a value we hold. Reported, never applied. */
   differences: FieldChange[]
+  /**
+   * Whether this member has opted in for texts.
+   *
+   * Carried through to the preview because it is the fact that decides a
+   * disagreement. Somebody who opted in typed their address into the form
+   * themselves, so ours is their own answer; somebody who never did has an address
+   * that came from a historic import, and ASR's is likely to be fresher. Measured on
+   * the 2025-2026 export: nine of fifteen disagreements were with people who had
+   * opted in through Airtable.
+   */
+  optedIn: boolean
 }
 
 export interface ImportDiff {
@@ -299,6 +310,7 @@ export function buildDiff(
         matchedBy: null,
         changes: [],
         differences: [],
+        optedIn: false,
       })
       continue
     }
@@ -311,6 +323,7 @@ export function buildDiff(
       matchedBy: found.matchedBy,
       changes,
       differences: contactDifferences(member, found.person),
+      optedIn: !!found.person.opt_in_at,
     }
 
     if (!currentMember.has(found.person.id)) diff.joined.push(entry)
