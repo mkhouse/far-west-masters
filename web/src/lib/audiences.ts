@@ -15,6 +15,7 @@
 import 'server-only'
 
 import { supabaseAdmin } from './supabase/admin'
+import { introFailures } from './intro-failures'
 import {
   FILTER_COLUMNS,
   applyFilter,
@@ -307,24 +308,45 @@ export async function resolveAudience(
       // for.
       const { data } = await db
         .from('people')
-        .select(GATE_COLUMNS)
+        .select(`id, ${GATE_COLUMNS}`)
         .not('opt_in_at', 'is', null)
         .is('intro_sent_at', null)
 
-      const people = data ?? []
+      const people = (data ?? []) as Array<
+        Parameters<typeof explainExclusions>[0][number] & { id: string }
+      >
+
+      // People whose intro has already been permanently rejected are held back.
+      //
+      // They look identical to somebody never introduced — opt_in_at set,
+      // intro_sent_at null — but sending again cannot work: the carrier refused the
+      // number, usually because it is a landline. Leaving them in means every
+      // campaign run re-sends to them, the count never reaches zero, and the real
+      // remedy (getting a working mobile from them, by phone or email) never
+      // happens because nothing distinguishes them.
+      const failed = await introFailures()
+
       const reachable = people.filter(
-        (p) => p.phone && !p.opted_out_at && !p.sms_never
+        (p) => p.phone && !p.opted_out_at && !p.sms_never && !failed.has(p.id)
       )
-      const unreachable = people.length - reachable.length
+      const failedCount = people.filter((p) => failed.has(p.id)).length
+      const unreachable = people.length - reachable.length - failedCount
 
       return {
         kind,
         label: 'Opted-in, needs intro text',
         recipientCount: reachable.length,
         consideredCount: people.length,
-        excluded: unreachable > 0
-          ? [{ reason: 'no phone number, opted out, or suppressed', count: unreachable }]
-          : [],
+        excluded: [
+          ...(unreachable > 0
+            ? [{ reason: 'no phone number, opted out, or suppressed', count: unreachable }]
+            : []),
+          // Named separately because the action differs: these need a phone call,
+          // not another text.
+          ...(failedCount > 0
+            ? [{ reason: 'intro text already failed — bad number', count: failedCount }]
+            : []),
+        ],
         incompleteConsent: true,
         unavailableReason:
           people.length === 0 ? 'Everyone who has opted in has had their intro text' : undefined,

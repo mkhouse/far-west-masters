@@ -67,7 +67,7 @@ function stubQuery(table: string, rows: unknown[]) {
       Promise.resolve({ data: rows }).then(resolve),
   }
 
-  for (const method of ['select', 'eq', 'not', 'is', 'order'] as const) {
+  for (const method of ['select', 'eq', 'not', 'is', 'in', 'order'] as const) {
     chain[method] = (...args: unknown[]) => {
       record.calls.push({ method, args })
       return chain
@@ -369,5 +369,55 @@ describe('the queries ask the database for the right people', () => {
         expect(columns, `${kind} must read ${column}`).toContain(column)
       }
     }
+  })
+})
+
+describe('an intro that already failed is held back', () => {
+  // Somebody whose intro was permanently rejected looks identical in `people` to
+  // somebody never introduced: opt_in_at set, intro_sent_at null. Sending again
+  // cannot work — the carrier refused the number — so leaving them in means every
+  // campaign run re-sends to them and the count never reaches zero.
+  //
+  // See lib/intro-failures.ts. Registered here on message_recipients because that is
+  // where the failure actually lives; nothing is stored on the person.
+  it('excludes them, and says so separately from the other exclusions', async () => {
+    const stranded = eligible({ id: 'bad-number', intro_sent_at: null })
+    const waiting = eligible({ id: 'never-sent', intro_sent_at: null })
+    tables.people = [stranded, waiting]
+    tables.message_recipients = [
+      { person_id: 'bad-number', phone: '+15305550100', error: 'Landline', error_code: '30006' },
+    ]
+
+    const result = await resolveAudience('intro_pending')
+
+    expect(result.recipientCount).toBe(1)
+    expect(result.consideredCount).toBe(2)
+    // Named on its own, because the remedy differs: this one needs a phone call,
+    // not another text.
+    expect(result.excluded).toContainEqual({
+      reason: 'intro text already failed — bad number',
+      count: 1,
+    })
+  })
+
+  it('leaves the audience alone when nothing has failed', async () => {
+    tables.people = [eligible({ id: 'a', intro_sent_at: null })]
+    tables.message_recipients = []
+    const result = await resolveAudience('intro_pending')
+    expect(result.recipientCount).toBe(1)
+    expect(result.excluded).toEqual([])
+  })
+
+  it('only looks at permanently failed deliveries of intro messages', async () => {
+    tables.people = [eligible({ id: 'a', intro_sent_at: null })]
+    tables.message_recipients = []
+    await resolveAudience('intro_pending')
+
+    expect(predicates('message_recipients')).toContainEqual([
+      'in', 'delivery_status', ['failed', 'undelivered'],
+    ])
+    expect(predicates('message_recipients')).toContainEqual([
+      'in', 'messages.audience_kind', ['opt_in_auto', 'opt_in_review', 'series_intro'],
+    ])
   })
 })

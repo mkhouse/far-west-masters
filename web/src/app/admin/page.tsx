@@ -12,6 +12,7 @@
 
 import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { countPending } from '@/lib/opt-in-review'
 
 /** Built and usable. */
@@ -48,9 +49,51 @@ const PLANNED = [
 ]
 
 export default async function AdminPage() {
-  // Throws for a signed-in user who is not an admin. The proxy only checks that
-  // someone is signed in; role is enforced here, next to the data.
-  const appUser = await requireAppUser('admin')
+  // Any signed-in officer, then the role is checked below. Asking for 'admin' here
+  // would throw, and an unhandled error is a poor way to tell a colleague they need
+  // to ask somebody — particularly now the nav badge invites them to click.
+  const appUser = await requireAppUser()
+
+  if (appUser.role !== 'admin') {
+    // The opt-in queue itself only needs a signed-in officer, so a processor who
+    // followed the badge can still do the work it was pointing at. Say that, and
+    // name who can grant more — "access denied" leaves somebody with nothing to do
+    // next but guess.
+    const { data: admins } = await supabaseAdmin()
+      .from('app_users')
+      .select('user_id, people(first_name, last_name)')
+      .eq('role', 'admin')
+
+    // PostgREST returns a joined row as an array, so normalise to one record —
+    // the same shape handling as in lib/audiences.ts.
+    type Joined = { people: { first_name: string; last_name: string } | Array<{ first_name: string; last_name: string }> | null }
+
+    const names = ((admins ?? []) as unknown as Joined[])
+      .map(({ people }) => (Array.isArray(people) ? people[0] : people))
+      .filter(Boolean)
+      .map((p) => `${p!.first_name} ${p!.last_name}`)
+
+    return (
+      <main className="mx-auto max-w-2xl px-6 py-12">
+        <h1 className="text-xl font-semibold">Admin</h1>
+        <p className="mt-3 text-sm text-neutral-600">
+          These settings are limited to admins, and your account is a processor.
+          {names.length > 0
+            ? ` Ask ${names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}`} if you need access.`
+            : ' Ask whoever set up your account if you need access.'}
+        </p>
+
+        <p className="mt-6 text-sm">
+          <Link href="/admin/opt-ins" className="text-fwm-navy underline">
+            Opt-in submissions
+          </Link>{' '}
+          <span className="text-neutral-600">
+            is open to every officer, so you can still review those.
+          </span>
+        </p>
+      </main>
+    )
+  }
 
   // The count is the whole point of surfacing this here: a review queue nobody is
   // told about is the same as no review queue, and the people in it have already

@@ -41,6 +41,8 @@ export const FILTER_COLUMNS =
   'id, first_name, last_name, status, usssa, phone, email, opt_in_at, intro_sent_at, opted_out_at, sms_never'
 
 export interface FilterablePerson {
+  /** Set by the caller from lib/intro-failures.ts, where it matters. */
+  intro_failed?: boolean
   id: string
   first_name: string
   last_name: string
@@ -148,6 +150,7 @@ export function describeFilter(f: MemberFilter): string {
 const TEXTING_LABEL: Record<string, string> = {
   eligible: 'opted-in for texts',
   awaiting_intro: 'opted-in, needs intro text',
+  intro_failed: 'intro text failed',
   not_opted_in: 'not opted-in for texts',
   opted_out: 'opted out',
   suppressed: 'suppressed',

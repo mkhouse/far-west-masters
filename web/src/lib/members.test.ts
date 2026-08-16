@@ -80,6 +80,44 @@ describe('consentState', () => {
   })
 })
 
+// A failed intro and an unsent one are identical in the database — opt_in_at set,
+// intro_sent_at null — and call for opposite actions. One needs a text sending; the
+// other will reject every text until somebody gets a working number from them.
+describe('a permanently failed intro is its own state', () => {
+  it('reports intro_failed rather than awaiting_intro', () => {
+    expect(
+      consentState(signals({ intro_sent_at: null, intro_failed: true }))
+    ).toBe('intro_failed')
+  })
+
+  it('still reports awaiting_intro when nothing has failed', () => {
+    expect(consentState(signals({ intro_sent_at: null }))).toBe('awaiting_intro')
+    expect(
+      consentState(signals({ intro_sent_at: null, intro_failed: false }))
+    ).toBe('awaiting_intro')
+  })
+
+  // Somebody who moved from a landline to a mobile has a failure behind them and is
+  // perfectly reachable now. The successful intro is what counts.
+  it('reports eligible once an intro has actually been sent', () => {
+    expect(consentState(signals({ intro_failed: true }))).toBe('eligible')
+  })
+
+  // The blocking reason still has to be the one a human would act on first.
+  it('puts not opted in, opted out and suppression ahead of it', () => {
+    expect(consentState(signals({ opt_in_at: null, intro_sent_at: null, intro_failed: true })))
+      .toBe('not_opted_in')
+    expect(
+      consentState(
+        signals({ intro_sent_at: null, intro_failed: true, opted_out_at: '2026-02-01T00:00:00Z' })
+      )
+    ).toBe('opted_out')
+    expect(
+      consentState(signals({ intro_sent_at: null, intro_failed: true, sms_never: true }))
+    ).toBe('suppressed')
+  })
+})
+
 describe('MESSAGEABLE', () => {
   // The absence of a send button IS the rule for every other state. If a state ever
   // gains an entry here, somebody has made a way to message people who did not agree.
@@ -93,7 +131,15 @@ describe('MESSAGEABLE', () => {
   })
 
   it('offers nothing for anyone who has not opted in', () => {
-    for (const state of ['not_opted_in', 'opted_out', 'suppressed', 'no_phone'] as const) {
+    for (const state of [
+      'not_opted_in',
+      'opted_out',
+      'suppressed',
+      'no_phone',
+      // Deliberately here rather than among the messageable states: sending again
+      // to a number the carrier refused cannot work.
+      'intro_failed',
+    ] as const) {
       expect(MESSAGEABLE[state], `${state} must have no send action`).toBeUndefined()
     }
   })
@@ -104,6 +150,7 @@ describe('CONSENT_STATE_LABEL', () => {
     for (const state of [
       'eligible',
       'awaiting_intro',
+      'intro_failed',
       'not_opted_in',
       'opted_out',
       'suppressed',

@@ -287,6 +287,28 @@ somebody's consent record — the evidence that a named person agreed on a given
 and deleting by an identifier a real member shares would destroy theirs along with the
 test row.
 
+### When an intro text cannot be delivered
+
+Some numbers will never accept a text — a landline given as a mobile, or a digit
+mistyped on the form. Twilio accepts the message, the carrier refuses it, and the
+delivery report clears `intro_sent_at` so they return to the intro audience.
+
+Left there they would be re-sent to on every campaign run, forever, and the count
+would never reach zero. So they are separated out:
+
+- The members directory shows **"Intro text failed — bad number"** as its own state,
+  distinct from "needs intro text".
+- The **"Opted-in, needs intro text"** audience holds them back, and says so in its
+  own line of the exclusions rather than lumping them in with the rest.
+
+**The remedy is not another text.** These people have opted in and want to hear from
+the club; the number is the problem. Somebody has to reach them another way — the
+email address on their record, or a phone call — and get a working mobile. That makes
+them a natural outreach list once #55 exists.
+
+Nothing here is stored on the member. The state is derived each time from the send
+log, so it corrects itself the moment a good number produces a delivered intro.
+
 ### Looking someone up
 
 `/members` answers "is this person in the system, and why aren't they getting
@@ -474,6 +496,7 @@ files — and so that what is *not* guaranteed is equally visible.
 | **The consent gate** | `web/src/lib/audiences.test.ts` | Nobody who has not opted in, has not had the intro text, has opted out, is suppressed, or has no phone number can appear in any sendable audience. Groups are not an exception (migration 0020). A filter can only narrow an audience, never widen it. `intro_pending` is the only audience flagged as incomplete consent, and everyone in it has still opted in. The database queries are asserted too, so a predicate cannot quietly go missing. |
 | **Consent states** | `web/src/lib/members.test.ts` | The five database signals reduce to one blocking reason, in the same order the gate applies them. Exactly two states have a send action, and both have already opted in. |
 | **SMS cost and assembly** | `web/src/lib/sms/segments.test.ts` | Segment boundaries exactly, including the UCS-2 cliff a curly apostrophe triggers. The opt-out line is appended once, never twice, and the character budget matches the message actually sent. |
+| **Failed intros** | `web/src/lib/intro-failures.test.ts` | Somebody whose intro was permanently rejected is marked as such, and somebody who has since been introduced successfully is not — however many failures sit behind them. |
 | **Delivery outcomes** | `web/src/lib/delivery.test.ts` | Only `failed` and `undelivered` count as final, so an intro still in flight is never re-sent; and only intro sends can un-introduce somebody, so an ordinary race text bouncing never drops a member out of every audience. |
 | **Opt-in matching** | `web/src/lib/opt-in-review.test.ts` | A submission is matched to a member on mobile, then email, then USSA number — in that order, because a USSA number typed on a public form is the one most likely to be a digit out. A number that failed to normalise is tried again rather than left lost. Nothing matches on a value the submission never gave. |
 | **Phone normalisation** | `web/src/lib/phone.test.ts` | Every shape found in the roster exports normalises to the same number. Anything that is not a ten-digit North American number is refused rather than half-accepted. |

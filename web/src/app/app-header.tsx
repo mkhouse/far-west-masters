@@ -11,18 +11,24 @@
  */
 
 import { getUser } from '@/lib/supabase/server'
+import { countPending } from '@/lib/opt-in-review'
 import { NavLinks } from './nav-links'
 
 export async function AppHeader() {
   const user = await getUser()
   if (!user) return null
 
+  // One extra query on every signed-in page. It is a count with `head: true`, so no
+  // rows come back, and it is the price of the queue being noticed at all rather
+  // than only by whoever remembers to look.
+  const pendingOptIns = await countPending()
+
   return (
     // White, not the page grey: the bar needs to read as a fixed frame around the
     // content rather than as part of it.
     <header className="border-b border-neutral-200 bg-surface dark:border-neutral-800">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
-        <NavLinks />
+        <NavLinks badges={{ '/admin': pendingOptIns }} />
 
         <div className="flex items-center gap-3 text-sm">
           {/* Which account, not just that you are signed in. On a shared machine

@@ -11,6 +11,10 @@
  * "Messages" lit, and /admin/groups keeps "Admin" lit. Without that, the indicator
  * would vanish exactly when you had navigated somewhere — which is worse than
  * having none.
+ *
+ * Counts arrive as `badges`, keyed by href. A review queue nobody is told about is
+ * the same as no review queue, and the people in it have consented and are waiting
+ * to hear from the club.
  */
 
 import Link from 'next/link'
@@ -22,7 +26,7 @@ const SECTIONS = [
   { href: '/admin', label: 'Admin' },
 ]
 
-export function NavLinks() {
+export function NavLinks({ badges = {} }: { badges?: Record<string, number> }) {
   const pathname = usePathname()
 
   return (
@@ -48,6 +52,16 @@ export function NavLinks() {
             aria-current={active ? 'page' : undefined}
           >
             {s.label}
+            {/* Keyed by href rather than named per section, so the nav does not
+                need to know what any particular count means. */}
+            {badges[s.href] ? (
+              <span className="ml-1.5 rounded-full bg-fwm-navy px-1.5 py-0.5 text-xs font-medium text-white">
+                {badges[s.href]}
+                {/* The number alone reads as "Admin 2". Screen readers get the
+                    sentence a sighted reader infers from the context. */}
+                <span className="sr-only"> waiting for review</span>
+              </span>
+            ) : null}
           </Link>
         )
       })}

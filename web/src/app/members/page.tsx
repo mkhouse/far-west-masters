@@ -13,6 +13,7 @@
 import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { introFailures, withIntroFailures } from '@/lib/intro-failures'
 import {
   CONSENT_STATE_LABEL,
   MESSAGEABLE,
@@ -44,6 +45,8 @@ interface PersonRow {
   intro_sent_at: string | null
   opted_out_at: string | null
   sms_never: boolean
+  /** Derived per request, not stored — see lib/intro-failures.ts. */
+  intro_failed?: boolean
 }
 
 /**
@@ -123,7 +126,13 @@ export default async function MembersPage({
     .order('last_name')
     .order('first_name')
 
-  const everyone = (data ?? []) as unknown as PersonRow[]
+  // Decorate with failed intros before anything filters or counts, so "needs intro
+  // text" and "intro text failed" are separated everywhere on this page rather than
+  // in one place and not another.
+  const everyone = withIntroFailures(
+    (data ?? []) as unknown as PersonRow[],
+    await introFailures()
+  ) as unknown as PersonRow[]
 
   const matches = applyFilter(
     everyone as unknown as FilterablePerson[],

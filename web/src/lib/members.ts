@@ -17,6 +17,7 @@ import 'server-only'
 export type ConsentState =
   | 'eligible'
   | 'awaiting_intro'
+  | 'intro_failed'
   | 'not_opted_in'
   | 'opted_out'
   | 'suppressed'
@@ -28,6 +29,14 @@ export interface ConsentSignals {
   intro_sent_at: string | null
   opted_out_at: string | null
   sms_never: boolean
+  /**
+   * An intro text was sent to this person and a carrier permanently rejected it.
+   *
+   * Derived rather than stored — see lib/intro-failures.ts. Optional because most
+   * callers have no reason to look it up, and its absence must read as "no known
+   * failure" rather than changing anyone's state.
+   */
+  intro_failed?: boolean
 }
 
 /**
@@ -44,6 +53,7 @@ export const CONSENT_STATE_LABEL: Record<ConsentState, string> = {
   // costs three words and removes the ambiguity everywhere the label appears.
   eligible: 'Opted-in for texts',
   awaiting_intro: 'Opted-in, needs intro text',
+  intro_failed: 'Intro text failed — bad number',
   not_opted_in: 'Not opted-in for texts',
   opted_out: 'Opted out',
   suppressed: 'Suppressed',
@@ -54,6 +64,8 @@ export const CONSENT_STATE_DETAIL: Record<ConsentState, string> = {
   eligible: 'Opted in and introduced — included in every ordinary audience.',
   awaiting_intro:
     'Opted in on the form but not yet sent the intro text that completes it. Included only in the intro audience.',
+  intro_failed:
+    'Opted in, but the intro text was permanently rejected by their carrier — usually a landline or a mistyped number. Sending it again will fail again: they need a working mobile number, which takes a phone call or an email.',
   not_opted_in: 'Has never submitted the opt-in form, so cannot be sent anything.',
   opted_out: 'Texted STOP. Twilio blocks further messages to this number.',
   suppressed: 'Manually suppressed by an officer, independent of anything the member did.',
@@ -86,6 +98,11 @@ export function consentState(p: ConsentSignals): ConsentState {
   if (p.opted_out_at) return 'opted_out'
   if (p.sms_never) return 'suppressed'
   if (!p.opt_in_at) return 'not_opted_in'
+  // Before awaiting_intro, because the two look identical in the database — both
+  // have opt_in_at set and intro_sent_at null — and call for opposite actions. One
+  // needs a text sending; the other will reject every text until somebody gets a
+  // working number from them.
+  if (!p.intro_sent_at && p.intro_failed) return 'intro_failed'
   if (!p.intro_sent_at) return 'awaiting_intro'
   return 'eligible'
 }
