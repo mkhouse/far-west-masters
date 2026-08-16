@@ -260,9 +260,15 @@ Notes on the decisions built in:
   is AdminSkiRacing's answer, and the membership import will match them on phone or
   email if they join.
 
-**To test it**, use `supabase/local/seed-pending-optin.sql` — it inserts a synthetic
-pending submission against your own mobile number, so approving it texts you rather
-than a member.
+**To test it**, use `supabase/local/seed-pending-optin.sql`. It inserts two synthetic
+submissions — one matching nobody, one matching you on email rather than phone, which
+is the case the form itself cannot handle.
+
+Both carry fixed, obviously-synthetic ids, and the cleanup deletes by id. **Never
+clean up submissions by phone number or email.** A row in `opt_in_submissions` is
+somebody's consent record — the evidence that a named person agreed on a given date —
+and deleting by an identifier a real member shares would destroy theirs along with the
+test row.
 
 ### Looking someone up
 
