@@ -24,6 +24,7 @@ import { redirect } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { toE164 } from '@/lib/phone'
 import { sendIntro } from '@/lib/intro'
+import { resolveEmail } from '@/lib/opt-in-review'
 
 /** How recently the same number must have submitted to be treated as a repeat. */
 const DUPLICATE_WINDOW_MINUTES = 10
@@ -79,7 +80,7 @@ export async function submitOptIn(formData: FormData) {
   const { data: member } = phone
     ? await db
         .from('people')
-        .select('id, first_name, last_name, opt_in_at, intro_sent_at, opted_out_at, sms_never, usssa')
+        .select('id, first_name, last_name, email, opt_in_at, intro_sent_at, opted_out_at, sms_never, usssa')
         .eq('phone', phone)
         .maybeSingle()
     : { data: null }
@@ -119,6 +120,23 @@ export async function submitOptIn(formData: FormData) {
   if (member.opted_out_at) updates.opted_out_at = null
   // Fill a missing USSA number from the form while we have it.
   if (!member.usssa && usssa) updates.usssa = Number(usssa)
+
+  // The address they have just given us WINS over the one on file, even when we
+  // already hold one (Melissa, 2026-08-16).
+  //
+  // Same principle as the phone number: a member typing into a form headed "register
+  // your mobile number" is making a direct, current statement, and that beats a value
+  // imported from AdminSkiRacing or carried over from Airtable years ago.
+  //
+  // Until now the form recorded the address in opt_in_submissions and never touched
+  // the member record, so a member updating their email here was silently ignored —
+  // and the membership import would then offer to "correct" it back to ASR's.
+  //
+  // No separate audit note: the submission row already holds what they gave and when.
+  const decidedEmail = resolveEmail({ email: (member.email as string) ?? null }, { email })
+  if (decidedEmail.email && decidedEmail.email !== member.email) {
+    updates.email = decidedEmail.email
+  }
 
   await db.from('people').update(updates).eq('id', member.id)
 

@@ -23,7 +23,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { sendIntro } from '@/lib/intro'
-import { findMatch, getSubmission, resolvePhone } from '@/lib/opt-in-review'
+import { findMatch, getSubmission, resolveEmail, resolvePhone } from '@/lib/opt-in-review'
 import { formatPhone } from '@/lib/format'
 import { toE164 } from '@/lib/phone'
 
@@ -88,6 +88,13 @@ export async function linkSubmission(formData: FormData): Promise<ActionResult> 
   if (person.opted_out_at) updates.opted_out_at = null
   if (!person.usssa && sub.usssa) updates.usssa = sub.usssa
 
+  // The email from the form wins, as on the automatic path: it is the member's own,
+  // most recent statement of where to reach them.
+  const decidedEmail = resolveEmail(person, sub)
+  if (decidedEmail.email && decidedEmail.email !== person.email) {
+    updates.email = decidedEmail.email
+  }
+
   // The number they just gave us wins over the one on file — see resolvePhone for
   // why. This is the only place the two can disagree, because the public form
   // matches on phone and the review queue can match on email or USSA.
@@ -121,9 +128,15 @@ export async function linkSubmission(formData: FormData): Promise<ActionResult> 
   // A member's phone number changing must never be silent. This is the interim
   // record — #59's consent audit trail replaces it with something that also says who
   // and when for every consequential field, not just this one.
-  const phoneNote = decided.changed
-    ? `Mobile updated from ${formatPhone(decided.from)} to ${formatPhone(decided.phone)} — the number given on the form.`
-    : null
+  const notes = [
+    decided.changed
+      ? `Mobile updated from ${formatPhone(decided.from)} to ${formatPhone(decided.phone)} — the number given on the form.`
+      : null,
+    decidedEmail.changed
+      ? `Email updated from ${decidedEmail.from} to ${decidedEmail.email} — the address given on the form.`
+      : null,
+  ].filter(Boolean) as string[]
+  const phoneNote = notes.length > 0 ? notes.join(' ') : null
 
   if (phoneNote) {
     const { data: row } = await db

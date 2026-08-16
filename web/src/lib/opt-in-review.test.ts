@@ -14,7 +14,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { findMatch, resolvePhone } from './opt-in-review'
+import { findMatch, resolveEmail, resolvePhone } from './opt-in-review'
 
 interface StubPerson {
   id: string
@@ -266,6 +266,58 @@ describe('resolvePhone — which number wins', () => {
       resolvePhone({ phone: null }, { phone: '+15305559999', phone_raw: 'x' }),
       resolvePhone({ phone: '+15305551234' }, { phone: null, phone_raw: 'x' }),
       resolvePhone({ phone: '+15305551234' }, { phone: '+15305551234', phone_raw: 'x' }),
+    ]
+    for (const c of cases) expect(c.from).toBeNull()
+  })
+})
+
+describe('resolveEmail — which address wins', () => {
+  // THE FORM WINS, including over an address already on file (Melissa, 2026-08-16).
+  //
+  // Until this existed the form recorded the address in opt_in_submissions and never
+  // touched the member record, so a member updating their email through the form was
+  // silently ignored — and the membership import would then offer to "correct" their
+  // new address back to the stale one AdminSkiRacing held.
+
+  it('takes the address from the form over the one on file', () => {
+    const decided = resolveEmail({ email: 'old@example.com' }, { email: 'new@example.com' })
+    expect(decided.email).toBe('new@example.com')
+    expect(decided.changed).toBe(true)
+    expect(decided.from).toBe('old@example.com')
+  })
+
+  it('reports no change when the two agree', () => {
+    const decided = resolveEmail({ email: 'same@example.com' }, { email: 'same@example.com' })
+    expect(decided.changed).toBe(false)
+    expect(decided.from).toBeNull()
+  })
+
+  it('ignores case when comparing', () => {
+    // Nobody has changed their address by capitalising it.
+    const decided = resolveEmail({ email: 'Ada@Example.COM' }, { email: 'ada@example.com' })
+    expect(decided.changed).toBe(false)
+  })
+
+  // Filling a blank is not replacing anything.
+  it('fills a missing address without calling it a change', () => {
+    const decided = resolveEmail({ email: null }, { email: 'new@example.com' })
+    expect(decided.email).toBe('new@example.com')
+    expect(decided.changed).toBe(false)
+  })
+
+  it('keeps what is on file when the form gives nothing', () => {
+    const decided = resolveEmail({ email: 'ours@example.com' }, { email: '   ' })
+    expect(decided.email).toBe('ours@example.com')
+    expect(decided.changed).toBe(false)
+  })
+
+  it('never reports a from-address without reporting a change', () => {
+    // The note written to the submission is built from `from`, so a stray value here
+    // would record an address that never moved.
+    const cases = [
+      resolveEmail({ email: null }, { email: 'a@example.com' }),
+      resolveEmail({ email: 'a@example.com' }, { email: '' }),
+      resolveEmail({ email: 'a@example.com' }, { email: 'a@example.com' }),
     ]
     for (const c of cases) expect(c.from).toBeNull()
   })

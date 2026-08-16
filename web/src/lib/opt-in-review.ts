@@ -217,6 +217,45 @@ export function resolvePhone(
   return { phone: submitted, changed: true, from: person.phone }
 }
 
+export interface EmailDecision {
+  email: string | null
+  changed: boolean
+  from: string | null
+}
+
+/**
+ * Which email address wins when the form disagrees with the record.
+ *
+ * THE FORM WINS, including over an address we already hold (Melissa, 2026-08-16).
+ * Same principle as resolvePhone: a member typing into the opt-in form is making a
+ * direct, current statement, and that beats anything imported from AdminSkiRacing or
+ * carried across from Airtable years ago.
+ *
+ * Until this existed the form recorded the address in opt_in_submissions and never
+ * touched the member record, so a member updating their email through the form was
+ * silently ignored — and the membership import would then offer to "correct" their
+ * new address back to the stale one ASR held.
+ *
+ * No officer override here, unlike the phone. A mistyped number means an intro text
+ * goes nowhere and the member is stranded; a mistyped email is corrected the next
+ * time they submit the form, and costs nothing in the meantime.
+ */
+export function resolveEmail(
+  person: { email: string | null },
+  sub: { email: string }
+): EmailDecision {
+  const submitted = sub.email.trim()
+
+  if (!submitted) return { email: person.email, changed: false, from: null }
+  if (submitted.toLowerCase() === (person.email ?? '').toLowerCase()) {
+    return { email: person.email, changed: false, from: null }
+  }
+  // Filling a blank is not replacing anything, so it is not reported as a change.
+  if (!person.email) return { email: submitted, changed: false, from: null }
+
+  return { email: submitted, changed: true, from: person.email }
+}
+
 /** How many are waiting, for the badge on the admin index. */
 export async function countPending(): Promise<number> {
   const { count } = await supabaseAdmin()

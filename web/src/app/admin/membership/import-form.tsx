@@ -204,12 +204,15 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
               title={`${entriesWithDifferences(diff).length} people where AdminSkiRacing holds something different`}
             >
               <p className="mt-1 text-neutral-600">
-                Nothing here is changed unless you tick it. Whether the member has
-                opted in is what decides: somebody who opted in typed their address
-                into the form themselves, so ours is their own answer. Somebody who
-                never did has an address from a historic import, and
-                AdminSkiRacing&rsquo;s is usually fresher — often a personal address
-                replacing a work one.
+                Nothing here is changed unless you tick it, and whether the member
+                opted in is usually what decides.
+              </p>
+              <p className="mt-1 text-neutral-600">
+                <strong>Opted in</strong> — the address we hold is the one they gave
+                on the opt-in form, so ours is their own answer.{' '}
+                <strong>Never opted in</strong> — ours came from a historic import
+                rather than from them, and AdminSkiRacing&rsquo;s is usually fresher,
+                often a personal address replacing a work one.
               </p>
 
               <div className="mt-2 flex gap-3 text-sm">
@@ -288,7 +291,7 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                                   : 'bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
                               }`}
                             >
-                              {u.optedIn ? 'opted in — ours is theirs' : 'never opted in'}
+                              {u.optedIn ? 'opted in' : 'never opted in'}
                             </span>
                             <span className="text-neutral-600">
                               {' '}· {c.field}: <s>{c.from ?? '—'}</s> &rarr;{' '}
