@@ -76,13 +76,15 @@ signed in. Prefer the invitation.
 1. Import the season's membership from AdminSkiRacing — see **Importing membership**.
    Until that is done nobody counts as a current member, which is correct but means
    the directory shows last season until it happens.
-2. Create the season with its scoring rules (best-N, points scale, age groups).
-3. Enter the race schedule.
+2. **Import the schedule** — see below. This creates the season and its races, and
+   marks which ones do not count toward standings.
+3. **Set the season's scoring rules** (best-N, points scale, age groups). The import
+   deliberately does not do this. Nothing scores correctly until it is done, and the
+   schedule screen says so while `best_n` is 0.
 4. For each race, add the **live-timing race id**. Links arrive by the Monday before
    a race at the latest, and the system can look the id up from the date and venue —
-   confirm the suggestion rather than typing it.
-5. Mark any race that does **not** count toward standings — Nationals in particular,
-   which is scored and published by usalpinemasters.org.
+   confirm the suggestion rather than typing it. The schedule import never touches
+   these.
 
 ### Importing membership
 
@@ -125,6 +127,54 @@ particular can detach somebody from their own race history.
 **Nothing medical or residential is imported.** The export carries allergies —
 including insurance and patient record numbers for at least one member — plus
 emergency contacts and home addresses. Those are not read at all.
+
+### Importing the schedule
+
+**/admin/schedule.** Reads the schedule the club publishes and turns it into races.
+Two sources, same content: the copy in this repository under
+`archive/<season>/schedule/`, or farwestmasters.org directly.
+
+**Preview first — it writes nothing.** Then Apply.
+
+The published page lists race *weekends*; `races` holds one row per race. That
+expansion is the whole job, so **the preview lists every race it would create rather
+than counting them**. A count of 19 looks fine either way; "2 races at Sugar Bowl"
+when you know there were four does not.
+
+**Re-run it whenever the schedule changes.** The screen says *"this page has changed
+since it was last imported"* — exact, not time-based, because the schedule lives in
+this repository and editing it is a commit.
+
+What it will never do, and why:
+
+| | |
+|---|---|
+| **Delete a race** | Results hang off races. A page dropping a row is not evidence a race did not happen. Listed and left alone |
+| **Change a race that has results** | That is a published standing being rewritten, and the parity harness checks those against every result since 2009. Held for you to do by hand |
+| **Touch `live_timing_id`, `usssa_race_code`, `notes`** | All hand-entered, none recoverable from the page |
+| **Apply an empty parse** | A restructured page and "every race was removed" look identical from here, so an empty result is refused rather than obeyed |
+| **Guess which day a race is on** | Some rows say only "four disciplines across seven days". Those are listed for manual entry. Refusing costs one manual entry; guessing wrong costs a season of standings |
+
+**Statuses come from the page's own row classes** — `canceled`, `completed`,
+`out-of-region`. Note that `out-of-region` is not geographic: the 2025-26 Mammoth
+Nationals carries it, and it means the race does not count toward FWM standings.
+
+**A wrong year is caught automatically.** The page never writes one, so it is inferred
+from the season — and getting it wrong would produce correct-looking months and days
+with every race a year out, which nothing downstream would notice. The weekday
+annotations the club already writes (`Dec. 5-6 (Sat-Sun)`) are checked against the
+computed dates, and a disagreement stops the row.
+
+**Two assumptions worth knowing**, both in `web/src/lib/schedule-import.ts`:
+
+- Speed events (SG, DH) are imported as **one run**, technical events (SL, GS) as
+  two. Getting this wrong matters: the results importer refuses a two-run race that
+  only has run 1 on live-timing, so a single-run super-G marked as two runs would
+  make it refuse a complete race.
+- `SL / SL` over a two-day range means one race per day; over a single day it means
+  two races that day. If the club ever changes what that notation means, nothing will
+  error — it will simply import half the races. The preview listing every race is the
+  defence.
 
 ### Race day
 
@@ -612,6 +662,8 @@ files — and so that what is *not* guaranteed is equally visible.
 | **Opt-in matching** | `web/src/lib/opt-in-review.test.ts` | A submission is matched to a member on mobile, then email, then USSA number — in that order, because a USSA number typed on a public form is the one most likely to be a digit out. A number that failed to normalise is tried again rather than left lost. Nothing matches on a value the submission never gave. |
 | **Phone normalisation** | `web/src/lib/phone.test.ts` | Every shape found in the roster exports normalises to the same number. Anything that is not a ten-digit North American number is refused rather than half-accepted. |
 | **Message templates** | `web/src/lib/templates.test.ts` | An unfilled blank stays visible in the message and is reported, rather than being dropped to make the message look finished — including when the value supplied is empty or blank, which is the officer-with-no-contact-number case. Substitution is one pass, so nothing a member or officer types can be re-read as a placeholder. A placeholder nothing can fill is left as written rather than sent silently. `{officer phone}` is sourced from the officer, never from the member being contacted. |
+| **Schedule parsing** | `web/src/lib/schedule-parse.test.ts` | Both archived seasons as fixtures. Every row is found, including ones without closing tags that a regex silently drops. A wrong season year is caught by the page's own weekday annotations. `SGx2` is two races; `SG (2x points)` is one race worth double. A row that does not say which day is refused, not guessed. |
+| **Schedule import** | `web/src/lib/schedule-import.test.ts` | A race with results is never changed automatically. A race on file but absent from the page is never deleted. An empty parse is flagged rather than treated as a clearance. Duplicate races on one day are counted, not matched one-to-one, so the second super-G is not reported missing forever. |
 | **Race dates** | `web/src/lib/races.test.ts` | A race date is formatted from its own string, not through `new Date()`. Parsing a date column yields UTC midnight, which west of UTC renders as the day before — every race in the picker listed a day early, all season. Invisible in summer on a UTC machine. |
 | **Directory filters** | `web/src/lib/member-filters.test.ts` | The filters that decide what the directory shows are the same ones that decide who a message reaches. Groupings stay disjoint; an unknown value in the URL narrows rather than widens. |
 

@@ -31,6 +31,7 @@ export type AudienceKind =
   | 'intro_pending' // opted in, but not yet sent the intro text that completes it
   | 'always' // members who asked to hear about races regardless of entry
   | 'filtered' // a slice of the members directory, described by its filters
+  | 'person' // one named member, for the one-to-one messages templates exist for
 
 export interface AudienceOption {
   kind: AudienceKind
@@ -38,6 +39,8 @@ export interface AudienceOption {
   series?: string
   /** Group id, when kind is 'group' */
   groupId?: string
+  /** Person id, when kind is 'person' */
+  personId?: string
   label: string
 }
 

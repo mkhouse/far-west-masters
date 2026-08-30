@@ -7,6 +7,19 @@ const nextConfig: NextConfig = {
   // against 18 seasons of published results is the code that runs in the app.
   transpilePackages: ["@fwm/results-engine"],
 
+  // The published race schedule is kept in the repository, under
+  // archive/<season>/schedule/, and the importer reads it from there.
+  //
+  // Without this it works locally and fails in production, silently and only for
+  // whoever tries to import a schedule. Vercel's Root Directory is `web`, so
+  // everything above it is present at build time — which is why `npm install
+  // --prefix=..` works — but only files Next traces are shipped to the serverless
+  // function that actually runs. Nothing statically imports these HTML files, so
+  // nothing traces them, so at runtime the directory is simply not there.
+  outputFileTracingIncludes: {
+    "/admin/schedule": ["../archive/**/schedule/*.html"],
+  },
+
   async redirects() {
     return [
       // "/messaging" is what people type. Cheaper to accept it than to correct

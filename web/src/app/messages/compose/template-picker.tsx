@@ -41,6 +41,7 @@ export function TemplatePicker({
   onOfficerPhoneSaved,
   body,
   onBodyChange,
+  onPurposeChange,
   recipientCount,
 }: {
   templates: MessageTemplate[]
@@ -53,6 +54,8 @@ export function TemplatePicker({
   onOfficerPhoneSaved: (e164: string) => void
   body: string
   onBodyChange: (next: string) => void
+  /** Fills Purpose with the template's name — see choose(). */
+  onPurposeChange: (next: string) => void
   recipientCount: number
 }) {
   const [selectedId, setSelectedId] = useState('')
@@ -90,6 +93,12 @@ export function TemplatePicker({
 
     const { text } = fillTemplate(template.body, officerValues)
     onBodyChange(text)
+
+    // The template's name is what this message is, so it is also what the send log
+    // should call it. Typed by hand it is the field most likely to be left blank, and
+    // a log full of unlabelled sends is the thing Purpose exists to prevent. Still
+    // editable — it is a starting point, like the body.
+    onPurposeChange(template.name)
   }
 
   /** Apply whatever the officer has typed into the blank fields. */
@@ -147,12 +156,16 @@ export function TemplatePicker({
     <section className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
       <label className="block">
         <span className="text-sm font-medium">Start from a template</span>
+        <span className="mt-0.5 block text-sm text-neutral-600">
+          Select a template to start with an existing message. If no template is
+          selected, you can compose a new message below.
+        </span>
         <select
           value={selectedId}
           onChange={(e) => choose(e.target.value)}
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         >
-          <option value="">Write from scratch</option>
+          <option value="">Select template</option>
           {templates.map((t) => (
             <option key={t.id} value={t.id}>
               {categoryLabel(t.category)} — {t.name}

@@ -21,7 +21,12 @@ import {
   fixSmartCharacters,
   remainingNonGsmCharacters,
 } from '@/lib/sms/segments'
-import { describePlaceholders, findPlaceholders, type MessageTemplate } from '@/lib/templates'
+import {
+  PLACEHOLDERS,
+  describePlaceholders,
+  findPlaceholders,
+  type MessageTemplate,
+} from '@/lib/templates'
 import { TemplatePicker, type RaceOption } from './template-picker'
 
 export interface Officer {
@@ -134,6 +139,10 @@ export function ComposeForm({
   // Held here rather than in the picker so that saving a contact number mid-compose
   // updates every placeholder that depends on it, not just the one being filled.
   const [officerPhone, setOfficerPhone] = useState(initialOfficerPhone)
+  // Controlled, so choosing a template can fill it with the template's name. Left as
+  // an uncontrolled input it would keep whatever was typed first and silently ignore
+  // the template — the field would look like it simply did not work.
+  const [purpose, setPurpose] = useState(prefillPurpose ?? '')
 
   /**
    * Smart punctuation is corrected as it is typed or pasted, rather than offered as
@@ -237,6 +246,7 @@ export function ComposeForm({
         onOfficerPhoneSaved={setOfficerPhone}
         body={body}
         onBodyChange={setBody}
+        onPurposeChange={setPurpose}
         recipientCount={recipientCount}
       />
 
@@ -323,8 +333,9 @@ export function ComposeForm({
         </span>
         <input
           name="purpose"
-          defaultValue={prefillPurpose ?? ''}
-          placeholder="Sugar Bowl start times"
+          value={purpose}
+          onChange={(e) => setPurpose(e.target.value)}
+          placeholder="Type your subject here"
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         />
       </label>
@@ -339,7 +350,7 @@ export function ComposeForm({
             onChange={(e) => handleBodyChange(e.target.value)}
             rows={6}
             className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 font-mono text-sm dark:border-neutral-700"
-            placeholder="Sugar Bowl SL starts at 9am. Bib pickup opens 8am at the lodge."
+            placeholder="Compose your message here"
           />
         </label>
 
@@ -351,13 +362,30 @@ export function ComposeForm({
 
         {/* Said next to the message rather than only at the button, because the fix
             is here: the placeholder is a few characters away in the box above. */}
+        {/* Recomputed from the message on every keystroke, so closing one blank drops
+            it from this list immediately and the remaining ones stay named. The
+            advice is per blank on purpose: there is no field above for a member's
+            name, so telling somebody to "fill it in above" sends them looking for a
+            control that does not exist. */}
         {unresolved.length > 0 && (
           <p
             className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
             role="alert"
           >
-            {describePlaceholders(unresolved.map((u) => `{${u}}`))} This cannot be sent
-            with a blank still in it — fill it in above, or type over it.
+            {describePlaceholders(unresolved.map((u) => `{${u}}`))}{' '}
+            {unresolved.some((u) => PLACEHOLDERS[u]?.source === 'member') && (
+              <>
+                Type the member&rsquo;s name straight over{' '}
+                <code>{'{first name}'}</code> &mdash; these messages go to one person
+                at a time.{' '}
+              </>
+            )}
+            {unresolved.some((u) =>
+              ['race', 'typed', 'officer'].includes(PLACEHOLDERS[u]?.source ?? '')
+            ) && <>Fill the rest in above. </>}
+            {unresolved.some((u) => !(u in PLACEHOLDERS)) && (
+              <>Anything the system cannot fill has to be typed over. </>
+            )}
           </p>
         )}
 

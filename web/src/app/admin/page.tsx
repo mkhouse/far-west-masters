@@ -48,6 +48,12 @@ const AVAILABLE = [
       'The wording the club sends over and over, held once so it stops drifting. Blanks — the member’s name, your contact number, which race — are filled in when you use one.',
   },
   {
+    href: '/admin/schedule',
+    title: 'Race schedule',
+    description:
+      'Import the season’s races from the schedule the club publishes. Preview first — nothing is written until you apply, and nothing on file is ever deleted.',
+  },
+  {
     href: '/account',
     title: 'Your account',
     description:
@@ -57,8 +63,16 @@ const AVAILABLE = [
 
 /** Not built yet. Listed so the shape of the system is visible. */
 const PLANNED = [
-  { title: 'Season setup', description: 'Scoring rules: best-N, points scale, age groups.' },
-  { title: 'Race schedule', description: 'Races, venues, live-timing ids, and which races count.' },
+  {
+    title: 'Season setup',
+    description:
+      'Scoring rules: best-N, points scale, age groups. The schedule importer creates a season without these deliberately — a rule guessed from last season produces standings that look right and are not.',
+  },
+  {
+    title: 'Live-timing ids',
+    description:
+      'Entered per race once the links arrive. The schedule import never touches them.',
+  },
   {
     title: 'Officer accounts',
     description:
