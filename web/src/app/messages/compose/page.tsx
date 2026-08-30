@@ -12,9 +12,11 @@ import { listAudiences, resolveAudience, type AudienceKind } from '@/lib/audienc
 import { filterFromParams, filterToParams } from '@/lib/member-filters'
 import { membershipContext } from '@/lib/membership'
 import { raceLabel, upcomingRaces } from '@/lib/races'
+import { CONSENT_STATE_LABEL, consentState } from '@/lib/members'
 import type { MessageTemplate } from '@/lib/templates'
 import { MembershipBanner } from '../../membership-banner'
 import { ComposeForm, type ComposeSettings, type Officer } from './compose-form'
+import type { PersonOption } from './person-picker'
 import type { RaceOption } from './template-picker'
 
 /** Read the operational settings, falling back to documented defaults. */
@@ -45,6 +47,7 @@ export default async function ComposePage({
     audience?: string
     series?: string
     group?: string
+    person?: string
     // Carried through from the members directory when messaging a filtered set.
     membership?: string
     filter?: string
@@ -82,6 +85,44 @@ export default async function ComposePage({
     name: `${o.first_name} ${o.last_name}`,
     phone: o.phone as string,
   }))
+
+  // --- everyone who can be picked as a single recipient ---
+  //
+  // The whole list, not only people who can be texted, each carrying the reason if
+  // they cannot. Omitting them would make "why is Bob not in this list?" unanswerable
+  // from this screen; the consent gate still applies on the server, so listing
+  // somebody here cannot send them anything.
+  const { data: peopleRows } = await db
+    .from('people')
+    .select(
+      'id, first_name, last_name, phone, opt_in_at, intro_sent_at, opted_out_at, sms_never'
+    )
+    .order('last_name')
+
+  interface PersonRow {
+    id: string
+    first_name: string
+    last_name: string
+    phone: string | null
+    opt_in_at: string | null
+    intro_sent_at: string | null
+    opted_out_at: string | null
+    sms_never: boolean
+  }
+
+  const people: PersonOption[] = ((peopleRows ?? []) as unknown as PersonRow[]).map(
+    (p) => {
+      const state = consentState(p)
+      return {
+        id: p.id,
+        firstName: p.first_name,
+        lastName: p.last_name,
+        // Same vocabulary as the members directory and the audience labels — one set
+        // of words for member state everywhere.
+        blockedReason: state === 'eligible' ? null : CONSENT_STATE_LABEL[state],
+      }
+    }
+  )
 
   // --- what the template picker needs ---
   //
@@ -138,20 +179,36 @@ export default async function ComposePage({
   // screen and starts typing without thinking about who it reaches.
   const audiences = await listAudiences()
 
-  // Default to the first audience, which listAudiences puts a test group at — the
-  // safe landing place if someone opens this screen and starts typing.
-  const fallback = audiences[0]
-  const selectedKind = (params.audience as AudienceKind) ?? fallback?.kind ?? 'all_eligible'
+  // NOTHING IS SELECTED BY DEFAULT.
+  //
+  // This used to land on the first audience, which listAudiences puts a test group
+  // at, on the reasoning that a test group is the safe thing to default to. It is
+  // safe, and it is still a default — the screen arrives with a recipient already
+  // chosen, and a default that is usually right is exactly the kind a person stops
+  // reading. Requiring a choice costs one click and removes the case where somebody
+  // composes carefully and sends to whoever happened to be preselected.
+  const selectedKind = params.audience as AudienceKind | undefined
 
   // A filtered audience is not in the picker — it exists only for the send you
   // arrived with, described by the filters that produced it.
   const filter = selectedKind === 'filtered' ? filterFromParams(params) : undefined
 
-  const audience = await resolveAudience(selectedKind, {
-    series: params.series,
-    groupId: params.group ?? (params.audience ? undefined : fallback?.groupId),
-    filter,
-  })
+  const audience = selectedKind
+    ? await resolveAudience(selectedKind, {
+        series: params.series,
+        groupId: params.group,
+        personId: params.person,
+        filter,
+      })
+    : {
+        kind: '' as AudienceKind,
+        label: '',
+        recipientCount: 0,
+        consideredCount: 0,
+        excluded: [],
+        incompleteConsent: false,
+        unavailableReason: 'Choose who this message goes to.',
+      }
 
   const settings = await loadSettings()
 
@@ -175,6 +232,8 @@ export default async function ComposePage({
           audience={audience}
           templates={templates}
           races={races}
+          people={people}
+          selectedPersonId={params.person}
           officerName={officerFirstName}
           officerPhone={officerPhone}
           // Prefilled, not auto-sent. The officer still reads it and presses Send:
@@ -182,7 +241,7 @@ export default async function ComposePage({
           prefillBody={audience.kind === 'intro_pending' ? settings.introText : ''}
           prefillPurpose={audience.kind === 'intro_pending' ? 'Intro text' : ''}
           selectedSeries={params.series}
-          selectedGroupId={params.group ?? fallback?.groupId}
+          selectedGroupId={params.group}
           filterParams={filter ? filterToParams(filter) : undefined}
         />
       </div>

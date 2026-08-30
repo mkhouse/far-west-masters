@@ -10,7 +10,7 @@
  * Length rules and their reasoning: migration/sms-limits.md
  */
 
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { sendMessage } from './send'
 import {
@@ -28,6 +28,8 @@ import {
   type MessageTemplate,
 } from '@/lib/templates'
 import { TemplatePicker, type RaceOption } from './template-picker'
+import { PersonPicker, type PersonOption } from './person-picker'
+import { SaveAsTemplate } from './save-as-template'
 
 export interface Officer {
   id: string
@@ -96,6 +98,8 @@ export function ComposeForm({
   audience,
   templates,
   races,
+  people,
+  selectedPersonId,
   officerName,
   officerPhone: initialOfficerPhone,
   selectedSeries,
@@ -114,6 +118,10 @@ export function ComposeForm({
   templates: MessageTemplate[]
   /** Races left this season, for the {venue} picker. Empty until #6. */
   races: RaceOption[]
+  /** Everyone selectable as a single recipient, with why they cannot be texted. */
+  people: PersonOption[]
+  /** The chosen recipient, when the audience is one person. */
+  selectedPersonId?: string
   /** The signed-in officer's first name, for {officer name}. */
   officerName: string | null
   /** Their published contact number in E.164, or null. See migration 0030. */
@@ -143,6 +151,37 @@ export function ComposeForm({
   // an uncontrolled input it would keep whatever was typed first and silently ignore
   // the template — the field would look like it simply did not work.
   const [purpose, setPurpose] = useState(prefillPurpose ?? '')
+
+  const bodyRef = useRef<HTMLTextAreaElement>(null)
+
+  /**
+   * Put a blank where the cursor is.
+   *
+   * Inserts the placeholder LITERALLY — `{first name}`, not the name of whoever is
+   * selected. That is what makes writing a template from scratch possible: you type
+   * the message with blanks in it, save it as a template while the blanks are still
+   * blanks, and only then fill them in and send. Resolving on insert would give you a
+   * finished message and nothing worth keeping.
+   *
+   * The send stays blocked until every blank is closed, so this cannot leak braces
+   * into a real text.
+   */
+  function insertAtCursor(snippet: string) {
+    const field = bodyRef.current
+    const at = field?.selectionStart ?? body.length
+    const to = field?.selectionEnd ?? at
+
+    const next = body.slice(0, at) + snippet + body.slice(to)
+    setBody(next)
+
+    // Put the caret after what was just inserted, so typing carries on where the
+    // sentence was rather than at the end of the message.
+    requestAnimationFrame(() => {
+      if (!field) return
+      field.focus()
+      field.setSelectionRange(at + snippet.length, at + snippet.length)
+    })
+  }
 
   /**
    * Smart punctuation is corrected as it is typed or pasted, rather than offered as
@@ -212,6 +251,7 @@ export function ComposeForm({
       <input type="hidden" name="audience_kind" value={audience.kind} />
       <input type="hidden" name="group_id" value={selectedGroupId ?? ''} />
       <input type="hidden" name="series" value={selectedSeries ?? ''} />
+      <input type="hidden" name="person_id" value={selectedPersonId ?? ''} />
       {/* The filter travels as parameters, not as a list of people. The server
           re-resolves it, so this cannot decide who receives anything. */}
       {filterParams && (
@@ -230,6 +270,8 @@ export function ComposeForm({
       <AudiencePicker
         audiences={audiences}
         audience={audience}
+        people={people}
+        selectedPersonId={selectedPersonId}
         selectedSeries={selectedSeries}
         selectedGroupId={selectedGroupId}
       />
@@ -244,6 +286,14 @@ export function ComposeForm({
         officerName={officerName}
         officerPhone={officerPhone}
         onOfficerPhoneSaved={setOfficerPhone}
+        // The member being contacted, for {first name}. Only ever set when the
+        // audience is one person — a bulk send has no per-person name to fill, which
+        // is why the picker refuses a template that asks for one.
+        memberFirstName={
+          audience.kind === 'person'
+            ? (people.find((p) => p.id === selectedPersonId)?.firstName ?? null)
+            : null
+        }
         body={body}
         onBodyChange={setBody}
         onPurposeChange={setPurpose}
@@ -345,6 +395,7 @@ export function ComposeForm({
         <label className="block">
           <span className="text-sm font-medium">Message</span>
           <textarea
+            ref={bodyRef}
             name="body"
             value={body}
             onChange={(e) => handleBodyChange(e.target.value)}
@@ -353,6 +404,8 @@ export function ComposeForm({
             placeholder="Compose your message here"
           />
         </label>
+
+        <InsertBlank onInsert={insertAtCursor} />
 
         {autoFixed.length > 0 && (
           <p className="mt-2 text-sm text-neutral-600">
@@ -388,6 +441,21 @@ export function ComposeForm({
             )}
           </p>
         )}
+
+        {/* Offered where the message is, because the moment somebody knows it is
+            worth keeping is the moment they finish writing it — not later, in a
+            screen they would have to remember to go to. */}
+        <SaveAsTemplate
+          body={body}
+          purpose={purpose}
+          officerName={officerName}
+          officerPhone={officerPhone}
+          memberFirstName={
+            audience.kind === 'person'
+              ? (people.find((p) => p.id === selectedPersonId)?.firstName ?? null)
+              : null
+          }
+        />
 
         {/* The message as it will actually arrive. A counter can be argued with;
             seeing the reply notice and the opt-out line in place cannot. */}
@@ -427,6 +495,66 @@ export function ComposeForm({
         blockedByPlaceholder={unresolved.length > 0}
       />
     </form>
+  )
+}
+
+/**
+ * Insert a blank into the message.
+ *
+ * This is the answer to "how do I write a template from scratch?" — without it you
+ * would have to know that the syntax is braces, and that the name inside is `first
+ * name` rather than `firstName` or `member name`. A control that inserts the right
+ * thing is better documentation than documentation.
+ *
+ * Labelled by what each one means in the sentence rather than by its syntax, because
+ * the person clicking is thinking "their name here", not "{first name}". The braces
+ * are shown too, so the connection to what lands in the box is visible.
+ */
+function InsertBlank({ onInsert }: { onInsert: (snippet: string) => void }) {
+  return (
+    <div className="mt-3 rounded-lg border border-neutral-200 p-3 dark:border-neutral-800">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm font-medium">Insert a blank</span>
+        {Object.keys(PLACEHOLDERS).map((name) => (
+          <button
+            key={name}
+            type="button"
+            onClick={() => onInsert(`{${name}}`)}
+            className="rounded-full border border-neutral-300 px-2.5 py-1 font-mono text-sm text-neutral-700 hover:border-neutral-500 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500"
+          >
+            {`{${name}}`}
+          </button>
+        ))}
+      </div>
+
+      {/* Written out on the page rather than left to a tooltip. A tooltip is only
+          found by someone who already suspects it is there, and this list is the
+          answer to "what can I put in a message?" — the question somebody has before
+          they know these exist at all. */}
+      <dl className="mt-3 grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
+        {Object.entries(PLACEHOLDERS).map(([name, spec]) => (
+          <Fragment key={name}>
+            <dt className="font-mono text-neutral-700 dark:text-neutral-300">
+              {`{${name}}`}
+            </dt>
+            <dd className="text-neutral-600 sm:mt-0">{spec.description}</dd>
+          </Fragment>
+        ))}
+      </dl>
+
+      {/* Both paths, said plainly. Inserting a blank does not commit anybody to
+          making a template — most messages are written once and sent once, and
+          {first name} is useful in those simply because it fills itself in. */}
+      <p className="mt-3 text-sm text-neutral-600">
+        Blanks stay as written while you compose, then fill in below. A message with a
+        blank left in it cannot be sent.
+      </p>
+      <p className="mt-1 text-sm text-neutral-600">
+        Use them in a one-off message and send it, or save the message as a template
+        first &mdash; with the blanks still blank &mdash; and reuse it. Neither
+        requires the other.
+      </p>
+    </div>
   )
 }
 
@@ -608,11 +736,15 @@ function CostSummary({
 function AudiencePicker({
   audiences,
   audience,
+  people,
+  selectedPersonId,
   selectedSeries,
   selectedGroupId,
 }: {
   audiences: AudienceOption[]
   audience: AudienceResult
+  people: PersonOption[]
+  selectedPersonId?: string
   selectedSeries?: string
   selectedGroupId?: string
   /** Present when messaging a slice of the members directory. */
@@ -627,6 +759,22 @@ function AudiencePicker({
       ? `group|${selectedGroupId ?? ''}`
       : audience.kind + (selectedSeries ? `|${selectedSeries}` : '')
 
+  /**
+   * Changing the audience reloads the page.
+   *
+   * The recipient count and the exclusion reasons are computed on the server against
+   * live data, so the audience lives in the URL rather than in local state — a count
+   * estimated in the browser is exactly the number nobody should trust before
+   * pressing Send.
+   *
+   * The cost is that anything typed is lost when the audience changes. That is worth
+   * knowing but not worth solving here: choosing who a message goes to is the first
+   * thing you do, which is why this control sits at the top of the form.
+   */
+  function go(params: URLSearchParams) {
+    window.location.search = params.toString()
+  }
+
   return (
     <section className="border-b border-neutral-200 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
       <label className="block">
@@ -635,13 +783,22 @@ function AudiencePicker({
           value={value}
           onChange={(e) => {
             const [kind, arg] = e.target.value.split('|')
+            if (!kind) {
+              go(new URLSearchParams())
+              return
+            }
             const params = new URLSearchParams({ audience: kind })
             if (kind === 'group' && arg) params.set('group', arg)
-            else if (arg) params.set('series', arg)
-            window.location.search = params.toString()
+            else if (kind !== 'person' && arg) params.set('series', arg)
+            go(params)
           }}
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         >
+          {/* Nothing preselected. The screen used to arrive with a test group
+              already chosen, which is safe and is still a default — and a default
+              that is usually right is the kind people stop reading. */}
+          <option value="">Choose who this message goes to&hellip;</option>
+
           {/* A filtered audience is not a standing option — it exists only for the
               send you arrived with, so it is listed as the current selection and
               nowhere else. Choosing anything else abandons the filter, which is
@@ -649,6 +806,11 @@ function AudiencePicker({
           {audience.kind === 'filtered' && (
             <option value="filtered">From members: {audience.label}</option>
           )}
+
+          {/* The audience the message templates were written for. Listed first
+              because a one-to-one message is the common case for them. */}
+          <option value="person">One person&hellip;</option>
+
           {audiences.map((a) => (
             <option
               key={a.kind + (a.groupId ?? a.series ?? '')}
@@ -663,6 +825,18 @@ function AudiencePicker({
           ))}
         </select>
       </label>
+
+      {audience.kind === 'person' && (
+        <PersonPicker
+          people={people}
+          selectedId={selectedPersonId ?? ''}
+          onSelect={(person) => {
+            const params = new URLSearchParams({ audience: 'person' })
+            if (person) params.set('person', person.id)
+            go(params)
+          }}
+        />
+      )}
 
       <div className="mt-3 text-sm">
         {audience.unavailableReason ? (

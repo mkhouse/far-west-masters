@@ -55,7 +55,7 @@ interface GatePerson {
  */
 async function recipientsFor(
   kind: AudienceKind,
-  opts: { series?: string; groupId?: string; filter?: MemberFilter }
+  opts: { series?: string; groupId?: string; personId?: string; filter?: MemberFilter }
 ): Promise<{ people: GatePerson[]; incompleteConsent: boolean }> {
   const db = supabaseAdmin()
 
@@ -63,6 +63,25 @@ async function recipientsFor(
     !!p.phone && !p.opted_out_at && !p.sms_never && !!p.opt_in_at && !!p.intro_sent_at
 
   switch (kind) {
+    case 'person': {
+      // One member. Filtered by exactly the same predicate as every audience above
+      // it — a one-to-one send is still a send from the club's number, and the fact
+      // that an officer has chosen this person deliberately is not consent.
+      if (!opts.personId) return { people: [], incompleteConsent: false }
+
+      const { data } = await db
+        .from('people')
+        .select(GATE)
+        .eq('id', opts.personId)
+        .maybeSingle()
+
+      const person = data as GatePerson | null
+      return {
+        people: person && passesGate(person) ? [person] : [],
+        incompleteConsent: false,
+      }
+    }
+
     case 'group': {
       // Groups always apply the consent gate — see migration 0020. There is
       // deliberately no per-group escape hatch: an audience that can silently skip
@@ -166,6 +185,7 @@ export async function sendMessage(formData: FormData) {
   const kind = String(formData.get('audience_kind') ?? '') as AudienceKind
   const groupId = String(formData.get('group_id') ?? '') || undefined
   const series = String(formData.get('series') ?? '') || undefined
+  const personId = String(formData.get('person_id') ?? '') || undefined
   const category = String(formData.get('category') ?? 'general')
   const purpose = String(formData.get('purpose') ?? '').trim() || null
   const repliesMonitored = formData.get('replies_monitored') === 'on'
@@ -221,6 +241,7 @@ export async function sendMessage(formData: FormData) {
   const { people, incompleteConsent } = await recipientsFor(kind, {
     series,
     groupId,
+    personId,
     filter,
   })
   if (!people.length) fail('That audience has nobody in it right now.')
@@ -291,6 +312,21 @@ export async function sendMessage(formData: FormData) {
     ? duplicateQuery.eq('series', series)
     : duplicateQuery.is('series', null)
 
+  // The recipient, for a one-to-one send.
+  //
+  // Without this the guard breaks the workflow it is supposed to protect. Group and
+  // series are both null for a person send, so an identical body would match ANY
+  // recent one-to-one message — and working through five new members with the same
+  // template is the ordinary use of this feature, not a double-click.
+  //
+  // It is not enough that the body usually differs. Two of the eight templates carry
+  // no {first name} at all — the event waiver is the same words for everybody — so
+  // those would collide every time.
+  //
+  // The person is read from `audience`, the jsonb column that already carries the
+  // filter spec for a filtered send, rather than a new column.
+  if (personId) duplicateQuery = duplicateQuery.eq('audience->>person_id', personId)
+
   const { data: recent } = await duplicateQuery.limit(1).maybeSingle()
 
   if (recent) {
@@ -302,7 +338,7 @@ export async function sendMessage(formData: FormData) {
     )
   }
 
-  const audience = await resolveAudience(kind, { series, groupId, filter })
+  const audience = await resolveAudience(kind, { series, groupId, personId, filter })
 
   // Who is sending, in a form a person can read months from now. Stored on the
   // message rather than looked up later: `created_by` points into the auth schema,
@@ -335,7 +371,14 @@ export async function sendMessage(formData: FormData) {
       // The filter spec, so the log can say exactly which slice was messaged and
       // the same set could be rebuilt later. `audience` is the jsonb column that
       // has been unused since the initial schema; this is what it was for.
-      audience: filter ? filterToParams(filter) : null,
+      // What defined this audience beyond its kind: the filter spec for a filtered
+      // send, the recipient for a one-to-one one. Both make the log able to say
+      // exactly who was messaged and why, months later.
+      audience: filter
+        ? filterToParams(filter)
+        : personId
+          ? { person_id: personId }
+          : null,
       bypassed_consent_gate: incompleteConsent,
       replies_monitored: repliesMonitored,
       reply_notice: replyNotice,

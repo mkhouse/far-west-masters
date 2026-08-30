@@ -176,12 +176,70 @@ export async function listAudiences(): Promise<AudienceOption[]> {
 /** Resolve an audience to a recipient count and an account of who was excluded. */
 export async function resolveAudience(
   kind: AudienceKind,
-  opts: { series?: string; groupId?: string; filter?: MemberFilter } = {}
+  opts: {
+    series?: string
+    groupId?: string
+    personId?: string
+    filter?: MemberFilter
+  } = {}
 ): Promise<AudienceResult> {
   const db = supabaseAdmin()
-  const { series, groupId, filter } = opts
+  const { series, groupId, personId, filter } = opts
 
   switch (kind) {
+    /**
+     * One named member.
+     *
+     * The audience the templates were always for: every message FWM sends to a
+     * member opens with their first name, which only means anything when the message
+     * goes to one person.
+     *
+     * NOT AN EXCEPTION TO THE CONSENT GATE, and worth being explicit about because a
+     * one-to-one message feels different from a bulk send and is not. It runs through
+     * explainExclusions like every other audience, so a member who has not opted in
+     * resolves to nobody and says why. There is no override — the same rule that
+     * stops a careless send to three hundred people stops a considered send to one.
+     *
+     * What an officer can still do is text them from their own phone. That is FWM's
+     * decision to make and outside this system; what this system will not do is send
+     * on the club's number to somebody who never agreed to hear from it.
+     */
+    case 'person': {
+      if (!personId) {
+        return {
+          kind, label: 'One person', recipientCount: 0, consideredCount: 0,
+          excluded: [], incompleteConsent: false,
+          unavailableReason: 'No one selected',
+        }
+      }
+
+      const { data: person } = await db
+        .from('people')
+        .select(`first_name, last_name, ${GATE_COLUMNS}`)
+        .eq('id', personId)
+        .maybeSingle()
+
+      if (!person) {
+        return {
+          kind, label: 'One person', recipientCount: 0, consideredCount: 0,
+          excluded: [], incompleteConsent: false,
+          unavailableReason: 'That member no longer exists',
+        }
+      }
+
+      type GatePerson = Parameters<typeof explainExclusions>[0][number]
+      const { eligible, excluded } = explainExclusions([person as unknown as GatePerson])
+
+      return {
+        kind,
+        label: `${person.first_name} ${person.last_name}`,
+        recipientCount: eligible,
+        consideredCount: 1,
+        excluded,
+        incompleteConsent: false,
+      }
+    }
+
     case 'group': {
       if (!groupId) {
         return {

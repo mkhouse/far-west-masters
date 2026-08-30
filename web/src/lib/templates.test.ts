@@ -6,6 +6,7 @@ import {
   fillTemplate,
   findPlaceholders,
   hasPerMemberPlaceholder,
+  unfillTemplate,
   unknownPlaceholders,
 } from './templates'
 
@@ -150,6 +151,84 @@ describe('fillTemplate', () => {
       text: plain,
       unresolved: [],
     })
+  })
+})
+
+describe('unfillTemplate', () => {
+  // Saving a message you just sent as a template. By that point it reads "Hello
+  // Damian, this is Mary, call me at (530) 555-1234" — stored as written, it greets
+  // every future member as Damian and hands out Mary's mobile to all of them.
+  const sent =
+    'Hello Damian, this is Mary from Far West Masters membership checking in with ' +
+    'you as a new member. Please give me a call at (530) 555-1234'
+
+  const values = {
+    'first name': 'Damian',
+    'officer name': 'Mary',
+    'officer phone': '(530) 555-1234',
+  }
+
+  it('puts the blanks back', () => {
+    expect(unfillTemplate(sent, values)).toBe(NEW_MEMBER_WELCOME)
+  })
+
+  it('removes the officer’s phone number, which is the one that must not persist', () => {
+    const result = unfillTemplate(sent, values)
+    expect(result).not.toContain('555-1234')
+    expect(result).toContain('{officer phone}')
+  })
+
+  it('round-trips: filling the result reproduces the original message', () => {
+    const { text } = fillTemplate(unfillTemplate(sent, values), values)
+    expect(text).toBe(sent)
+  })
+
+  it('replaces the longest value first, so a name is not left half-converted', () => {
+    // 'Mary' inside 'Mary Smith' would otherwise produce '{officer name} Smith'.
+    expect(
+      unfillTemplate('This is Mary Smith from FWM', { 'officer name': 'Mary Smith' })
+    ).toBe('This is {officer name} from FWM')
+  })
+
+  it('does not match a value inside a longer word', () => {
+    // A member called Ann must not turn 'Anna' into '{first name}a'.
+    expect(unfillTemplate('Hello Anna and Ann', { 'first name': 'Ann' })).toBe(
+      'Hello Anna and {first name}'
+    )
+  })
+
+  it('leaves placeholders that are already in the message alone', () => {
+    // The ordinary case once the insert-a-blank control exists: the officer wrote
+    // the message with blanks in it and never filled them.
+    expect(unfillTemplate(NEW_MEMBER_WELCOME, values)).toBe(NEW_MEMBER_WELCOME)
+  })
+
+  it('ignores values it was given that do not appear', () => {
+    expect(unfillTemplate('Race at Sugar Bowl', { 'first name': 'Damian' })).toBe(
+      'Race at Sugar Bowl'
+    )
+  })
+
+  it('ignores empty values rather than replacing everything', () => {
+    // An officer with no contact number on file. An empty string as a search term
+    // would otherwise match at every position in the message.
+    expect(unfillTemplate('Call me at (530) 555-1234', { 'officer phone': '' })).toBe(
+      'Call me at (530) 555-1234'
+    )
+  })
+
+  it('ignores a name that is not a real placeholder', () => {
+    expect(unfillTemplate('Ask the race director', { 'race director': 'Mike' })).toBe(
+      'Ask the race director'
+    )
+  })
+
+  it('treats a value containing regex characters literally', () => {
+    // A phone number is full of brackets and dashes. Interpreted as a pattern rather
+    // than text, this either throws or matches the wrong thing.
+    expect(
+      unfillTemplate('Call (530) 555-1234 today', { 'officer phone': '(530) 555-1234' })
+    ).toBe('Call {officer phone} today')
   })
 })
 

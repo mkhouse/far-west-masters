@@ -220,6 +220,52 @@ describe('resolveAudience applies the gate to every audience', () => {
     const accounted = recipientCount + excluded.reduce((s, e) => s + e.count, 0)
     expect(accounted).toBe(consideredCount)
   })
+
+  // --- one named person ---
+  //
+  // The newest way to reach somebody, and the one most likely to be assumed exempt:
+  // an officer choosing a member by name has clearly decided to contact them, and it
+  // is tempting to read that as sufficient. It is not. Deliberate choice by an
+  // officer is not consent given by a member, and this audience runs through exactly
+  // the same gate as a send to three hundred people.
+
+  it('reaches one named member who has cleared the gate', async () => {
+    tables.people = [eligible({ first_name: 'Damian', last_name: 'Palfini' })]
+    const result = await resolveAudience('person', { personId: 'p1' })
+    expect(result.recipientCount).toBe(1)
+    expect(result.consideredCount).toBe(1)
+    expect(result.label).toBe('Damian Palfini')
+    expect(result.incompleteConsent).toBe(false)
+  })
+
+  it.each([
+    ['has no phone number', { phone: null }, 'no phone number'],
+    ['has opted out', { opted_out_at: '2026-02-01T00:00:00Z' }, 'opted out'],
+    ['is suppressed', { sms_never: true }, 'suppressed'],
+    ['never opted in', { opt_in_at: null }, 'not opted-in for texts'],
+    ['has had no intro text', { intro_sent_at: null }, 'no intro text sent'],
+  ])('refuses to reach one named member who %s', async (_label, override, reason) => {
+    tables.people = [eligible(override)]
+    const result = await resolveAudience('person', { personId: 'p1' })
+    expect(result.recipientCount).toBe(0)
+    expect(result.excluded).toEqual([{ reason, count: 1 }])
+    // Not flagged as incomplete consent either — that label belongs to the intro
+    // audience alone, and misapplying it here would suggest a send could complete it.
+    expect(result.incompleteConsent).toBe(false)
+  })
+
+  it('reaches nobody when no one has been chosen', async () => {
+    const result = await resolveAudience('person', {})
+    expect(result.recipientCount).toBe(0)
+    expect(result.unavailableReason).toBe('No one selected')
+  })
+
+  it('reaches nobody when the chosen member no longer exists', async () => {
+    tables.people = []
+    const result = await resolveAudience('person', { personId: 'gone' })
+    expect(result.recipientCount).toBe(0)
+    expect(result.unavailableReason).toBe('That member no longer exists')
+  })
 })
 
 describe('a filter can only narrow the audience, never widen it', () => {

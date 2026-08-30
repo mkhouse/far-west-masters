@@ -210,6 +210,52 @@ export function fillTemplate(
 }
 
 /**
+ * Put the placeholders back into a message that has already been filled in.
+ *
+ * The reverse of fillTemplate, for saving a message you are about to send as a
+ * template. It is not a convenience — it is the thing that makes that feature safe.
+ *
+ * By the time an officer decides a message is worth keeping, it reads "Hello Damian,
+ * this is Mary from FWM membership, call me at (530) 555-1234". Stored as written,
+ * that template greets every future member as Damian and hands out Mary's mobile to
+ * all of them — the precise failure the placeholders were introduced to prevent, and
+ * it would arrive through the feature that looks most helpful.
+ *
+ * Longest values are substituted first, so a member called "Ann" cannot be matched
+ * inside "Anna" or inside the officer's own name. Matching is case-sensitive and
+ * bounded by word edges for names; the phone number is matched literally, because it
+ * is formatted by us and will appear exactly as it was inserted.
+ *
+ * Everything else is left alone. A venue typed by hand is not converted unless it was
+ * one of the supplied values — guessing that "Sugar Bowl" in the middle of a sentence
+ * is a placeholder rather than the subject of the message would rewrite meaning.
+ */
+export function unfillTemplate(
+  text: string,
+  values: Record<string, string | null | undefined>
+): string {
+  const entries = Object.entries(values)
+    .map(([name, value]) => [normalise(name), String(value ?? '').trim()] as const)
+    .filter(([name, value]) => value.length > 0 && name in PLACEHOLDERS)
+    // Longest first: "Mary Smith" must be replaced before "Mary", or the surname is
+    // orphaned and left in the template.
+    .sort((a, b) => b[1].length - a[1].length)
+
+  let out = text
+
+  for (const [name, value] of entries) {
+    const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    // A word boundary only where the value starts and ends with a word character —
+    // "(530) 555-1234" begins with a bracket, and \b before it would never match.
+    const left = /^\w/.test(value) ? '\\b' : ''
+    const right = /\w$/.test(value) ? '\\b' : ''
+    out = out.replace(new RegExp(`${left}${escaped}${right}`, 'g'), `{${name}}`)
+  }
+
+  return out
+}
+
+/**
  * A one-line summary of what a template still needs, for the editor and the picker.
  *
  * Reads as "needs a venue and a time" rather than listing brace syntax, because the

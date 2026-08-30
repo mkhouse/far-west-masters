@@ -107,6 +107,78 @@ export async function createTemplate(formData: FormData) {
   revalidatePath('/messages/compose')
 }
 
+/**
+ * Save a message being composed as a new template.
+ *
+ * Called from the compose screen with the body already re-abstracted — the caller
+ * puts the placeholders back before sending it here, so what arrives should read
+ * "Hello {first name}" and not "Hello Damian".
+ *
+ * This is checked rather than trusted. A body still containing the officer's own
+ * contact number is refused: getting that wrong publishes one officer's mobile
+ * through every future use of the template, and it would arrive silently.
+ *
+ * Returns a result rather than redirecting — the officer is mid-message and must not
+ * be navigated away from it.
+ */
+export async function saveAsTemplate(input: {
+  name: string
+  category: string
+  body: string
+  /** The officer's own contact number, so we can refuse to store it. */
+  officerPhone?: string | null
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const appUser = await requireAppUser()
+
+  const name = input.name.trim()
+  if (!name) return { ok: false, error: 'Give the template a name.' }
+  if (!VALID_CATEGORIES.has(input.category)) {
+    return { ok: false, error: 'Pick what kind of message this is.' }
+  }
+
+  const { text: body } = fixSmartCharacters(input.body.trim())
+  if (!body) return { ok: false, error: 'There is no message to save.' }
+
+  const unknown = unknownPlaceholders(body)
+  if (unknown.length) {
+    return {
+      ok: false,
+      error: `${unknown.map((u) => `{${u}}`).join(', ')} cannot be filled in, so it would be sent to members as written.`,
+    }
+  }
+
+  // The guard that matters. Templates are shared between officers, so a literal
+  // number in one is handed out by everybody who uses it.
+  const digits = (input.officerPhone ?? '').replace(/\D/g, '')
+  if (digits && body.replace(/\D/g, '').includes(digits)) {
+    return {
+      ok: false,
+      error:
+        'This still has your phone number written into it. Use {officer phone} so ' +
+        'the template fills in whoever is sending it — otherwise every officer who ' +
+        'uses this hands out your number.',
+    }
+  }
+
+  const { error } = await supabaseAdmin()
+    .from('message_templates')
+    .insert({ name, category: input.category, body, created_by: appUser.userId })
+
+  if (error) {
+    return {
+      ok: false,
+      error:
+        error.code === '23505'
+          ? `There is already a template called “${name}”.`
+          : `Could not save it: ${error.message}`,
+    }
+  }
+
+  revalidatePath('/admin/templates')
+  revalidatePath('/messages/compose')
+  return { ok: true }
+}
+
 export async function updateTemplate(formData: FormData) {
   await requireAppUser()
 

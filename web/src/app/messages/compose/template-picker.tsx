@@ -39,6 +39,7 @@ export function TemplatePicker({
   officerName,
   officerPhone,
   onOfficerPhoneSaved,
+  memberFirstName,
   body,
   onBodyChange,
   onPurposeChange,
@@ -52,6 +53,8 @@ export function TemplatePicker({
   /** E.164, or null when they have not published one. */
   officerPhone: string | null
   onOfficerPhoneSaved: (e164: string) => void
+  /** First name of the member being contacted, when the audience is one person. */
+  memberFirstName: string | null
   body: string
   onBodyChange: (next: string) => void
   /** Fills Purpose with the template's name — see choose(). */
@@ -72,14 +75,18 @@ export function TemplatePicker({
   // actually there rather than what the template originally said.
   const remaining = useMemo(() => findPlaceholders(body), [body])
 
-  const officerValues = useMemo(
+  // Everything the screen already knows, filled the moment a template is chosen.
+  // {first name} is here rather than in a field because the recipient has already
+  // been picked — asking for it again would be asking twice.
+  const knownValues = useMemo(
     () => ({
       'officer name': officerName ?? '',
       // Formatted, not E.164. A member reading "+15305551234" off a text has to
       // decode it before they can dial it.
       'officer phone': officerPhone ? formatPhone(officerPhone) : '',
+      'first name': memberFirstName ?? '',
     }),
-    [officerName, officerPhone]
+    [officerName, officerPhone, memberFirstName]
   )
 
   /** Insert a template, filling everything already known about the officer. */
@@ -91,7 +98,7 @@ export function TemplatePicker({
     const template = templates.find((t) => t.id === id)
     if (!template) return
 
-    const { text } = fillTemplate(template.body, officerValues)
+    const { text } = fillTemplate(template.body, knownValues)
     onBodyChange(text)
 
     // The template's name is what this message is, so it is also what the send log
@@ -166,10 +173,20 @@ export function TemplatePicker({
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         >
           <option value="">Select template</option>
-          {templates.map((t) => (
-            <option key={t.id} value={t.id}>
-              {categoryLabel(t.category)} — {t.name}
-            </option>
+          {/* Grouped rather than prefixed. "{category} — {name}" reads as "New
+              member welcome — New member welcome" whenever a template is the only
+              one of its kind, which is most of them. An optgroup says the same
+              thing once. */}
+          {[...new Set(templates.map((t) => t.category))].map((category) => (
+            <optgroup key={category} label={categoryLabel(category)}>
+              {templates
+                .filter((t) => t.category === category)
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+            </optgroup>
           ))}
         </select>
       </label>
