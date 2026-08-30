@@ -47,13 +47,17 @@ far-west-masters/
 ├── migration/               # Migration tooling and the reference documentation
 ├── reports/                 # Generated verification reports
 ├── airtable-results/        # Original Airtable scripts (reference; not edited)
-├── archive/                 # Historical files by season
-│   ├── 25-26/
-│   │   ├── email/           # All emails sent during 2025-26 season
+├── archive/                 # Historical files by season (see archive/README.md)
+│   ├── 2024-2025/
+│   │   └── results/         # Results table snapshots
+│   ├── 2025-2026/
+│   │   ├── forerunner/      # Forerunner newsletters, named by send date
+│   │   ├── email/           # Other emails sent that season
 │   │   ├── results/         # Results table snapshots
-│   │   └── schedule/        # Final season schedule table
-│   └── forerunner/          # Forerunner newsletter archive by season
-│       └── 2025-2026/
+│   │   └── schedule/        # Season schedule table
+│   └── 2026-2027/
+│       ├── forerunner/
+│       └── schedule/        # Live working file, edited all season
 ├── email-templates/         # Email templates and examples
 │   └── examples/            # Curated reference emails by type
 │       ├── old/             # Pre-2025-26 examples
@@ -77,13 +81,15 @@ Scripts used to import and calculate race and overall points for a season using 
 
 ## Archive
 
-Historical files organized by season. Each season folder contains:
+Historical files organized by season, one folder per season named with full years
+(`2025-2026`, not `25-26`). Each season folder can contain:
 
-- `email/` — all transactional and announcement emails sent that season
-- `results/` — end-of-season results table snapshot
-- `schedule/` — final season schedule table
+- `forerunner/` — Forerunner newsletters, named `YYYY-MM-DD.html` by send date
+- `email/` — other emails sent that season (deadline reminders, results announcements)
+- `results/` — results table snapshots
+- `schedule/` — the season schedule table, edited in place all season
 
-`forerunner/` contains the full Forerunner newsletter archive organized by season (e.g. `2025-2026/2026-01-02.html`).
+See [archive/README.md](archive/README.md) for details.
 
 ## Email Templates
 
@@ -104,7 +110,7 @@ See `email-templates/examples/README.md` for descriptions of each example file a
 2. Edit in VS Code Insiders with Claude Code
 3. Preview in a browser to check layout
 4. Copy the final HTML and paste into the FWM email editor
-5. Save the final sent version to `archive/forerunner/[season]/`
+5. Save the final sent version to `archive/[season]/forerunner/` (or `archive/[season]/email/` if it isn't a Forerunner), named `YYYY-MM-DD.html` by send date
 
 ## HTML Templates
 
@@ -116,10 +122,14 @@ Squarespace HTML block templates for the race schedule and results index pages o
 
 **Workflow: Updating the schedule table**
 
-1. Open `html-templates/templates/race-schedule.html` in VS Code Insiders
+1. Open the current season's file, e.g. `archive/2026-2027/schedule/race-schedule-2026-27.html`
 2. Edit with Claude Code (add races, update row states, add result links)
 3. Copy the HTML and paste into the Squarespace HTML block on the Schedule page
-4. At end of season, save the final file to `archive/[season]/schedule/`
+4. Nothing to move at season end — the file is already in the archive
+
+To start a new season, copy the blank template `html-templates/templates/race-schedule.html`
+into `archive/[season]/schedule/` and fill it in. The template documents every row state,
+icon type and URL pattern; leave it blank.
 
 **Workflow: Updating the results index table**
 
