@@ -31,7 +31,7 @@ export type AudienceKind =
   | 'intro_pending' // opted in, but not yet sent the intro text that completes it
   | 'always' // members who asked to hear about races regardless of entry
   | 'filtered' // a slice of the members directory, described by its filters
-  | 'person' // one named member, for the one-to-one messages templates exist for
+  | 'people' // named members picked by hand — one person, or a one-off handful
 
 export interface AudienceOption {
   kind: AudienceKind
@@ -39,8 +39,8 @@ export interface AudienceOption {
   series?: string
   /** Group id, when kind is 'group' */
   groupId?: string
-  /** Person id, when kind is 'person' */
-  personId?: string
+  /** Person ids, when kind is 'people' */
+  personIds?: string[]
   label: string
 }
 
@@ -179,62 +179,77 @@ export async function resolveAudience(
   opts: {
     series?: string
     groupId?: string
-    personId?: string
+    personIds?: string[]
     filter?: MemberFilter
   } = {}
 ): Promise<AudienceResult> {
   const db = supabaseAdmin()
-  const { series, groupId, personId, filter } = opts
+  const { series, groupId, personIds, filter } = opts
 
   switch (kind) {
     /**
-     * One named member.
+     * Members picked by hand — one person, or a one-off handful.
      *
-     * The audience the templates were always for: every message FWM sends to a
-     * member opens with their first name, which only means anything when the message
-     * goes to one person.
+     * The audience the templates were written for. Most often it is one member,
+     * because every message FWM sends to a member opens with their first name; but
+     * "these four racers need to sign the waiver" is an equally real need, and
+     * creating a permanent recipient group for it would be absurd.
      *
-     * NOT AN EXCEPTION TO THE CONSENT GATE, and worth being explicit about because a
-     * one-to-one message feels different from a bulk send and is not. It runs through
-     * explainExclusions like every other audience, so a member who has not opted in
-     * resolves to nobody and says why. There is no override — the same rule that
-     * stops a careless send to three hundred people stops a considered send to one.
+     * NOT AN EXCEPTION TO THE CONSENT GATE, and worth being explicit about because
+     * picking somebody by name feels different from a bulk send and is not. It runs
+     * through explainExclusions like every other audience, so a member who has not
+     * opted in resolves to nobody and says why. There is no override — the same rule
+     * that stops a careless send to three hundred people stops a considered send to
+     * one.
      *
      * What an officer can still do is text them from their own phone. That is FWM's
      * decision to make and outside this system; what this system will not do is send
      * on the club's number to somebody who never agreed to hear from it.
      */
-    case 'person': {
-      if (!personId) {
+    case 'people': {
+      const ids = (personIds ?? []).filter(Boolean)
+
+      if (!ids.length) {
         return {
-          kind, label: 'One person', recipientCount: 0, consideredCount: 0,
+          kind, label: 'Selected people', recipientCount: 0, consideredCount: 0,
           excluded: [], incompleteConsent: false,
-          unavailableReason: 'No one selected',
+          unavailableReason: 'Nobody selected yet',
         }
       }
 
-      const { data: person } = await db
+      const { data: rows } = await db
         .from('people')
         .select(`first_name, last_name, ${GATE_COLUMNS}`)
-        .eq('id', personId)
-        .maybeSingle()
+        .in('id', ids)
 
-      if (!person) {
+      const found = rows ?? []
+      if (!found.length) {
         return {
-          kind, label: 'One person', recipientCount: 0, consideredCount: 0,
+          kind, label: 'Selected people', recipientCount: 0, consideredCount: 0,
           excluded: [], incompleteConsent: false,
-          unavailableReason: 'That member no longer exists',
+          unavailableReason: 'Those members no longer exist',
         }
       }
 
       type GatePerson = Parameters<typeof explainExclusions>[0][number]
-      const { eligible, excluded } = explainExclusions([person as unknown as GatePerson])
+      const { eligible, excluded } = explainExclusions(
+        found as unknown as GatePerson[]
+      )
+
+      // Named while it is still a list somebody can hold in their head. Past that,
+      // the count is the more useful label — and the send log is easier to read for
+      // "6 people" than for six names run together.
+      const names = found.map((p) => `${p.first_name} ${p.last_name}`)
+      const label =
+        names.length <= 3
+          ? names.join(', ')
+          : `${names.length} people`
 
       return {
         kind,
-        label: `${person.first_name} ${person.last_name}`,
+        label,
         recipientCount: eligible,
-        consideredCount: 1,
+        consideredCount: found.length,
         excluded,
         incompleteConsent: false,
       }

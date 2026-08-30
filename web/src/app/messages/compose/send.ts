@@ -55,7 +55,12 @@ interface GatePerson {
  */
 async function recipientsFor(
   kind: AudienceKind,
-  opts: { series?: string; groupId?: string; personId?: string; filter?: MemberFilter }
+  opts: {
+    series?: string
+    groupId?: string
+    personIds?: string[]
+    filter?: MemberFilter
+  }
 ): Promise<{ people: GatePerson[]; incompleteConsent: boolean }> {
   const db = supabaseAdmin()
 
@@ -63,21 +68,17 @@ async function recipientsFor(
     !!p.phone && !p.opted_out_at && !p.sms_never && !!p.opt_in_at && !!p.intro_sent_at
 
   switch (kind) {
-    case 'person': {
-      // One member. Filtered by exactly the same predicate as every audience above
-      // it — a one-to-one send is still a send from the club's number, and the fact
-      // that an officer has chosen this person deliberately is not consent.
-      if (!opts.personId) return { people: [], incompleteConsent: false }
+    case 'people': {
+      // Members chosen by hand. Filtered by exactly the same predicate as every
+      // audience below — picking somebody by name is a decision by an officer, and
+      // an officer's decision is not the member's consent.
+      const ids = (opts.personIds ?? []).filter(Boolean)
+      if (!ids.length) return { people: [], incompleteConsent: false }
 
-      const { data } = await db
-        .from('people')
-        .select(GATE)
-        .eq('id', opts.personId)
-        .maybeSingle()
+      const { data } = await db.from('people').select(GATE).in('id', ids)
 
-      const person = data as GatePerson | null
       return {
-        people: person && passesGate(person) ? [person] : [],
+        people: ((data ?? []) as GatePerson[]).filter(passesGate),
         incompleteConsent: false,
       }
     }
@@ -185,7 +186,14 @@ export async function sendMessage(formData: FormData) {
   const kind = String(formData.get('audience_kind') ?? '') as AudienceKind
   const groupId = String(formData.get('group_id') ?? '') || undefined
   const series = String(formData.get('series') ?? '') || undefined
-  const personId = String(formData.get('person_id') ?? '') || undefined
+  // Comma-separated, because a hand-picked audience can be one person or several.
+  // Sorted so that the same set chosen in a different order is recognised as the
+  // same audience by the duplicate guard below.
+  const personIds = String(formData.get('person_ids') ?? '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean)
+    .sort()
   const category = String(formData.get('category') ?? 'general')
   const purpose = String(formData.get('purpose') ?? '').trim() || null
   const repliesMonitored = formData.get('replies_monitored') === 'on'
@@ -241,7 +249,7 @@ export async function sendMessage(formData: FormData) {
   const { people, incompleteConsent } = await recipientsFor(kind, {
     series,
     groupId,
-    personId,
+    personIds,
     filter,
   })
   if (!people.length) fail('That audience has nobody in it right now.')
@@ -325,7 +333,9 @@ export async function sendMessage(formData: FormData) {
   //
   // The person is read from `audience`, the jsonb column that already carries the
   // filter spec for a filtered send, rather than a new column.
-  if (personId) duplicateQuery = duplicateQuery.eq('audience->>person_id', personId)
+  if (personIds.length) {
+    duplicateQuery = duplicateQuery.eq('audience->>person_ids', personIds.join(','))
+  }
 
   const { data: recent } = await duplicateQuery.limit(1).maybeSingle()
 
@@ -338,7 +348,7 @@ export async function sendMessage(formData: FormData) {
     )
   }
 
-  const audience = await resolveAudience(kind, { series, groupId, personId, filter })
+  const audience = await resolveAudience(kind, { series, groupId, personIds, filter })
 
   // Who is sending, in a form a person can read months from now. Stored on the
   // message rather than looked up later: `created_by` points into the auth schema,
@@ -376,8 +386,8 @@ export async function sendMessage(formData: FormData) {
       // exactly who was messaged and why, months later.
       audience: filter
         ? filterToParams(filter)
-        : personId
-          ? { person_id: personId }
+        : personIds.length
+          ? { person_ids: personIds.join(',') }
           : null,
       bypassed_consent_gate: incompleteConsent,
       replies_monitored: repliesMonitored,

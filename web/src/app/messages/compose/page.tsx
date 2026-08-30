@@ -47,7 +47,7 @@ export default async function ComposePage({
     audience?: string
     series?: string
     group?: string
-    person?: string
+    people?: string
     // Carried through from the members directory when messaging a filtered set.
     membership?: string
     filter?: string
@@ -197,7 +197,7 @@ export default async function ComposePage({
     ? await resolveAudience(selectedKind, {
         series: params.series,
         groupId: params.group,
-        personId: params.person,
+        personIds: params.people?.split(',').filter(Boolean),
         filter,
       })
     : {
@@ -233,7 +233,7 @@ export default async function ComposePage({
           templates={templates}
           races={races}
           people={people}
-          selectedPersonId={params.person}
+          selectedPersonIds={params.people?.split(',').filter(Boolean) ?? []}
           officerName={officerFirstName}
           officerPhone={officerPhone}
           // Prefilled, not auto-sent. The officer still reads it and presses Send:

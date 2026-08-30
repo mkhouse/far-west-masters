@@ -221,7 +221,7 @@ describe('resolveAudience applies the gate to every audience', () => {
     expect(accounted).toBe(consideredCount)
   })
 
-  // --- one named person ---
+  // --- members picked by hand ---
   //
   // The newest way to reach somebody, and the one most likely to be assumed exempt:
   // an officer choosing a member by name has clearly decided to contact them, and it
@@ -231,7 +231,7 @@ describe('resolveAudience applies the gate to every audience', () => {
 
   it('reaches one named member who has cleared the gate', async () => {
     tables.people = [eligible({ first_name: 'Damian', last_name: 'Palfini' })]
-    const result = await resolveAudience('person', { personId: 'p1' })
+    const result = await resolveAudience('people', { personIds: ['p1'] })
     expect(result.recipientCount).toBe(1)
     expect(result.consideredCount).toBe(1)
     expect(result.label).toBe('Damian Palfini')
@@ -244,9 +244,9 @@ describe('resolveAudience applies the gate to every audience', () => {
     ['is suppressed', { sms_never: true }, 'suppressed'],
     ['never opted in', { opt_in_at: null }, 'not opted-in for texts'],
     ['has had no intro text', { intro_sent_at: null }, 'no intro text sent'],
-  ])('refuses to reach one named member who %s', async (_label, override, reason) => {
+  ])('refuses to reach a named member who %s', async (_label, override, reason) => {
     tables.people = [eligible(override)]
-    const result = await resolveAudience('person', { personId: 'p1' })
+    const result = await resolveAudience('people', { personIds: ['p1'] })
     expect(result.recipientCount).toBe(0)
     expect(result.excluded).toEqual([{ reason, count: 1 }])
     // Not flagged as incomplete consent either — that label belongs to the intro
@@ -254,17 +254,51 @@ describe('resolveAudience applies the gate to every audience', () => {
     expect(result.incompleteConsent).toBe(false)
   })
 
-  it('reaches nobody when no one has been chosen', async () => {
-    const result = await resolveAudience('person', {})
-    expect(result.recipientCount).toBe(0)
-    expect(result.unavailableReason).toBe('No one selected')
+  it('applies the gate to each person in a hand-picked group', async () => {
+    // The case a multi-select introduces: picking four people must not let the three
+    // eligible ones carry the fourth through. Every name is checked on its own.
+    tables.people = [
+      eligible({ first_name: 'Ann', last_name: 'One' }),
+      eligible({ first_name: 'Bob', last_name: 'Two' }),
+      eligible({ first_name: 'Cal', last_name: 'Three', opt_in_at: null }),
+    ]
+    const result = await resolveAudience('people', {
+      personIds: ['p1', 'p2', 'p3'],
+    })
+    expect(result.recipientCount).toBe(2)
+    expect(result.consideredCount).toBe(3)
+    expect(result.excluded).toEqual([{ reason: 'not opted-in for texts', count: 1 }])
   })
 
-  it('reaches nobody when the chosen member no longer exists', async () => {
-    tables.people = []
-    const result = await resolveAudience('person', { personId: 'gone' })
+  it('names a small selection and counts a large one', async () => {
+    // Three names are worth reading in the send log; seven are not.
+    tables.people = [
+      eligible({ first_name: 'Ann', last_name: 'One' }),
+      eligible({ first_name: 'Bob', last_name: 'Two' }),
+    ]
+    expect((await resolveAudience('people', { personIds: ['a', 'b'] })).label).toBe(
+      'Ann One, Bob Two'
+    )
+
+    tables.people = Array.from({ length: 5 }, (_, i) =>
+      eligible({ first_name: `P${i}`, last_name: 'Racer' })
+    )
+    expect(
+      (await resolveAudience('people', { personIds: ['a', 'b', 'c', 'd', 'e'] })).label
+    ).toBe('5 people')
+  })
+
+  it('reaches nobody when no one has been chosen', async () => {
+    const result = await resolveAudience('people', {})
     expect(result.recipientCount).toBe(0)
-    expect(result.unavailableReason).toBe('That member no longer exists')
+    expect(result.unavailableReason).toBe('Nobody selected yet')
+  })
+
+  it('reaches nobody when the chosen members no longer exist', async () => {
+    tables.people = []
+    const result = await resolveAudience('people', { personIds: ['gone'] })
+    expect(result.recipientCount).toBe(0)
+    expect(result.unavailableReason).toBe('Those members no longer exist')
   })
 })
 

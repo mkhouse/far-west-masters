@@ -30,7 +30,7 @@ import { filterFromParams } from '@/lib/member-filters'
 export async function resolveAudienceAction(input: {
   kind: AudienceKind
   groupId?: string
-  personId?: string
+  personIds?: string[]
   series?: string
   filterParams?: Record<string, string>
 }): Promise<AudienceResult> {
@@ -40,7 +40,7 @@ export async function resolveAudienceAction(input: {
 
   return resolveAudience(input.kind, {
     groupId: input.groupId || undefined,
-    personId: input.personId || undefined,
+    personIds: input.personIds?.filter(Boolean),
     series: input.series || undefined,
     filter:
       input.kind === 'filtered' && input.filterParams

@@ -100,7 +100,7 @@ export function ComposeForm({
   templates,
   races,
   people,
-  selectedPersonId: initialPersonId,
+  selectedPersonIds: initialPersonIds,
   officerName,
   officerPhone: initialOfficerPhone,
   selectedSeries: initialSeries,
@@ -121,8 +121,8 @@ export function ComposeForm({
   races: RaceOption[]
   /** Everyone selectable as a single recipient, with why they cannot be texted. */
   people: PersonOption[]
-  /** The chosen recipient, when the audience is one person. */
-  selectedPersonId?: string
+  /** The chosen recipients, when the audience is people picked by hand. */
+  selectedPersonIds?: string[]
   /** The signed-in officer's first name, for {officer name}. */
   officerName: string | null
   /** Their published contact number in E.164, or null. See migration 0030. */
@@ -147,7 +147,7 @@ export function ComposeForm({
   // still lands on the same audience, without React remounting anything.
   const [audience, setAudience] = useState(initialAudience)
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId)
-  const [selectedPersonId, setSelectedPersonId] = useState(initialPersonId)
+  const [selectedPersonIds, setSelectedPersonIds] = useState(initialPersonIds ?? [])
   const [selectedSeries, setSelectedSeries] = useState(initialSeries)
   const [switching, startSwitching] = useTransition()
 
@@ -181,11 +181,11 @@ export function ComposeForm({
   function changeAudience(next: {
     kind: string
     groupId?: string
-    personId?: string
+    personIds?: string[]
     series?: string
   }) {
     setSelectedGroupId(next.groupId)
-    setSelectedPersonId(next.personId)
+    setSelectedPersonIds(next.personIds ?? [])
     setSelectedSeries(next.series)
 
     // Keep the address bar honest without a navigation, so a refresh or a link
@@ -195,7 +195,7 @@ export function ComposeForm({
     const params = new URLSearchParams()
     if (next.kind) params.set('audience', next.kind)
     if (next.groupId) params.set('group', next.groupId)
-    if (next.personId) params.set('person', next.personId)
+    if (next.personIds?.length) params.set('people', next.personIds.join(','))
     if (next.series) params.set('series', next.series)
     window.history.replaceState(null, '', `?${params.toString()}`)
 
@@ -216,7 +216,7 @@ export function ComposeForm({
       const resolved = await resolveAudienceAction({
         kind: next.kind as Parameters<typeof resolveAudienceAction>[0]['kind'],
         groupId: next.groupId,
-        personId: next.personId,
+        personIds: next.personIds,
         series: next.series,
         filterParams,
       })
@@ -333,7 +333,7 @@ export function ComposeForm({
       <input type="hidden" name="audience_kind" value={audience.kind} />
       <input type="hidden" name="group_id" value={selectedGroupId ?? ''} />
       <input type="hidden" name="series" value={selectedSeries ?? ''} />
-      <input type="hidden" name="person_id" value={selectedPersonId ?? ''} />
+      <input type="hidden" name="person_ids" value={selectedPersonIds.join(',')} />
       {/* The filter travels as parameters, not as a list of people. The server
           re-resolves it, so this cannot decide who receives anything. */}
       {filterParams && (
@@ -353,7 +353,7 @@ export function ComposeForm({
         audiences={audiences}
         audience={audience}
         people={people}
-        selectedPersonId={selectedPersonId}
+        selectedPersonIds={selectedPersonIds}
         selectedSeries={selectedSeries}
         selectedGroupId={selectedGroupId}
         switching={switching}
@@ -374,8 +374,8 @@ export function ComposeForm({
         // audience is one person — a bulk send has no per-person name to fill, which
         // is why the picker refuses a template that asks for one.
         memberFirstName={
-          audience.kind === 'person'
-            ? (people.find((p) => p.id === selectedPersonId)?.firstName ?? null)
+          audience.kind === 'people' && selectedPersonIds.length === 1
+            ? (people.find((p) => p.id === selectedPersonIds[0])?.firstName ?? null)
             : null
         }
         body={body}
@@ -535,8 +535,11 @@ export function ComposeForm({
           officerName={officerName}
           officerPhone={officerPhone}
           memberFirstName={
-            audience.kind === 'person'
-              ? (people.find((p) => p.id === selectedPersonId)?.firstName ?? null)
+            // Only when exactly one person is chosen. One message body goes to
+            // everybody, so with two recipients there is no name to fill in — and
+            // filling in the first one's would address the second by the wrong name.
+            audience.kind === 'people' && selectedPersonIds.length === 1
+              ? (people.find((p) => p.id === selectedPersonIds[0])?.firstName ?? null)
               : null
           }
         />
@@ -821,7 +824,7 @@ function AudiencePicker({
   audiences,
   audience,
   people,
-  selectedPersonId,
+  selectedPersonIds,
   selectedSeries,
   selectedGroupId,
   switching,
@@ -830,7 +833,7 @@ function AudiencePicker({
   audiences: AudienceOption[]
   audience: AudienceResult
   people: PersonOption[]
-  selectedPersonId?: string
+  selectedPersonIds: string[]
   selectedSeries?: string
   selectedGroupId?: string
   /** True while the server is resolving a newly chosen audience. */
@@ -838,7 +841,7 @@ function AudiencePicker({
   onChange: (next: {
     kind: string
     groupId?: string
-    personId?: string
+    personIds?: string[]
     series?: string
   }) => void
   /** Present when messaging a slice of the members directory. */
@@ -864,10 +867,10 @@ function AudiencePicker({
             onChange({
               kind,
               groupId: kind === 'group' ? arg : undefined,
-              series: kind !== 'group' && kind !== 'person' ? arg : undefined,
-              // Switching to "one person" starts with nobody chosen; the picker
+              series: kind !== 'group' && kind !== 'people' ? arg : undefined,
+              // Switching to "select people" starts with nobody chosen; the picker
               // below appears and asks.
-              personId: undefined,
+              personIds: undefined,
             })
           }}
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
@@ -887,7 +890,7 @@ function AudiencePicker({
 
           {/* The audience the message templates were written for. Listed first
               because a one-to-one message is the common case for them. */}
-          <option value="person">One person&hellip;</option>
+          <option value="people">Select people&hellip;</option>
 
           {audiences.map((a) => (
             <option
@@ -904,13 +907,11 @@ function AudiencePicker({
         </select>
       </label>
 
-      {audience.kind === 'person' && (
+      {audience.kind === 'people' && (
         <PersonPicker
           people={people}
-          selectedId={selectedPersonId ?? ''}
-          onSelect={(person) =>
-            onChange({ kind: 'person', personId: person?.id })
-          }
+          selectedIds={selectedPersonIds}
+          onChange={(ids) => onChange({ kind: 'people', personIds: ids })}
         />
       )}
 
