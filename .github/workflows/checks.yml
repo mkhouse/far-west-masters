@@ -26,9 +26,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # v5 rather than v4: the actions themselves run in a Node runtime that GitHub
+      # provides, separate from the Node this project builds on. GitHub deprecated the
+      # Node 20 runtime for actions and was already forcing v4 onto Node 24. This only
+      # changes GitHub's plumbing — `node-version` below is what our code runs on.
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # Matches local development. Deliberately not chasing whatever Vercel
           # defaults to — reproducing a CI failure on your own machine matters more
@@ -40,6 +44,15 @@ jobs:
       # and fails if the lockfile is out of step with package.json, which is a real
       # error worth failing on rather than silently resolving.
       - run: npm ci
+
+      # web/src/app/layout.tsx uses LayoutProps<"/">, a global type Next.js generates
+      # into web/.next/types/. That directory is gitignored, so it exists on a developer
+      # machine after any dev run or build but never on a fresh CI checkout — which is
+      # why typecheck passed locally and failed here. `next typegen` writes those types
+      # without the cost of a full build. Needed before Typecheck, and before any future
+      # use of the other generated globals (PageProps, RouteContext).
+      - name: Generate Next.js route types
+        run: npx next typegen web
 
       - name: Typecheck
         run: npm run typecheck

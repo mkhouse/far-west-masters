@@ -16,7 +16,10 @@ import { supabaseServer } from '@/lib/supabase/server'
  */
 export async function requestMagicLink(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim()
-  const next = String(formData.get('next') ?? '/')
+
+  // The form still posts a `next` field, and it is deliberately not read here: it
+  // cannot be carried through the magic link. See the emailRedirectTo comment below
+  // for why, and where officers land instead.
 
   if (!email) {
     redirect(`/sign-in?error=${encodeURIComponent('Enter an email address.')}`)
