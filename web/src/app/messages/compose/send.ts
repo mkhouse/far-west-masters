@@ -30,6 +30,7 @@ import {
   type MemberFilter,
 } from '@/lib/member-filters'
 import { additionsLength, checkSendability, composeBody } from '@/lib/sms/segments'
+import { describePlaceholders, findPlaceholders } from '@/lib/templates'
 import { sendMany, twilioConfig } from '@/lib/sms/twilio'
 
 /** Consent-relevant columns, matching the audience module. */
@@ -190,6 +191,25 @@ export async function sendMessage(formData: FormData) {
     redirect(`/messages/compose?error=${encodeURIComponent(msg)}`)
 
   if (!body) fail('Nothing to send — the message is empty.')
+
+  // --- no unfilled blanks ---
+  //
+  // The composer disables the button while a placeholder remains, but a disabled
+  // button is a courtesy, not a control: this action is reachable directly, and a tab
+  // left open while somebody edited the template would submit stale text. Checked
+  // here because this is the last point before the words reach a phone.
+  //
+  // Deliberately checks for ANY placeholder rather than a known list. A template
+  // containing {race director} is a mistake, and sending those literal characters to
+  // three hundred members is exactly the mistake worth refusing.
+  const blanks = findPlaceholders(body)
+  if (blanks.length) {
+    fail(
+      `This message still has blanks in it. ` +
+        `${describePlaceholders(blanks.map((b) => `{${b}}`))} ` +
+        `Fill them in before sending — nothing was sent.`
+    )
+  }
 
   const tw = twilioConfig()
   if ('missing' in tw) {

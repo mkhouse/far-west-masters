@@ -11,8 +11,11 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { listAudiences, resolveAudience, type AudienceKind } from '@/lib/audiences'
 import { filterFromParams, filterToParams } from '@/lib/member-filters'
 import { membershipContext } from '@/lib/membership'
+import { raceLabel, upcomingRaces } from '@/lib/races'
+import type { MessageTemplate } from '@/lib/templates'
 import { MembershipBanner } from '../../membership-banner'
 import { ComposeForm, type ComposeSettings, type Officer } from './compose-form'
+import type { RaceOption } from './template-picker'
 
 /** Read the operational settings, falling back to documented defaults. */
 async function loadSettings(): Promise<ComposeSettings> {
@@ -80,6 +83,48 @@ export default async function ComposePage({
     phone: o.phone as string,
   }))
 
+  // --- what the template picker needs ---
+  //
+  // Live templates only. An archived one is kept for the record, not for sending.
+  const { data: templateRows } = await db
+    .from('message_templates')
+    .select('id, name, category, body')
+    .is('archived_at', null)
+    .order('category')
+    .order('name')
+
+  const templates = (templateRows ?? []) as unknown as MessageTemplate[]
+
+  const races: RaceOption[] = (await upcomingRaces()).map((r) => ({
+    id: r.id,
+    venue: r.venue,
+    label: raceLabel(r),
+  }))
+
+  // The officer's own details, for {officer name} and {officer phone}.
+  //
+  // The phone comes from `app_users`, NOT from their member record — see migration
+  // 0030. `people.phone` is where the club texts them and where member replies are
+  // forwarded; it has never been shown to a member, and quietly reusing it here would
+  // publish it to everyone this template is ever sent to.
+  const { data: meRow } = await db
+    .from('app_users')
+    .select('contact_phone')
+    .eq('user_id', appUser.userId)
+    .maybeSingle()
+
+  const officerPhone = (meRow?.contact_phone as string | null) ?? null
+
+  let officerFirstName: string | null = null
+  if (appUser.personId) {
+    const { data: me } = await db
+      .from('people')
+      .select('first_name')
+      .eq('id', appUser.personId)
+      .maybeSingle()
+    officerFirstName = (me?.first_name as string | null) ?? null
+  }
+
   const { data: defaultRows } = await db
     .from('category_reply_defaults')
     .select('category, person_id')
@@ -128,6 +173,10 @@ export default async function ComposePage({
           categoryDefaults={categoryDefaults}
           audiences={audiences}
           audience={audience}
+          templates={templates}
+          races={races}
+          officerName={officerFirstName}
+          officerPhone={officerPhone}
           // Prefilled, not auto-sent. The officer still reads it and presses Send:
           // a stored template is exactly what drifts out of date unnoticed.
           prefillBody={audience.kind === 'intro_pending' ? settings.introText : ''}

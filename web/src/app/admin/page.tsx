@@ -41,6 +41,18 @@ const AVAILABLE = [
     description:
       'Named audiences for the compose screen — test groups, officials, board members. Groups appear in the “Send to” list as soon as they have members.',
   },
+  {
+    href: '/admin/templates',
+    title: 'Message templates',
+    description:
+      'The wording the club sends over and over, held once so it stops drifting. Blanks — the member’s name, your contact number, which race — are filled in when you use one.',
+  },
+  {
+    href: '/account',
+    title: 'Your account',
+    description:
+      'The number you are willing to give to members, used by templates that ask them to call. Deliberately not the number the club texts you on.',
+  },
 ]
 
 /** Not built yet. Listed so the shape of the system is visible. */

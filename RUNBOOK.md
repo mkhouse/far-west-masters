@@ -190,6 +190,69 @@ wait, or change the wording.
 string *only* if Twilio is ever configured to append its own, or members will get it
 twice.
 
+### Message templates
+
+**/admin/templates.** The wording the club sends over and over, held in one place.
+Open to every officer, not just admins — the person who writes these is the
+membership director, and needing somebody else's help to fix your own wording is how
+people go back to typing it by hand.
+
+Eight are seeded from what Mary sends today, under five headings: new member
+welcome, race-day logistics, action required before race day, re-engagement, and
+answering a question.
+
+**A template is text with blanks**, filled when you use it. Picking one on the
+compose screen fills the message box; it never sends anything, and you still press
+Send.
+
+| Blank | Filled from |
+|---|---|
+| `{first name}` | The member being contacted |
+| `{officer name}` | Your first name |
+| `{officer phone}` | Your contact number — see below |
+| `{venue}`, `{next venue}` | Picked from the races left this season |
+| `{time}` | Typed. The schedule holds a date but no start time |
+
+**Not every template needs a name in it.** Two of the eight have none — they answer a
+question or give instructions rather than opening a conversation.
+
+**A message with a blank still in it cannot be sent.** The button says so, and the
+send is refused server-side as well. This is deliberate and worth understanding: the
+alternative is a member receiving "Please give me a call at" with the number silently
+dropped, or the literal characters `{first name}`. Fill the blank in, or type over it.
+
+**These templates are for contacting one member at a time.** One message goes to the
+whole audience, so there is no per-person name to fill in — pick a template with
+`{first name}` while a large audience is selected and the screen says so.
+
+**The editor straightens smart punctuation on save**, exactly as the compose box does
+as you type. This is not tidiness. A curly apostrophe in "don't" — inserted
+automatically by a Mac or an iPhone, invisible on screen — forces UCS-2 and cuts a
+segment from 160 characters to 70. Two of the real templates arrived carrying one:
+the racer-profile message cost 5 segments as typed and 2 once straightened. Saved
+unfixed into a template, that is a permanent 2.5x multiplier on every future send.
+
+**Length is shown, not enforced.** These run to 264 characters and most are two
+segments. That is fine — they go to one person, not three hundred.
+
+**Archive rather than delete.** A template that has been used is part of the record
+of how the club communicates, and archiving frees the name for a rewrite.
+
+### Your contact number
+
+**/account.** The number templates fill into `{officer phone}` — the new-member
+welcome ends "please give me a call at…".
+
+**This is deliberately not the number on your member record.** That one is inbound:
+it is where the club texts you and where member replies are forwarded, and no member
+has ever seen it. Publishing it to three hundred people is a different decision, so
+it is a different field, and nothing copies one to the other. Left unset, templates
+needing it will not send — which is the intended outcome, because the alternative is
+a shared template handing out somebody else's mobile.
+
+You can set it without leaving a half-written message: pick a template that needs it
+and the field appears inline, saves to your account, and fills itself in.
+
 ### When a member replies
 
 The reply is forwarded to whichever officer was named on that message, as:
@@ -548,6 +611,8 @@ files — and so that what is *not* guaranteed is equally visible.
 | **Delivery outcomes** | `web/src/lib/delivery.test.ts` | Only `failed` and `undelivered` count as final, so an intro still in flight is never re-sent; and only intro sends can un-introduce somebody, so an ordinary race text bouncing never drops a member out of every audience. |
 | **Opt-in matching** | `web/src/lib/opt-in-review.test.ts` | A submission is matched to a member on mobile, then email, then USSA number — in that order, because a USSA number typed on a public form is the one most likely to be a digit out. A number that failed to normalise is tried again rather than left lost. Nothing matches on a value the submission never gave. |
 | **Phone normalisation** | `web/src/lib/phone.test.ts` | Every shape found in the roster exports normalises to the same number. Anything that is not a ten-digit North American number is refused rather than half-accepted. |
+| **Message templates** | `web/src/lib/templates.test.ts` | An unfilled blank stays visible in the message and is reported, rather than being dropped to make the message look finished — including when the value supplied is empty or blank, which is the officer-with-no-contact-number case. Substitution is one pass, so nothing a member or officer types can be re-read as a placeholder. A placeholder nothing can fill is left as written rather than sent silently. `{officer phone}` is sourced from the officer, never from the member being contacted. |
+| **Race dates** | `web/src/lib/races.test.ts` | A race date is formatted from its own string, not through `new Date()`. Parsing a date column yields UTC midnight, which west of UTC renders as the day before — every race in the picker listed a day early, all season. Invisible in summer on a UTC machine. |
 | **Directory filters** | `web/src/lib/member-filters.test.ts` | The filters that decide what the directory shows are the same ones that decide who a message reaches. Groupings stay disjoint; an unknown value in the URL narrows rather than widens. |
 
 ### How we know the tests are load-bearing

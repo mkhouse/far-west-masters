@@ -21,6 +21,8 @@ import {
   fixSmartCharacters,
   remainingNonGsmCharacters,
 } from '@/lib/sms/segments'
+import { describePlaceholders, findPlaceholders, type MessageTemplate } from '@/lib/templates'
+import { TemplatePicker, type RaceOption } from './template-picker'
 
 export interface Officer {
   id: string
@@ -87,6 +89,10 @@ export function ComposeForm({
   categoryDefaults,
   audiences,
   audience,
+  templates,
+  races,
+  officerName,
+  officerPhone: initialOfficerPhone,
   selectedSeries,
   selectedGroupId,
   filterParams,
@@ -99,6 +105,14 @@ export function ComposeForm({
   categoryDefaults: Record<string, string>
   audiences: AudienceOption[]
   audience: AudienceResult
+  /** Saved wording an officer can start from. See lib/templates.ts. */
+  templates: MessageTemplate[]
+  /** Races left this season, for the {venue} picker. Empty until #6. */
+  races: RaceOption[]
+  /** The signed-in officer's first name, for {officer name}. */
+  officerName: string | null
+  /** Their published contact number in E.164, or null. See migration 0030. */
+  officerPhone: string | null
   selectedSeries?: string
   selectedGroupId?: string
   /** Present when messaging a slice of the members directory. */
@@ -117,6 +131,9 @@ export function ComposeForm({
   const [replyNotice, setReplyNotice] = useState(settings.defaultReplyNotice)
   const [replyTo, setReplyTo] = useState<string>(categoryDefaults.general ?? '')
   const [autoFixed, setAutoFixed] = useState<string[]>([])
+  // Held here rather than in the picker so that saving a contact number mid-compose
+  // updates every placeholder that depends on it, not just the one being filled.
+  const [officerPhone, setOfficerPhone] = useState(initialOfficerPhone)
 
   /**
    * Smart punctuation is corrected as it is typed or pasted, rather than offered as
@@ -165,7 +182,19 @@ export function ComposeForm({
 
   const specialChars = useMemo(() => remainingNonGsmCharacters(body), [body])
   const emoji = countEmoji(body)
-  const canSend = body.trim().length > 0 && !verdict.blocked && recipientCount > 0
+
+  // Blanks still in the message. This is the whole safety property of templates:
+  // "Please give me a call at {officer phone}" must never reach a member, and neither
+  // must the version where the placeholder was silently dropped and the sentence just
+  // stops. Send is blocked until every blank is closed, and send.ts checks again
+  // server-side because this page can be stale.
+  const unresolved = useMemo(() => findPlaceholders(body), [body])
+
+  const canSend =
+    body.trim().length > 0 &&
+    !verdict.blocked &&
+    recipientCount > 0 &&
+    unresolved.length === 0
 
   return (
     <form action={sendMessage} className="space-y-6">
@@ -194,6 +223,21 @@ export function ComposeForm({
         audience={audience}
         selectedSeries={selectedSeries}
         selectedGroupId={selectedGroupId}
+      />
+
+      {/* Placed after the audience and before everything else: which message you are
+          sending decides the category, the reply contact and the wording, so choosing
+          it first means the rest of the form is answering a question you have already
+          asked. */}
+      <TemplatePicker
+        templates={templates}
+        races={races}
+        officerName={officerName}
+        officerPhone={officerPhone}
+        onOfficerPhoneSaved={setOfficerPhone}
+        body={body}
+        onBodyChange={setBody}
+        recipientCount={recipientCount}
       />
 
       <section className="grid gap-4 border-b border-neutral-200 px-5 py-4 sm:grid-cols-2 dark:border-neutral-800">
@@ -305,6 +349,18 @@ export function ComposeForm({
           </p>
         )}
 
+        {/* Said next to the message rather than only at the button, because the fix
+            is here: the placeholder is a few characters away in the box above. */}
+        {unresolved.length > 0 && (
+          <p
+            className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+            role="alert"
+          >
+            {describePlaceholders(unresolved.map((u) => `{${u}}`))} This cannot be sent
+            with a blank still in it — fill it in above, or type over it.
+          </p>
+        )}
+
         {/* The message as it will actually arrive. A counter can be argued with;
             seeing the reply notice and the opt-out line in place cannot. */}
         {body.trim() && (
@@ -337,7 +393,11 @@ export function ComposeForm({
 
       </div>
 
-      <SendButton canSend={canSend} recipientCount={recipientCount} />
+      <SendButton
+        canSend={canSend}
+        recipientCount={recipientCount}
+        blockedByPlaceholder={unresolved.length > 0}
+      />
     </form>
   )
 }
@@ -360,9 +420,12 @@ export function ComposeForm({
 function SendButton({
   canSend,
   recipientCount,
+  blockedByPlaceholder,
 }: {
   canSend: boolean
   recipientCount: number
+  /** A blank is still in the message. Named on the button so it is not a mystery. */
+  blockedByPlaceholder: boolean
 }) {
   const { pending } = useFormStatus()
 
@@ -390,7 +453,9 @@ function SendButton({
     >
       {recipientCount === 0
         ? 'No recipients'
-        : `Send to ${recipientCount} ${recipientCount === 1 ? 'person' : 'people'}`}
+        : blockedByPlaceholder
+          ? 'Fill in the blanks first'
+          : `Send to ${recipientCount} ${recipientCount === 1 ? 'person' : 'people'}`}
     </button>
   )
 }
