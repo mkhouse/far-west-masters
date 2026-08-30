@@ -10,7 +10,7 @@
  * Length rules and their reasoning: migration/sms-limits.md
  */
 
-import { Fragment, useMemo, useRef, useState } from 'react'
+import { Fragment, useMemo, useRef, useState, useTransition } from 'react'
 import { useFormStatus } from 'react-dom'
 import { sendMessage } from './send'
 import {
@@ -30,6 +30,7 @@ import {
 import { TemplatePicker, type RaceOption } from './template-picker'
 import { PersonPicker, type PersonOption } from './person-picker'
 import { SaveAsTemplate } from './save-as-template'
+import { resolveAudienceAction } from './audience'
 
 export interface Officer {
   id: string
@@ -95,15 +96,15 @@ export function ComposeForm({
   settings,
   categoryDefaults,
   audiences,
-  audience,
+  audience: initialAudience,
   templates,
   races,
   people,
-  selectedPersonId,
+  selectedPersonId: initialPersonId,
   officerName,
   officerPhone: initialOfficerPhone,
-  selectedSeries,
-  selectedGroupId,
+  selectedSeries: initialSeries,
+  selectedGroupId: initialGroupId,
   filterParams,
   prefillBody,
   prefillPurpose,
@@ -135,6 +136,21 @@ export function ComposeForm({
   /** Matching label for the log. */
   prefillPurpose?: string
 }) {
+  // --- the audience, changed in place ---
+  //
+  // Held as state and updated through a server action rather than by reloading the
+  // page. The resolution still happens on the server against live data — see
+  // ./audience.ts — so the count is as trustworthy as it was; what has gone is the
+  // navigation that used to throw away whatever had been typed.
+  //
+  // The URL is kept in step with history.replaceState so a refresh or a shared link
+  // still lands on the same audience, without React remounting anything.
+  const [audience, setAudience] = useState(initialAudience)
+  const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId)
+  const [selectedPersonId, setSelectedPersonId] = useState(initialPersonId)
+  const [selectedSeries, setSelectedSeries] = useState(initialSeries)
+  const [switching, startSwitching] = useTransition()
+
   const recipientCount = audience.recipientCount
   const [category, setCategory] = useState<string>('general')
   // Starts from the audience's standard wording when there is one — the intro
@@ -153,6 +169,72 @@ export function ComposeForm({
   const [purpose, setPurpose] = useState(prefillPurpose ?? '')
 
   const bodyRef = useRef<HTMLTextAreaElement>(null)
+
+  /**
+   * Change who the message goes to, keeping everything already written.
+   *
+   * Note what is deliberately NOT reset: the body, the purpose, the category, the
+   * reply settings. Changing your mind about the recipient is not changing your mind
+   * about the message, and the old behaviour — a page load that silently cleared the
+   * lot — punished the most ordinary sequence there is.
+   */
+  function changeAudience(next: {
+    kind: string
+    groupId?: string
+    personId?: string
+    series?: string
+  }) {
+    setSelectedGroupId(next.groupId)
+    setSelectedPersonId(next.personId)
+    setSelectedSeries(next.series)
+
+    // Keep the address bar honest without a navigation, so a refresh or a link
+    // shared with another officer lands in the same place. replaceState rather than
+    // router.replace: this must not re-render the route, because re-rendering it is
+    // what used to lose the message.
+    const params = new URLSearchParams()
+    if (next.kind) params.set('audience', next.kind)
+    if (next.groupId) params.set('group', next.groupId)
+    if (next.personId) params.set('person', next.personId)
+    if (next.series) params.set('series', next.series)
+    window.history.replaceState(null, '', `?${params.toString()}`)
+
+    if (!next.kind) {
+      setAudience({
+        kind: '',
+        label: '',
+        recipientCount: 0,
+        consideredCount: 0,
+        excluded: [],
+        incompleteConsent: false,
+        unavailableReason: 'Choose who this message goes to.',
+      })
+      return
+    }
+
+    startSwitching(async () => {
+      const resolved = await resolveAudienceAction({
+        kind: next.kind as Parameters<typeof resolveAudienceAction>[0]['kind'],
+        groupId: next.groupId,
+        personId: next.personId,
+        series: next.series,
+        filterParams,
+      })
+      setAudience(resolved)
+
+      // The intro audience has standard wording. Filled in only when there is
+      // nothing to overwrite — the entire point of this change is that switching
+      // audience does not clobber what you wrote.
+      if (
+        resolved.kind === 'intro_pending' &&
+        !body.trim() &&
+        settings.introText.trim()
+      ) {
+        setBody(settings.introText)
+        setPurpose('Intro text')
+      }
+    })
+  }
 
   /**
    * Put a blank where the cursor is.
@@ -274,6 +356,8 @@ export function ComposeForm({
         selectedPersonId={selectedPersonId}
         selectedSeries={selectedSeries}
         selectedGroupId={selectedGroupId}
+        switching={switching}
+        onChange={changeAudience}
       />
 
       {/* Placed after the audience and before everything else: which message you are
@@ -740,6 +824,8 @@ function AudiencePicker({
   selectedPersonId,
   selectedSeries,
   selectedGroupId,
+  switching,
+  onChange,
 }: {
   audiences: AudienceOption[]
   audience: AudienceResult
@@ -747,6 +833,14 @@ function AudiencePicker({
   selectedPersonId?: string
   selectedSeries?: string
   selectedGroupId?: string
+  /** True while the server is resolving a newly chosen audience. */
+  switching: boolean
+  onChange: (next: {
+    kind: string
+    groupId?: string
+    personId?: string
+    series?: string
+  }) => void
   /** Present when messaging a slice of the members directory. */
   filterParams?: Record<string, string>
   /** Message text to start from, when the audience has a standard wording. */
@@ -759,22 +853,6 @@ function AudiencePicker({
       ? `group|${selectedGroupId ?? ''}`
       : audience.kind + (selectedSeries ? `|${selectedSeries}` : '')
 
-  /**
-   * Changing the audience reloads the page.
-   *
-   * The recipient count and the exclusion reasons are computed on the server against
-   * live data, so the audience lives in the URL rather than in local state — a count
-   * estimated in the browser is exactly the number nobody should trust before
-   * pressing Send.
-   *
-   * The cost is that anything typed is lost when the audience changes. That is worth
-   * knowing but not worth solving here: choosing who a message goes to is the first
-   * thing you do, which is why this control sits at the top of the form.
-   */
-  function go(params: URLSearchParams) {
-    window.location.search = params.toString()
-  }
-
   return (
     <section className="border-b border-neutral-200 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
       <label className="block">
@@ -783,14 +861,14 @@ function AudiencePicker({
           value={value}
           onChange={(e) => {
             const [kind, arg] = e.target.value.split('|')
-            if (!kind) {
-              go(new URLSearchParams())
-              return
-            }
-            const params = new URLSearchParams({ audience: kind })
-            if (kind === 'group' && arg) params.set('group', arg)
-            else if (kind !== 'person' && arg) params.set('series', arg)
-            go(params)
+            onChange({
+              kind,
+              groupId: kind === 'group' ? arg : undefined,
+              series: kind !== 'group' && kind !== 'person' ? arg : undefined,
+              // Switching to "one person" starts with nobody chosen; the picker
+              // below appears and asks.
+              personId: undefined,
+            })
           }}
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         >
@@ -830,16 +908,23 @@ function AudiencePicker({
         <PersonPicker
           people={people}
           selectedId={selectedPersonId ?? ''}
-          onSelect={(person) => {
-            const params = new URLSearchParams({ audience: 'person' })
-            if (person) params.set('person', person.id)
-            go(params)
-          }}
+          onSelect={(person) =>
+            onChange({ kind: 'person', personId: person?.id })
+          }
         />
       )}
 
       <div className="mt-3 text-sm">
-        {audience.unavailableReason ? (
+        {/* While the server is working out the new audience the previous count is
+            still on screen and no longer true. Saying so is the whole reason this is
+            a server round trip rather than a browser estimate — showing a stale
+            number as though it were current would give away exactly what was gained
+            by not guessing in the first place. */}
+        {switching ? (
+          <p className="text-neutral-600" role="status" aria-live="polite">
+            Working out who that reaches&hellip;
+          </p>
+        ) : audience.unavailableReason ? (
           <p className="text-amber-700 dark:text-amber-300">
             {audience.unavailableReason}
           </p>
