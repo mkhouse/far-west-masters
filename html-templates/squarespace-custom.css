@@ -42,11 +42,6 @@ body.homepage main .page-section:first-child {
   }
 }
 
-/* stop clipping the descender on the honepage */
-#block-yui_3_17_2_1_1793493367864_6926 .sqs-block-content {
-  overflow: visible;
-}
-
 /* Table Link Styling */
 table a {
   color: #0066cc;
@@ -723,9 +718,10 @@ tr.completed .date-cell .day-info {
    For wide tables that overflow on any screen
    ========================================== */
 
-/* Squarespace wraps markdown content in these containers */
-.sqs-block-markdown .sqs-block-content,
-.sqs-block-html .sqs-block-content {
+/* Squarespace wraps markdown content in these containers. Only blocks with tables
+   scroll, because overflow-x also clips text vertically, cutting off descenders. */
+.sqs-block-markdown .sqs-block-content:has(table),
+.sqs-block-html .sqs-block-content:has(table) {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
@@ -1006,6 +1002,18 @@ tr.completed .date-cell .day-info {
 
   .sqs-block-markdown h3,
   .sqs-block-html h3 {
+    font-size: 10pt !important;
+    margin: 6px 0 2px !important;
+  }
+
+  /* Remove Squarespace's top padding so content starts at the page margin */
+  .content-wrapper {
+    padding-top: 0 !important;
+  }
+
+  /* Class headings: tight to their table */
+  .sqs-block-markdown h4,
+  .sqs-block-html h4 {
     font-size: 10pt !important;
     margin: 6px 0 2px !important;
   }
