@@ -22,6 +22,11 @@ body {
   padding-bottom: 5px !important;
 }
 
+/* stop clipping the descender on the honepage */
+#block-yui_3_17_2_1_1793493367864_6926 .sqs-block-content {
+  overflow: visible;
+}
+
 /* Table Link Styling */
 table a {
   color: #0066cc;
