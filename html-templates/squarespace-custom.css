@@ -18,8 +18,28 @@ body {
 }
 
 .page-section {
-  padding-top: 10px !important;
   padding-bottom: 5px !important;
+}
+
+/* Keep the tight spacing everywhere except the first section on narrow screens,
+   where Squarespace's padding has to clear the taller header. */
+main .page-section:not(:first-child),
+footer .page-section,
+body.homepage main .page-section:first-child {
+  padding-top: 10px !important;
+}
+
+@media screen and (min-width: 900px) {
+  main .page-section:first-child {
+    padding-top: 10px !important;
+  }
+}
+
+/* Trim Squarespace's extra space above the first section's content on narrow screens. */
+@media screen and (max-width: 899px) {
+  body.collection-type-page:not(.homepage) main .page-section:first-child .content-wrapper {
+    padding-top: 20px !important;
+  }
 }
 
 /* stop clipping the descender on the honepage */
