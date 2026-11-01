@@ -2,19 +2,17 @@
   FWM RACE SCHEDULE — 2026-27 SEASON
   ==================================
   Live working file for the season — edit here all season, then paste into the Squarespace
-  HTML block on the Schedule page. This IS the archive copy; nothing to move at season end.
+  code blocks on the Schedule and home pages. This IS the archive copy; nothing to move at season end.
 
-  Source: FWM_Schedule_2027_preliminary.pdf (Mike Braun, dated 25-Aug-2026). PRELIMINARY —
-  dates may shift as commitments with organizing areas are confirmed.
+  Source: classic.farwestmasters.org/raceinfo/2027/schedule (checked Nov 1, 2026).
 
   17 scored FWM races: 6 SL, 5 GS, 6 SG. Plus the Dec race camp (unscored) and three
   out-of-region events (Alyeska, Nakiska, Big Sky).
 
-  STILL TBA ACROSS ALL FWM ROWS — fill in as they land:
-    - Entry fees and entry deadlines
-    - Race flyer PDFs  (resources.farwestmasters.org/announcements/2027/)
-    - Registration links (masters.adminskiracing.com/fwm-[slug]) — entries open November 2026
+  STILL TBA — fill in as they land:
+    - Registration links for the five races after Mammoth (masters.adminskiracing.com/fwm-[slug])
     - Race Day Checkin / Communications, race hill, start time
+    - Lift ticket prices at Sierra at Tahoe, Northstar, Alpine and Palisades
     - Viva Italia Cup location (not yet finalized)
 
   Row states, icon types and URL patterns are documented in the blank reference template
@@ -40,11 +38,6 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 20px;
   background-color: #f5f5f5;
-}
-
-.page-section {
-  padding-top: 10px !important;
-  padding-bottom: 5px !important;
 }
 
 /* Table Link Styling */
@@ -398,6 +391,7 @@ h1 {
 }
 </style>
 
+<div class="table-container"> through its closing </div>. -->
 <div class="table-container">
   <table>
     <thead>
@@ -421,14 +415,18 @@ h1 {
         <td class="location-cell">Mammoth Mountain, CA</td>
         <td class="title-cell">
           Masters race camp<br />
-          <span class="entry-details">Final plans TBA</span>
+          <span class="entry-details">Registration closes Sun 11/29</span>
         </td>
         <td class="disciplines-cell">GS</td>
         <td class="download-cell">
-          <!-- Info: camp PDF TBA -->
+          <!-- Info: no camp flyer -->
         </td>
         <td class="download-cell">
-          <!-- Signup: TBA -->
+          <a href="https://book.mammothmountain.com/ecomm/Package/PackageBuilder/17793040/en-US/?packageid=94059&amp;promocode=MSTRCP26" class="download-link" title="Registration" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon external-icon" viewBox="0 0 24 24">
+              <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
           <!-- No results: training camp -->
@@ -440,20 +438,31 @@ h1 {
         <td class="date-cell">
           Dec. 5-6<br /><span class="day-info">(Sat-Sun)</span>
         </td>
-        <td class="location-cell"><a href="https://www.mammothmountain.com" target="_blank" rel="noopener noreferrer">Mammoth Mountain</a><br /><a href="https://www.mammothmountain.com/discover-mammoth/camps-teams/race-department" target="_blank" rel="noopener noreferrer">Race Department</a><br /><a href="mailto:RaceAdmin@MammothResorts.com">RaceAdmin@MammothResorts.com</a><br />(760) 934-0642<br />Mammoth Lakes, CA 93546</td>
+        <td class="location-cell"><a href="https://www.mammothmountain.com" target="_blank" rel="noopener noreferrer">Mammoth Mountain</a><br /><a href="https://www.mammothmountain.com/discover-mammoth/camps-teams/race-department" target="_blank" rel="noopener noreferrer">Race Department</a><br />(760) 934-0642<br />Mammoth Lakes, CA 93546</td>
         <td class="title-cell">
-          <span class="entry-details">Entry fees and deadlines TBA</span><br />
+          <span class="entry-cost">Entries: $45 per race</span><br />
+          Lift: $79 ($68 ages 65-79, 80+ free) or Ikon pass<br />
+          <span class="entry-details">Entries due Thu 12/3 7pm PT</span><br />
+          <span class="entry-details">$5 late fee after Sun 11/29</span><br />
           <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span><br />
-          Registration opens November 2026<br />
+          Registration: <a href="https://masters.adminskiracing.com/fwm-mammoth-gs-dec-2026" target="_blank" rel="noopener noreferrer">register online</a><br />
           Race Day Checkin: TBA<br />
           Race Day Communications: TBA
         </td>
         <td class="disciplines-cell">GS / GS<br /><br />Race: TBA<br />Start: TBA</td>
         <td class="download-cell">
-          <!-- Info: flyer TBA -->
+          <a href="https://resources.farwestmasters.org/announcements/2027/FWM-EventInfo-Mammoth-Dec-GS.pdf" class="download-link" title="Race Flyer" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
-          <!-- Signup: opens November 2026 -->
+          <a href="https://masters.adminskiracing.com/fwm-mammoth-gs-dec-2026" class="download-link" title="Registration" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon external-icon" viewBox="0 0 24 24">
+              <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
           <!-- Results -->
@@ -465,46 +474,64 @@ h1 {
         <td class="date-cell">
           Jan. 22-24<br /><span class="day-info">(Fri-Sat-Sun)</span>
         </td>
-        <td class="location-cell"><a href="https://www.mammothmountain.com" target="_blank" rel="noopener noreferrer">Mammoth Mountain</a><br /><a href="https://www.mammothmountain.com/discover-mammoth/camps-teams/race-department" target="_blank" rel="noopener noreferrer">Race Department</a><br /><a href="mailto:RaceAdmin@MammothResorts.com">RaceAdmin@MammothResorts.com</a><br />(760) 934-0642<br />Mammoth Lakes, CA 93546</td>
+        <td class="location-cell"><a href="https://www.mammothmountain.com" target="_blank" rel="noopener noreferrer">Mammoth Mountain</a><br /><a href="https://www.mammothmountain.com/discover-mammoth/camps-teams/race-department" target="_blank" rel="noopener noreferrer">Race Department</a><br />(760) 934-0642<br />Mammoth Lakes, CA 93546</td>
         <td class="title-cell">
           Mammoth Speed Races<br />
-          <span class="entry-details">Entry fees and deadlines TBA</span><br />
+          <span class="entry-cost">Entries: $55 per race</span><br />
+          Lift: $79 ($68 ages 65-79, 80+ free) or Ikon pass<br />
+          <span class="entry-details">Entries due Tue 1/19 7pm PT</span><br />
+          <span class="entry-details">$5 late fee after Sun 1/17</span><br />
           <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span><br />
-          Registration opens November 2026<br />
+          Registration: <a href="https://masters.adminskiracing.com/fwm-mammoth-nss-sg-gs-jan-2027" target="_blank" rel="noopener noreferrer">register online</a><br />
           Race Day Checkin: TBA<br />
           Race Day Communications: TBA
         </td>
-        <td class="disciplines-cell">Fri: SG / SG, Sat: SG / SG, Sun: GS<br /><br />First SG each day scored for NSS<br />Race: TBA<br />Start: TBA</td>
+        <td class="disciplines-cell">Fri: SG / SG<br />Sat: SG / SG<br />Sun: GS<br /><br />First SG each day scored for NSS<br /><br />Race: TBA<br />Start: TBA</td>
         <td class="download-cell">
-          <!-- Info: flyer TBA -->
+          <a href="https://resources.farwestmasters.org/announcements/2027/FWM-EventInfo-Mammoth-Jan-SpeedSeries-SG-GS.pdf" class="download-link" title="Race Flyer" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
-          <!-- Signup: opens November 2026 -->
+          <a href="https://masters.adminskiracing.com/fwm-mammoth-nss-sg-gs-jan-2027" class="download-link" title="Registration" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon external-icon" viewBox="0 0 24 24">
+              <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
           <!-- Results -->
         </td>
       </tr>
 
-      <!-- RACE 8-9 - Sierra at Tahoe SL (returning venue) -->
+      <!-- RACE 8-9 - Sierra at Tahoe SL -->
       <tr>
         <td class="date-cell">
           Feb. 6-7<br /><span class="day-info">(Sat-Sun)</span>
         </td>
         <td class="location-cell"><a href="https://sierraattahoe.com" target="_blank" rel="noopener noreferrer">Sierra at Tahoe</a><br />Twin Bridges, CA 95735</td>
         <td class="title-cell">
-          <span class="entry-details">Entry fees and deadlines TBA</span><br />
+          <span class="entry-cost">Entries: $45 per race</span><br />
+          Lift: TBA or Ikon pass<br />
+          <span class="entry-details">Entries due Thu 2/4 7pm PT</span><br />
+          <span class="entry-details">$5 late fee after Sun 1/31</span><br />
           <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span><br />
-          Registration opens November 2026<br />
+          Registration link coming soon<br />
           Race Day Checkin: TBA<br />
           Race Day Communications: TBA
         </td>
         <td class="disciplines-cell">SL / SL<br /><br />Race: TBA<br />Start: TBA</td>
         <td class="download-cell">
-          <!-- Info: flyer TBA -->
+          <a href="https://resources.farwestmasters.org/announcements/2027/FWM-EventInfo-SierraTahoe-Feb-SL.pdf" class="download-link" title="Race Flyer" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
-          <!-- Signup: opens November 2026 -->
+          <!-- Signup: link added when it opens -->
         </td>
         <td class="download-cell">
           <!-- Results -->
@@ -516,21 +543,27 @@ h1 {
         <td class="date-cell">
           Feb. 19<br /><span class="day-info">(Fri)</span>
         </td>
-        <td class="location-cell"><a href="https://www.northstarcalifornia.com" target="_blank" rel="noopener noreferrer">Northstar California</a><br />Truckee, CA 96160</td>
+        <td class="location-cell"><a href="https://www.northstarcalifornia.com" target="_blank" rel="noopener noreferrer">Northstar California</a><br /><a href="mailto:NorthstarRaceDept@vailresorts.com?subject=Masters%20Race%20Inquiry">NorthstarRaceDept@vailresorts.com</a><br />(530) 562-3233<br />Truckee, CA 96160</td>
         <td class="title-cell">
           Northstar Speed Series<br />
-          <span class="entry-details">Entry fees and deadlines TBA</span><br />
+          <span class="entry-cost">Entries: $55 per SG race</span><br />
+          Lift: TBA or Epic pass<br />
+          <span class="entry-details">Entries due Wed 2/17 7pm PT</span><br />
+          <span class="entry-details">$5 late fee after Sun 2/14</span><br />
           <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span><br />
-          Registration opens November 2026<br />
-          Race Day Checkin: TBA<br />
+          Registration link coming soon<br />
           Race Day Communications: TBA
         </td>
-        <td class="disciplines-cell">SG / SG<br /><br />Both races scored for NSS<br />Race: TBA<br />Start: TBA</td>
+        <td class="disciplines-cell">SG / SG<br /><br />Both races scored for NSS<br /><br />Race: TBA<br />Start: TBA</td>
         <td class="download-cell">
-          <!-- Info: flyer TBA -->
+          <a href="https://resources.farwestmasters.org/announcements/2027/FWM-EventInfo-Northstar-Feb-SpeedSeries-SG.pdf" class="download-link" title="Race Flyer" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
-          <!-- Signup: opens November 2026 -->
+          <!-- Signup: link added when it opens -->
         </td>
         <td class="download-cell">
           <!-- Results -->
@@ -544,18 +577,24 @@ h1 {
         </td>
         <td class="location-cell"><a href="https://www.sugarbowl.com" target="_blank" rel="noopener noreferrer">Sugar Bowl</a><br />Norden, CA 95724</td>
         <td class="title-cell">
-          <span class="entry-details">Entry fees and deadlines TBA</span><br />
+          <span class="entry-cost">Entries: $45 per race</span><br />
+          <span class="entry-details">Entries due Thu 2/25 7pm PT</span><br />
+          <span class="entry-details">$5 late fee after Sun 2/21</span><br />
           <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span><br />
-          Registration opens November 2026<br />
+          Registration link coming soon<br />
           Race Day Checkin: TBA<br />
           Race Day Communications: TBA
         </td>
         <td class="disciplines-cell">SL / SL<br /><br />Race: TBA<br />Start: TBA</td>
         <td class="download-cell">
-          <!-- Info: flyer TBA -->
+          <a href="https://resources.farwestmasters.org/announcements/2027/FWM-EventInfo-SugarBowl-Feb-SL.pdf" class="download-link" title="Race Flyer" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
-          <!-- Signup: opens November 2026 -->
+          <!-- Signup: link added when it opens -->
         </td>
         <td class="download-cell">
           <!-- Results -->
@@ -567,20 +606,27 @@ h1 {
         <td class="date-cell">
           Mar. 5<br /><span class="day-info">(Fri)</span>
         </td>
-        <td class="location-cell"><a href="https://www.palisadestahoe.com" target="_blank" rel="noopener noreferrer">Alpine</a><br />Olympic Valley, CA 96146</td>
+        <td class="location-cell"><a href="https://www.palisadestahoe.com/" target="_blank" rel="noopener noreferrer">Alpine</a><br />(530) 452-7188<br />Olympic Valley, CA 96146</td>
         <td class="title-cell">
-          <span class="entry-details">Entry fees and deadlines TBA</span><br />
+          <span class="entry-cost">Entries: $45 per race</span><br />
+          Lift: TBA or Ikon pass<br />
+          <span class="entry-details">Entries due Wed 3/3 7pm PT</span><br />
+          <span class="entry-details">$5 late fee after Sun 2/28</span><br />
           <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span><br />
-          Registration opens November 2026<br />
+          Registration link coming soon<br />
           Race Day Checkin: TBA<br />
           Race Day Communications: TBA
         </td>
         <td class="disciplines-cell">SL / SL<br /><br />Race: TBA<br />Start: TBA</td>
         <td class="download-cell">
-          <!-- Info: flyer TBA -->
+          <a href="https://resources.farwestmasters.org/announcements/2027/FWM-EventInfo-Alpine-Mar-SL.pdf" class="download-link" title="Race Flyer" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
-          <!-- Signup: opens November 2026 -->
+          <!-- Signup: link added when it opens -->
         </td>
         <td class="download-cell">
           <!-- Results -->
@@ -592,28 +638,37 @@ h1 {
         <td class="date-cell">
           Mar. 6-7<br /><span class="day-info">(Sat-Sun)</span>
         </td>
-        <td class="location-cell"><a href="https://www.palisadestahoe.com" target="_blank" rel="noopener noreferrer">Palisades Tahoe</a><br />Olympic Valley, CA 96146</td>
+        <td class="location-cell"><a href="https://www.palisadestahoe.com/" target="_blank" rel="noopener noreferrer">Palisades Tahoe</a><br />(530) 452-7188<br />Olympic Valley, CA 96146</td>
         <td class="title-cell">
           Bernard Cup<br />
-          <span class="entry-details">Entry fees and deadlines TBA</span><br />
+          <span class="entry-cost">Entries: $45 per race</span><br />
+          Lift: TBA or Ikon pass<br />
+          <span class="entry-details">Entries due Wed 3/3 7pm PT</span><br />
+          <span class="entry-details">$5 late fee after Sun 2/28</span><br />
           <span class="no-race-day">NO DAY-OF-RACE SIGNUPS</span><br />
-          Registration opens November 2026<br />
+          Registration link coming soon<br />
+          Liability release required: <a href="https://masters.adminskiracing.com/node/414498" target="_blank" rel="noopener noreferrer">sign on ASR</a> with race entries<br />
+          Palisades parking reservation required on weekend<br />
           Race Day Checkin: TBA<br />
           Race Day Communications: TBA
         </td>
         <td class="disciplines-cell">GS / GS<br /><br />Race: TBA<br />Start: TBA</td>
         <td class="download-cell">
-          <!-- Info: flyer TBA -->
+          <a href="https://resources.farwestmasters.org/announcements/2027/FWM-EventInfo-Palisades-Mar-GS-BernardCup.pdf" class="download-link" title="Race Flyer" target="_blank" rel="noopener noreferrer">
+            <svg class="download-icon pdf-icon" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            </svg>
+          </a>
         </td>
         <td class="download-cell">
-          <!-- Signup: opens November 2026 -->
+          <!-- Signup: link added when it opens -->
         </td>
         <td class="download-cell">
           <!-- Results -->
         </td>
       </tr>
 
-      <!-- OUT OF REGION - 2027 US Masters National Championships -->
+      <!-- US Masters Nationals (unscored) -->
       <tr class="out-of-region">
         <td class="date-cell">
           Mar. 21-27<br /><span class="day-info">(Sun-Sat)</span>
@@ -622,7 +677,8 @@ h1 {
         <td class="title-cell">
           2027 US Masters National Championships<br />
           <span class="entry-details">Entries: See Masters Handbook (DH, SG - NSS)</span><br />
-          <a href="https://usskiandsnowboard.org/masters/masters-events-schedules#NAT" target="_blank" rel="noopener noreferrer">National Championship info on usskiandsnowboard.org/masters</a>
+          <a href="https://usskiandsnowboard.org/masters/masters-events-schedules#NAT" target="_blank" rel="noopener noreferrer">National Championship info on usskiandsnowboard.org/masters</a><br />
+          Registration will open by Dec. 1
         </td>
         <td class="disciplines-cell">DH / SG / GS / SL [unscored]</td>
         <td class="download-cell">
@@ -640,7 +696,7 @@ h1 {
         </td>
       </tr>
 
-      <!-- OUT OF REGION - Canada FIS Masters World Cup -->
+      <!-- Canada FIS Masters World Cup (unscored); not on the classic schedule -->
       <tr class="out-of-region">
         <td class="date-cell">
           Apr. 2-4<br /><span class="day-info">(Fri-Sun)</span>
@@ -667,7 +723,7 @@ h1 {
         </td>
       </tr>
 
-      <!-- OUT OF REGION - FIS Masters World Cup Finals -->
+      <!-- FIS Masters World Cup Finals (unscored) -->
       <tr class="out-of-region">
         <td class="date-cell">
           Apr. 7-10<br /><span class="day-info">(Wed-Sat)</span>
