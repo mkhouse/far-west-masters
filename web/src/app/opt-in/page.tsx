@@ -75,7 +75,10 @@ export default async function OptInPage({
       <h1 className="text-2xl font-semibold tracking-tight text-fwm-navy">
         Far West Masters SMS messaging opt-in
       </h1>
-      <div className="mt-1 h-0.5 w-12 bg-fwm-burgundy" />
+      {/* Full width rather than a short stub under the heading: on this page the
+          rule reads as a divider between the title and the explanation, and a
+          3rem fragment looked like an underline that had not finished. */}
+      <div className="mt-2 h-0.5 w-full bg-fwm-burgundy" />
 
       {/* What the messages are and are not for. Kept from the Airtable form: a
           member deciding whether to consent deserves to know the answer before
