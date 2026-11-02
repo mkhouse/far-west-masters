@@ -76,6 +76,25 @@ export default async function OptInReviewPage() {
             which is why they can sit here unnoticed for a very long time.
           </p>
 
+          {/* A button, above the list rather than a text link below it. This was a
+              link at the foot of the section and went unfound: it is the main thing
+              the page is for, and the names underneath are the detail behind it. */}
+          <p className="mt-4">
+            <Link
+              href="/messages/compose?audience=intro_pending"
+              className="inline-block rounded-md bg-fwm-navy px-4 py-2.5 text-sm font-medium text-white hover:bg-fwm-navy/90"
+            >
+              Send the intro text to{' '}
+              {w.awaitingIntro.length === 1
+                ? 'them'
+                : `all ${w.awaitingIntro.length}`}
+            </Link>
+          </p>
+          <p className="mt-2 text-sm text-neutral-600">
+            The wording is prefilled and editable, and you still press Send on the
+            next screen. Nothing goes out from here.
+          </p>
+
           <ul className="mt-3 divide-y divide-neutral-200 rounded-lg border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
             {w.awaitingIntro.map((p) => (
               <li
@@ -96,17 +115,6 @@ export default async function OptInReviewPage() {
             ))}
           </ul>
 
-          <p className="mt-3 text-sm">
-            <Link
-              href="/messages/compose?audience=intro_pending"
-              className="text-fwm-navy underline"
-            >
-              Send the intro text to all {w.awaitingIntro.length}
-            </Link>
-            <span className="text-neutral-600">
-              {' '}&mdash; the wording is prefilled, and you still press Send.
-            </span>
-          </p>
         </section>
       )}
 
