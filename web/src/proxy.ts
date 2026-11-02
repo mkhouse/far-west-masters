@@ -22,6 +22,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { allowedOnOptInHost, isOptInHost } from '@/lib/opt-in-host'
 
 /**
  * Paths that require a signed-in officer. Everything else is public.
@@ -33,28 +34,19 @@ import { NextResponse, type NextRequest } from 'next/server'
 const PROTECTED = ['/admin', '/process', '/messages', '/members']
 
 /**
- * The hostname that serves nothing but the opt-in form.
+ * The hostname that serves nothing but the opt-in form:
+ * fwm-messaging-optin.mkinthehouse.com.
  *
  * Members are asked for their phone number on this page, and the address bar is
  * part of that ask. "fwm-apps.mkinthehouse.com" invites the question "who is
  * mkinthehouse and why do they want my number" — a bad question to raise on a
  * consent form. A dedicated host at least keeps the officer tooling out of sight;
- * moving it to farwestmasters.org (#23) is the real fix.
+ * moving it to farwestmasters.org (#23) is the real fix, and is blocked on DNS
+ * access the club does not yet have.
  *
- * Matched by prefix so that any environment — preview deployments included —
- * behaves the same way.
+ * The matching rule and its reasoning live in lib/opt-in-host.ts, with tests —
+ * it decides whether a request reaches the officer tooling or the public form.
  */
-const OPT_IN_HOST_PREFIX = 'optin.'
-
-/** Paths that must keep working on the opt-in host: the form, and Next's own. */
-function allowedOnOptInHost(path: string): boolean {
-  return (
-    path === '/' ||
-    path === '/opt-in' ||
-    path.startsWith('/_next/') ||
-    path === '/favicon.ico'
-  )
-}
 
 export async function proxy(request: NextRequest) {
   // --- the opt-in host serves one page and nothing else ---
@@ -69,7 +61,7 @@ export async function proxy(request: NextRequest) {
   // hostname handed out to the public, even though every page of it requires a
   // sign-in anyway.
   const host = request.headers.get('host') ?? ''
-  if (host.startsWith(OPT_IN_HOST_PREFIX)) {
+  if (isOptInHost(host)) {
     const path = request.nextUrl.pathname
 
     if (path === '/') {

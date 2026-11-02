@@ -108,6 +108,24 @@ export default async function OptInPage({
           message. That unsubscribes you from all future messaging. Message
           frequency varies, and message and data rates may apply.
         </p>
+
+        {/* Above the fields, not below the Submit button, which is where this sat
+            before. The Airtable form this replaces carried it here, as the closing
+            line of the explanation, and the two are meant to stay in step: the
+            wording on this page is what was described to Twilio when the toll-free
+            number was verified. It also reads better here — somebody with a
+            question has it in front of them while they are deciding, rather than
+            after they have scrolled past the thing they were unsure about. */}
+        <p className="text-neutral-700 dark:text-neutral-300">
+          If you have questions, email{' '}
+          <a
+            href="mailto:membership@farwestmasters.org"
+            className="text-fwm-navy underline"
+          >
+            membership@farwestmasters.org
+          </a>
+          .
+        </p>
       </div>
 
       {error && (
@@ -214,17 +232,6 @@ export default async function OptInPage({
           Submit
         </button>
       </form>
-
-      <p className="mt-6 text-sm text-neutral-600">
-        Questions? Email{' '}
-        <a
-          href="mailto:membership@farwestmasters.org"
-          className="text-fwm-navy underline"
-        >
-          membership@farwestmasters.org
-        </a>
-        .
-      </p>
     </main>
   )
 }

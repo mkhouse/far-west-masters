@@ -54,7 +54,21 @@ const nextConfig: NextConfig = {
         source: "/",
         destination: "/messages",
         permanent: false,
-        missing: [{ type: "query", key: "code" }],
+        missing: [
+          { type: "query", key: "code" },
+          // Not on the opt-in host, where "/" IS the form.
+          //
+          // This condition is load-bearing and was missing until the hostname was
+          // finally set up. next.config redirects run BEFORE the proxy, so without
+          // it this rule fires first and sends a member arriving at the root of
+          // fwm-messaging-optin.mkinthehouse.com to the officer sign-in — and the
+          // proxy's rewrite to the form never runs at all.
+          //
+          // The pattern mirrors isOptInHost() in lib/opt-in-host.ts: the first label
+          // ends with "optin". The two must stay in step; a test cannot see this
+          // file, so changing one means changing the other.
+          { type: "host", value: "[^.]*optin\\..*" },
+        ],
       },
     ];
   },
