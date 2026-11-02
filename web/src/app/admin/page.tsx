@@ -33,6 +33,8 @@ interface Item {
   description: string
   /** Absent on anything not built yet. */
   href?: string
+  /** A short state label, shown to the right of the title. */
+  chip?: string
 }
 
 interface Group {
@@ -183,7 +185,25 @@ export default async function AdminPage() {
       ? GROUPS
       : GROUPS.map((g) =>
           g.title === 'Members'
-            ? { ...g, items: [NEEDS_ACTION, ...g.items] }
+            ? {
+                ...g,
+                items: [
+                  ...g.items,
+                  {
+                    ...NEEDS_ACTION,
+                    // STATE THE STATE. Hiding the banner is only a signal to
+                    // somebody who has seen the banner — a reader who has never had
+                    // anything waiting cannot read its absence, and is left unsure
+                    // whether this screen has work on it or they simply cannot see
+                    // it. So the quiet card says so outright, in the chip and in the
+                    // first words of the description, rather than relying on what is
+                    // missing elsewhere.
+                    chip: 'Nothing waiting',
+                    description:
+                      'Nothing needs action right now. Submissions to review, intro texts to send, and numbers a carrier rejected all appear here.',
+                  },
+                ],
+              }
             : g
         )
 
@@ -233,7 +253,17 @@ export default async function AdminPage() {
                     href={item.href}
                     className="block rounded-lg border border-neutral-200 bg-surface p-4 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
                   >
-                    <span className="font-medium">{item.title}</span>
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="font-medium">{item.title}</span>
+                      {/* Sits where the navy count sits on the banner, so the two
+                          states read as the same control in two conditions rather
+                          than as two unrelated things. */}
+                      {item.chip && (
+                        <span className="shrink-0 rounded-full bg-neutral-200 px-2 py-0.5 text-sm font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                          {item.chip}
+                        </span>
+                      )}
+                    </span>
                     <span className="mt-1 block text-sm text-neutral-600">
                       {item.description}
                     </span>
