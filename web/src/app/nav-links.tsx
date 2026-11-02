@@ -58,8 +58,12 @@ export function NavLinks({ badges = {} }: { badges?: Record<string, number> }) {
               <span className="ml-1.5 rounded-full bg-fwm-navy px-1.5 py-0.5 text-xs font-medium text-white">
                 {badges[s.href]}
                 {/* The number alone reads as "Admin 2". Screen readers get the
-                    sentence a sighted reader infers from the context. */}
-                <span className="sr-only"> waiting for review</span>
+                    sentence a sighted reader infers from the context.
+
+                    Deliberately not "waiting for review", which this said until the
+                    count grew to cover people awaiting an intro text and people
+                    whose number was rejected. Neither of those is reviewed. */}
+                <span className="sr-only"> needing action</span>
               </span>
             ) : null}
           </Link>

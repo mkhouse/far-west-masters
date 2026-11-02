@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { supabaseServer } from '@/lib/supabase/server'
+import { signInErrorMessage } from '@/lib/sign-in-errors'
 
 /**
  * Send a magic-link sign-in email.
@@ -52,7 +53,23 @@ export async function requestMagicLink(formData: FormData) {
   if (error) {
     // Surface transport failures (misconfigured SMTP, rate limits) rather than
     // claiming success — those are operator problems worth seeing.
-    redirect(`/sign-in?error=${encodeURIComponent(error.message)}`)
+    //
+    // But only when Supabase says something. It does not always: when the mailbox
+    // password changed on 2 November 2026 the message came back as the literal
+    // string "{}", and the page rendered a red "{}" with no other clue. The real
+    // cause, `535 "5.7.8 Error: authentication failed"`, was in Supabase's auth logs
+    // and nowhere else. See lib/sign-in-errors.ts.
+    //
+    // The raw error goes to the server log either way, so the detail is recoverable
+    // from Vercel without going to Supabase — and without printing SMTP internals
+    // onto a page anyone can load.
+    console.error('[sign-in] magic link failed', {
+      code: error.code,
+      status: error.status,
+      message: error.message,
+    })
+
+    redirect(`/sign-in?error=${encodeURIComponent(signInErrorMessage(error.message))}`)
   }
 
   redirect('/sign-in?sent=1')

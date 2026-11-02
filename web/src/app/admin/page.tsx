@@ -13,7 +13,7 @@
 import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { countPending } from '@/lib/opt-in-review'
+import { countWaiting } from '@/lib/waiting'
 
 /** Built and usable. */
 const AVAILABLE = [
@@ -25,9 +25,9 @@ const AVAILABLE = [
   },
   {
     href: '/admin/opt-ins',
-    title: 'Opt-in submissions',
+    title: 'Opt-ins needing action',
     description:
-      'People who filled in the form and could not be matched to a member automatically. They have consented and are waiting to be introduced.',
+      'Everyone who consented and is waiting on the club — a submission to decide, an intro text to send, or a bad number that needs a phone call instead.',
   },
   {
     href: '/admin/membership',
@@ -117,20 +117,24 @@ export default async function AdminPage() {
 
         <p className="mt-6 text-sm">
           <Link href="/admin/opt-ins" className="text-fwm-navy underline">
-            Opt-in submissions
+            Opt-ins needing action
           </Link>{' '}
           <span className="text-neutral-600">
-            is open to every officer, so you can still review those.
+            is open to every officer, so you can still work through those.
           </span>
         </p>
       </main>
     )
   }
 
-  // The count is the whole point of surfacing this here: a review queue nobody is
-  // told about is the same as no review queue, and the people in it have already
-  // consented and are waiting to hear from the club.
-  const pendingOptIns = await countPending()
+  // The count is the whole point of surfacing this here: a queue nobody is told
+  // about is the same as no queue, and the people in it have already consented and
+  // are waiting to hear from the club.
+  //
+  // Counts everyone waiting, matching the nav badge. Reading from countPending()
+  // here while the nav read something broader would put two different numbers for
+  // the same thing on screen at once.
+  const waitingCount = await countWaiting()
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
@@ -146,9 +150,9 @@ export default async function AdminPage() {
             >
               <span className="flex items-baseline justify-between gap-3">
                 <span className="font-medium">{item.title}</span>
-                {item.href === '/admin/opt-ins' && pendingOptIns > 0 && (
+                {item.href === '/admin/opt-ins' && waitingCount > 0 && (
                   <span className="shrink-0 rounded-full bg-fwm-navy/10 px-2 py-0.5 text-sm font-medium text-fwm-navy">
-                    {pendingOptIns} waiting
+                    {waitingCount} waiting
                   </span>
                 )}
               </span>

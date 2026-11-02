@@ -11,24 +11,31 @@
  */
 
 import { getUser } from '@/lib/supabase/server'
-import { countPending } from '@/lib/opt-in-review'
+import { countWaiting } from '@/lib/waiting'
 import { NavLinks } from './nav-links'
 
 export async function AppHeader() {
   const user = await getUser()
   if (!user) return null
 
-  // One extra query on every signed-in page. It is a count with `head: true`, so no
-  // rows come back, and it is the price of the queue being noticed at all rather
-  // than only by whoever remembers to look.
-  const pendingOptIns = await countPending()
+  // EVERYONE waiting, not just the review queue.
+  //
+  // This counted pending submissions alone until 2 November 2026, and the gap was
+  // not academic: on that day there were zero pending submissions and three people
+  // who had opted in and never been sent an intro — one of them since March 2025.
+  // The badge read nothing at all while three members waited, because the only
+  // thing that would have shown them was a filter somebody had to think to apply.
+  //
+  // A few extra queries on every signed-in page, and the price of a queue being
+  // noticed at all rather than only by whoever remembers to look.
+  const waitingCount = await countWaiting()
 
   return (
     // White, not the page grey: the bar needs to read as a fixed frame around the
     // content rather than as part of it.
     <header className="border-b border-neutral-200 bg-surface dark:border-neutral-800">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
-        <NavLinks badges={{ '/admin': pendingOptIns }} />
+        <NavLinks badges={{ '/admin': waitingCount }} />
 
         <div className="flex items-center gap-3 text-sm">
           {/* Which account, not just that you are signed in. On a shared machine

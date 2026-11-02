@@ -328,10 +328,23 @@ become common enough to be a nuisance.
 
 ### The opt-in form
 
-Members opt in at **optin.mkinthehouse.com** — a public page, the only one in the
-system that does not need a sign-in. It also answers at `/opt-in` on the main app
-domain; the dedicated hostname exists because the address bar is part of what a
-member is being asked to trust when handing over a phone number.
+Members opt in at **fwm-messaging-optin.mkinthehouse.com** — a public page, the only
+one in the system that does not need a sign-in. It also answers at `/opt-in` on the
+main app domain; the dedicated hostname exists because the address bar is part of
+what a member is being asked to trust when handing over a phone number.
+
+> This file previously named `optin.mkinthehouse.com`, which **never existed** —
+> never added to Vercel, never in DNS. The hostname was finally created on 2 November
+> 2026, and two things had to be fixed before it worked, both of which had been
+> waiting silently since the feature was written:
+>
+> * `proxy.ts` matched hosts *starting* with `optin.`, which the chosen name does not.
+>   The rule now lives in `web/src/lib/opt-in-host.ts` with tests, and matches a first
+>   label that *ends* with `optin`.
+> * `next.config.ts` redirects `/` to `/messages`, and **redirects run before the
+>   proxy** — so a member reaching the root of the opt-in host was sent to the officer
+>   sign-in before the rewrite could happen. That rule now carries a `missing` host
+>   condition. The two patterns must stay in step; a test cannot see `next.config.ts`.
 
 That host serves the form and nothing else: `/` is rewritten to it, and any other
 path redirects back. The officer tooling is not reachable from a hostname handed
@@ -339,6 +352,16 @@ out to the public, even though every page of it requires a sign-in anyway. It re
 deliberately: that text is what was described to Twilio when the toll-free number
 was verified, so the two need to stay in step. It is editable in `app_settings`
 (`opt_in_consent_label`, `opt_in_intro_promise`) rather than in code.
+
+**The club website is what sends members here**, and it is not part of this
+repository. farwestmasters.org/communication carries the button, and it pointed at
+the old Airtable form until 2 November 2026 — which is why opt-ins kept arriving
+somewhere this application could not see. That page also explains why the form is on
+a `mkinthehouse.com` address; if the form ever moves, the explanation moves with it.
+
+The URL on file with Twilio is `https://farwestmasters.org/communication#textmsg`,
+not the form itself, so changing where that button points does not require
+resubmitting the toll-free verification.
 
 **What happens on submission:**
 
@@ -377,10 +400,37 @@ Decisions built into it, all of them deliberate:
 `supabase/local/reset-my-opt-in-for-testing.sql`. Submitting as somebody already
 introduced does nothing visible, by design.
 
-### Reviewing opt-in submissions
+### Opt-ins needing action
 
-**/admin/opt-ins**, with a count on the admin index so it cannot be forgotten.
-Everything the form could not match waits here, oldest first.
+**/admin/opt-ins**, badged in the navigation on every signed-in page so it cannot be
+forgotten. Three groups, with three different answers:
+
+| Group | What it means | What to do |
+|---|---|---|
+| **Waiting for a decision** | The form could not match them to a member | Review below — link, add as new, or reject |
+| **Waiting for their intro text** | They opted in and the club never replied | Send it. One link on the page preselects the audience |
+| **Intro failed — bad number** | A carrier permanently rejected the text | **Not another text.** Email them or phone them and get a working mobile |
+
+**The badge counts all three**, not just the review queue, and that distinction is
+the whole point of the screen. On 2 November 2026 there were zero pending
+submissions and three people who had opted in and never been introduced — one of
+them since March 2025. A badge counting only submissions showed nothing while three
+members waited, because the only thing that would have surfaced them was a filter on
+the members directory that somebody had to think to apply.
+
+If the badge is absent, nobody is waiting. If it shows a number, somebody is.
+
+> **Intro history from the Airtable era did not migrate.** Everything before autumn
+> 2025 went out through the Airtable base and its own automation, and the move across
+> carried members, consent dates and race history but not the messaging log. One
+> member — James Sanchirico — therefore arrived here looking as though he had never
+> been introduced when Airtable had texted him in March 2025, and migration 0031
+> records that after the fact. If anybody else ever turns up in the same state with
+> an opt-in before October 2025, check the Airtable messaging log in
+> `../fwm-migration-backups/` before sending: that backup is the only record of that
+> era, and sending again is not harmful but is not honest either.
+
+Everything the form could not match waits in the first group, oldest first.
 
 This matters most for exactly the people the form is best at reaching. Somebody
 joining the club is registering with AdminSkiRacing at that moment, so they are
@@ -506,7 +556,23 @@ message — is the answer.
 ## Deployment
 
 The app is hosted on Vercel at **https://fwm-results.mkinthehouse.com**, built from
-the `main` branch of this repository. Pushing to `main` deploys. There is no
+the `main` branch of this repository.
+
+> **Three hostnames point at this one project, and the split is deliberate:**
+>
+> | Host | Now | Intended |
+> |---|---|---|
+> | `fwm-messaging-optin` | The opt-in form, nothing else | Unchanged |
+> | `fwm-apps` | The officer app | **The officer app** — keep it |
+> | `fwm-results` | The officer app | **The public race-results history**, once that exists |
+>
+> `fwm-results` serves the officer tooling today only because that is all there is.
+> **`NEXT_PUBLIC_SITE_URL` points at it**, which means sign-in links, the Twilio
+> inbound webhook and the status callbacks all resolve to the host earmarked to go
+> public. When the results browser lands they move to `fwm-apps` — all three
+> together, per "Changing the domain" below, or sign-in and delivery reports break.
+> `next.config.ts` marks the `/` redirect as deliberately temporary (307, not 308)
+> for the same reason. Pushing to `main` deploys. There is no
 separate release step. The original `far-west-masters-web.vercel.app` address still
 works and is kept as a fallback.
 
@@ -611,6 +677,7 @@ should always say `NO — correct`.
 | Sign-in emails never arrive | Custom SMTP not enabled — the built-in mailer allows about two per hour, project-wide, and cannot be raised |
 | Sign-in hangs ~30s, then "email rate limit exceeded" | The SMTP host is not answering. A web domain and its mail server are different machines: use the provider's mail host (`smtp.dreamhost.com`), not the domain itself |
 | SMTP fails as though the password were wrong | Username must be the **full email address**, not the part before the @ |
+| A red `{}` on the sign-in page, or any empty error | Supabase failed to send and did not say why. **The real error is in Supabase's auth logs, not on the page.** This happened on 2 November 2026 when the password on the `mkinthehouse.com` mailbox changed: the logs showed `535 "5.7.8 Error: authentication failed"` and the page showed `{}`. Fix the password at Authentication → Emails → SMTP Settings. The page now says this in words, and the raw error is also logged to Vercel |
 | Two sign-in attempts in a row both fail | "Minimum interval per user" (Authentication → Rate Limits) is 60s, separate from the hourly cap. Wait a minute between attempts when testing |
 | Edited an auth email template, but sends still use the old one | Supabase caches templates for a few minutes. The dashboard preview updates immediately, which makes it look like the change is live. Wait, then send one test — repeated attempts only burn the rate limit |
 | Sign-in link says "expired" on a first click, AND delivery reports stopped | Both at once means `NEXT_PUBLIC_SITE_URL` has no value in the build — almost certainly marked Sensitive in Vercel. See Environment variables above |
@@ -660,6 +727,9 @@ files — and so that what is *not* guaranteed is equally visible.
 | **Failed intros** | `web/src/lib/intro-failures.test.ts` | Somebody whose intro was permanently rejected is marked as such, and somebody who has since been introduced successfully is not — however many failures sit behind them. |
 | **Delivery outcomes** | `web/src/lib/delivery.test.ts` | Only `failed` and `undelivered` count as final, so an intro still in flight is never re-sent; and only intro sends can un-introduce somebody, so an ordinary race text bouncing never drops a member out of every audience. |
 | **Opt-in matching** | `web/src/lib/opt-in-review.test.ts` | A submission is matched to a member on mobile, then email, then USSA number — in that order, because a USSA number typed on a public form is the one most likely to be a digit out. A number that failed to normalise is tried again rather than left lost. Nothing matches on a value the submission never gave. |
+| **Who is waiting** | `web/src/lib/waiting.test.ts` | The three waiting states stay disjoint, and somebody whose intro was permanently rejected is listed as that rather than as "needs an intro text" — they need a phone call, not another send. Longest wait sorts first. Somebody introduced since a failure is not listed at all. |
+| **The opt-in hostname** | `web/src/lib/opt-in-host.test.ts` | Which hosts serve only the form. Only the leftmost label counts, so nothing to the right of the first dot can qualify a hostname. The application's own hosts never match. |
+| **Empty sign-in errors** | `web/src/lib/sign-in-errors.test.ts` | An error message that says nothing is replaced with one that does. A message that already says something is passed through unchanged. |
 | **Phone normalisation** | `web/src/lib/phone.test.ts` | Every shape found in the roster exports normalises to the same number. Anything that is not a ten-digit North American number is refused rather than half-accepted. |
 | **Message templates** | `web/src/lib/templates.test.ts` | An unfilled blank stays visible in the message and is reported, rather than being dropped to make the message look finished — including when the value supplied is empty or blank, which is the officer-with-no-contact-number case. Substitution is one pass, so nothing a member or officer types can be re-read as a placeholder. A placeholder nothing can fill is left as written rather than sent silently. `{officer phone}` is sourced from the officer, never from the member being contacted. |
 | **Schedule parsing** | `web/src/lib/schedule-parse.test.ts` | Both archived seasons as fixtures. Every row is found, including ones without closing tags that a regex silently drops. A wrong season year is caught by the page's own weekday annotations. `SGx2` is two races; `SG (2x points)` is one race worth double. A row that does not say which day is refused, not guessed. |
