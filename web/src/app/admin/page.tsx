@@ -178,6 +178,15 @@ export default async function AdminPage() {
   // the same thing on screen at once.
   const waitingCount = await countWaiting()
 
+  const groups =
+    waitingCount > 0
+      ? GROUPS
+      : GROUPS.map((g) =>
+          g.title === 'Members'
+            ? { ...g, items: [NEEDS_ACTION, ...g.items] }
+            : g
+        )
+
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="text-xl font-semibold">Admin</h1>
@@ -204,18 +213,13 @@ export default async function AdminPage() {
         </Link>
       )}
 
-      {/* The same entry when nobody is waiting: still reachable, not shouting. */}
-      {waitingCount === 0 && (
-        <p className="mt-8 rounded-lg border border-neutral-200 bg-surface p-4 text-sm text-neutral-600 dark:border-neutral-800">
-          Nobody is waiting on the club.{' '}
-          <Link href={NEEDS_ACTION.href!} className="text-fwm-navy underline">
-            Opt-ins
-          </Link>{' '}
-          is empty.
-        </p>
-      )}
 
-      {GROUPS.map((group) => (
+      {/* When nobody is waiting there is no banner at all — an always-present
+          "nothing to do here" line is one more thing to read past every visit.
+          The entry is not hidden, though: it joins the Members group as an ordinary
+          card, because this page exists so that nothing built is reachable only by
+          somebody who happens to know the URL. Quiet, not gone. */}
+      {groups.map((group) => (
         <section key={group.title} className="mt-10">
           <h2 className="text-sm font-medium tracking-wide text-neutral-600 uppercase">
             {group.title}

@@ -43,6 +43,9 @@ function refresh() {
   revalidatePath('/admin/opt-ins')
   revalidatePath('/admin')
   revalidatePath('/members')
+  // The header's waiting badge sits in the root layout, which a page-level
+  // revalidate does not reach. Approving somebody here changes that count.
+  revalidatePath('/', 'layout')
 }
 
 /**

@@ -17,6 +17,7 @@
  * otherwise decide who gets a text.
  */
 
+import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
@@ -472,6 +473,17 @@ export async function sendMessage(formData: FormData) {
       sent_at: new Date().toISOString(),
     })
     .eq('id', messageId)
+
+  // --- refresh the "waiting" badge in the header ---
+  //
+  // The badge lives in the root layout, and a redirect from a server action reuses
+  // the cached layout rather than re-rendering it. Without this, sending the intro
+  // texts leaves the header still claiming people are waiting — on the very screen
+  // that just stopped it being true, which reads as the send not having worked.
+  //
+  // Scoped to the layout rather than a page, because that is where the header is;
+  // revalidating '/messages' alone refreshes the content under a stale header.
+  revalidatePath('/', 'layout')
 
   redirect(`/messages/${messageId}?sent=${results.length - failed}&failed=${failed}`)
 }
