@@ -229,6 +229,28 @@ export function parseDisciplines(text: string): DisciplineToken[] {
 }
 
 /**
+ * The part of a Disciplines cell that lists races, joined into one string.
+ *
+ * Usually that is the first segment: everything after the line break is 'Race: TBA',
+ * 'Start: TBA' and scoring notes. See the `<br>` rule in schedule-html.ts.
+ *
+ * The exception is a per-day list written one day per line —
+ * 'Fri: SG / SG <br> Sat: SG / SG <br> Sun: GS'. Reading only the first line drops
+ * Saturday and Sunday without a warning, so following lines are taken for as long as
+ * each starts with a weekday, and joined with commas the way the one-line form is
+ * written. A blank line or a note ('First SG each day scored for NSS') ends the list.
+ */
+export function disciplineLines(segments: string[]): string {
+  const lines = segments.slice(0, 1)
+  for (const segment of segments.slice(1)) {
+    const day = /^\s*([A-Za-z]{3})[A-Za-z]*\s*:/.exec(segment)
+    if (!day || !(day[1].toLowerCase() in WEEKDAYS)) break
+    lines.push(segment)
+  }
+  return lines.join(', ')
+}
+
+/**
  * The venue, from a Location cell that is often a whole contact block.
  *
  * The first `<br>` segment is the resort — 'Mammoth Mountain' followed by 'Race
@@ -310,9 +332,7 @@ export function expandRow(row: Row, index: number, season: string): {
   const venue = parseVenue(locationCell ?? { segments: [], text: '' })
   if (!venue) return warn('No venue in the Location column.')
 
-  // Only the first segment: everything after the line break is 'Race: TBA', 'Start:
-  // TBA' and scoring notes. See the `<br>` rule in schedule-html.ts.
-  const disciplineText = disciplineCell?.segments[0] ?? ''
+  const disciplineText = disciplineLines(disciplineCell?.segments ?? [])
   const tokens = parseDisciplines(disciplineText)
   if (!tokens.length) {
     return warn(`No disciplines in “${disciplineCell?.text ?? ''}”.`)

@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { parseRows, scheduleRows, decodeEntities } from './schedule-html'
 import {
+  disciplineLines,
   expandRow,
   parseDateRange,
   parseDisciplines,
@@ -202,6 +203,28 @@ describe('parseVenue', () => {
     expect(parseVenue({ segments: ['Mammoth Mountain, CA'], text: '' })).toBe(
       'Mammoth Mountain'
     )
+  })
+})
+
+describe('disciplineLines', () => {
+  it('stops at the line break, before Race and Start notes', () => {
+    expect(disciplineLines(['GS / GS', '', 'Race: TBA', 'Start: TBA'])).toBe('GS / GS')
+  })
+
+  it('keeps a per-day list written one day per line', () => {
+    // The 2026-27 Mammoth Speed Races row, as it is now written. Reading only the
+    // first line found Friday's two races and silently dropped the weekend's other three.
+    expect(
+      disciplineLines([
+        'Fri: SG / SG', 'Sat: SG / SG', 'Sun: GS', '', 'First SG each day scored for NSS',
+      ])
+    ).toBe('Fri: SG / SG, Sat: SG / SG, Sun: GS')
+  })
+
+  it('does not take a note that merely mentions a day', () => {
+    expect(
+      disciplineLines(['Thu: GS x2, Fri: SG [unscored]', 'Both Fri SG races scored for NSS'])
+    ).toBe('Thu: GS x2, Fri: SG [unscored]')
   })
 })
 
