@@ -348,3 +348,31 @@ describe('expandRow', () => {
     expect(warnings).toHaveLength(1)
   })
 })
+
+describe('training camps', () => {
+  it('skips a camp rather than reporting it as a race that needs attention', () => {
+    // The 2026-27 schedule opens with the Mammoth masters camp — "Dec. 1-4", one
+    // discipline, four days. Before this was recognised it reached the
+    // day-assignment logic, failed, and was reported as a row counting toward
+    // standings that somebody had to deal with. There is nothing to deal with.
+    const { races, warnings } = parseSchedule(HTML_2627, '2026-2027')
+    const camp = warnings.find((w) => w.date.startsWith('Dec. 1-4'))
+
+    expect(camp, 'the camp row should produce a warning').toBeDefined()
+    expect(camp!.countsForStandings).toBe(false)
+    expect(camp!.message).toMatch(/camp/i)
+    expect(camp!.message).toMatch(/nothing to import/i)
+
+    // And no race on any of those four days.
+    expect(races.filter((r) => r.date >= '2026-12-01' && r.date <= '2026-12-04')).toEqual(
+      []
+    )
+  })
+
+  it('leaves every skipped row as one that does not count', () => {
+    // What the screen says out loud: "none of these would have counted anyway".
+    // That sentence is only safe while it is true of all of them.
+    const { warnings } = parseSchedule(HTML_2627, '2026-2027')
+    expect(warnings.every((w) => w.countsForStandings === false)).toBe(true)
+  })
+})

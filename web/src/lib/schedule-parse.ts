@@ -39,6 +39,15 @@ export interface ParseWarning {
   /** The date cell as published, to identify the row on screen. */
   date: string
   message: string
+  /**
+   * Whether the races in this row would have counted toward FWM standings.
+   *
+   * Carried so the screen can say whether a skipped row matters. In practice every
+   * row that reaches a warning has been out-of-region or unscored — a camp, a
+   * national championship, a FIS event — so the honest reading is usually "nothing
+   * to do", and saying so is better than leaving somebody to work it out.
+   */
+  countsForStandings?: boolean
 }
 
 export interface ScheduleParse {
@@ -360,6 +369,30 @@ export function expandRow(row: Row, index: number, season: string): {
 
   const eventName = parseEventName(eventCell ?? { segments: [] })
 
+  // A camp is not a race weekend.
+  //
+  // The schedule lists the Mammoth masters camp alongside the races because it is
+  // part of the season, but nothing is scored at it and there is nothing to import.
+  // Without this it reaches the day-assignment logic, fails to place "GS" across
+  // four days, and is reported as a row that counts toward standings and needs
+  // somebody's attention — which sends an officer looking for a problem that does
+  // not exist.
+  if (/\bcamps?\b/i.test(eventCell?.text ?? '')) {
+    return {
+      races: [],
+      warnings: [
+        {
+          sourceRow: index,
+          date: published,
+          countsForStandings: false,
+          message:
+            'A training camp rather than a race weekend, so there is nothing to ' +
+            'import. Nothing is scored at it.',
+        },
+      ],
+    }
+  }
+
   const make = (date: string, discipline: Discipline): ParsedRace => ({
     date,
     discipline,
@@ -411,11 +444,20 @@ export function expandRow(row: Row, index: number, season: string): {
     return { races: tokens.map((t) => make(dates[0], t.discipline)), warnings: [] }
   }
 
-  return warn(
-    `${tokens.length} races (“${disciplineText}”) across ${dates.length} days, and ` +
-      `the page does not say which day each is on. Add them by hand, or ask for the ` +
-      `page to name the days.`
-  )
+  return {
+    races: [],
+    warnings: [
+      {
+        sourceRow: index,
+        date: published,
+        countsForStandings,
+        message:
+          `${tokens.length} ${tokens.length === 1 ? 'race' : 'races'} ` +
+          `(“${disciplineText}”) spread across ${dates.length} days, and the page ` +
+          `does not say which race is on which day.`,
+      },
+    ],
+  }
 }
 
 /** Parse a whole published schedule page. */

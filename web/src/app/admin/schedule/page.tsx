@@ -414,22 +414,46 @@ export default async function SchedulePage({
               {/* Rows the parser would not guess at. */}
               {diff.warnings.length > 0 && (
                 <>
-                  <h2 className="mt-8 font-medium text-amber-800 dark:text-amber-300">
-                    {diff.warnings.length} rows need a person
+                  <h2 className="mt-8 font-medium">
+                    {diff.warnings.length}{' '}
+                    {diff.warnings.length === 1 ? 'row was' : 'rows were'} skipped
                   </h2>
                   <p className="mt-1 text-sm text-neutral-600">
-                    The page does not say enough to place these races on a day.
-                    Refusing costs you a manual entry; guessing wrong costs a season of
-                    standings.
+                    These rows do not say which race is on which day, so they were
+                    left out rather than guessed at. That is usually the right
+                    outcome: races that count toward FWM standings say their days.
+                    {diff.warnings.every((w) => w.countsForStandings === false) && (
+                      <>
+                        {' '}
+                        <strong>
+                          None of these would have counted toward standings anyway
+                        </strong>{' '}
+                        &mdash; nothing to do.
+                      </>
+                    )}
                   </p>
                   <ul className="mt-3 space-y-2">
                     {diff.warnings.map((w, i) => (
                       <li
                         key={`${w.sourceRow}-${i}`}
-                        className="rounded-lg border border-amber-300 px-4 py-2 text-sm dark:border-amber-900"
+                        className="rounded-lg border border-neutral-200 px-4 py-2 text-sm dark:border-neutral-800"
                       >
-                        <span className="font-mono">{w.date}</span>
+                        <span className="flex flex-wrap items-baseline justify-between gap-x-3">
+                          <span className="font-mono">{w.date}</span>
+                          {w.countsForStandings === false && (
+                            <span className="shrink-0 rounded-full bg-neutral-200 px-2 py-0.5 text-sm text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                              does not count toward standings
+                            </span>
+                          )}
+                        </span>
                         <span className="mt-0.5 block text-neutral-600">{w.message}</span>
+                        {w.countsForStandings !== false && (
+                          <span className="mt-1 block text-amber-800 dark:text-amber-300">
+                            This one would count toward standings. If the club is
+                            racing it, add it by hand &mdash; or ask for the schedule
+                            page to name the days.
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
