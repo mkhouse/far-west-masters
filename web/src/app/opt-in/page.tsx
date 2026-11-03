@@ -13,6 +13,7 @@
 import type { Metadata } from 'next'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { submitOptIn } from './actions'
+import { SubmitButton } from '../submit-button'
 
 export const metadata: Metadata = {
   title: 'Text message opt-in — Far West Masters',
@@ -228,12 +229,12 @@ export default async function OptInPage({
           </span>
         </label>
 
-        <button
-          type="submit"
+        <SubmitButton
+          pending="Sending…"
           className="w-full rounded-md bg-fwm-navy px-4 py-2.5 font-medium text-white"
         >
           Submit
-        </button>
+        </SubmitButton>
       </form>
     </main>
   )

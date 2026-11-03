@@ -11,6 +11,7 @@ import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createGroup, deleteGroup, removeMember, updateGroup } from './actions'
 import { MemberPicker } from './member-picker'
+import { SubmitButton, SubmitLink } from '../../submit-button'
 
 export default async function GroupsPage({
   searchParams,
@@ -123,12 +124,9 @@ export default async function GroupsPage({
                       placeholder="What this group is for"
                       className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm text-neutral-600 hover:border-neutral-300 focus:border-neutral-400 dark:hover:border-neutral-700"
                     />
-                    <button
-                      type="submit"
-                      className="ml-2 text-sm text-neutral-600 underline"
-                    >
-                      Save name and description
-                    </button>
+                    <span className="ml-2">
+                      <SubmitLink pending="Saving…">Save name and description</SubmitLink>
+                    </span>
                   </form>
 
                   <p className="ml-2 mt-2 text-sm text-neutral-600">
@@ -138,12 +136,12 @@ export default async function GroupsPage({
 
                 <form action={deleteGroup}>
                   <input type="hidden" name="group_id" value={g.id} />
-                  <button
-                    type="submit"
+                  <SubmitLink
+                    pending="Deleting…"
                     className="text-sm text-neutral-600 underline hover:text-fwm-burgundy"
                   >
                     Delete group
-                  </button>
+                  </SubmitLink>
                 </form>
               </div>
 
@@ -159,12 +157,12 @@ export default async function GroupsPage({
                     <form action={removeMember}>
                       <input type="hidden" name="group_id" value={g.id} />
                       <input type="hidden" name="person_id" value={m.person_id} />
-                      <button
-                        type="submit"
+                      <SubmitLink
+                        pending="removing…"
                         className="text-sm text-neutral-600 underline hover:text-red-700"
                       >
                         remove
-                      </button>
+                      </SubmitLink>
                     </form>
                   </li>
                 ))}
@@ -228,12 +226,12 @@ export default async function GroupsPage({
             whether consent applies.
           </p>
 
-          <button
-            type="submit"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+          <SubmitButton
+            pending="Creating…"
+            className="inline-block rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
           >
             Create group
-          </button>
+          </SubmitButton>
         </form>
       </section>
     </main>

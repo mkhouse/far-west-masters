@@ -19,6 +19,7 @@ import {
   updateTemplate,
 } from './actions'
 import { TemplateEditor } from './template-editor'
+import { SubmitLink } from '../../submit-button'
 
 interface TemplateRow {
   id: string
@@ -164,9 +165,7 @@ export default async function TemplatesPage({
                 </Link>
                 <form action={archiveTemplate}>
                   <input type="hidden" name="template_id" value={t.id} />
-                  <button type="submit" className="text-sm text-neutral-600 underline">
-                    Archive
-                  </button>
+                  <SubmitLink pending="Archiving…">Archive</SubmitLink>
                 </form>
               </div>
             </li>
@@ -195,9 +194,12 @@ export default async function TemplatesPage({
                 </span>
                 <form action={restoreTemplate}>
                   <input type="hidden" name="template_id" value={t.id} />
-                  <button type="submit" className="text-sm text-fwm-navy underline">
+                  <SubmitLink
+                    pending="Restoring…"
+                    className="text-sm text-fwm-navy underline"
+                  >
                     Restore
-                  </button>
+                  </SubmitLink>
                 </form>
               </li>
             ))}

@@ -192,7 +192,8 @@ export async function applySchedule(formData: FormData) {
   await requireAppUser('admin')
 
   const season = String(formData.get('season') ?? '')
-  const kind = String(formData.get('source') ?? 'archive') as SourceKind
+  // Matches the page's default — the published page is the source of truth.
+  const kind = String(formData.get('source') ?? 'live') as SourceKind
   const pasted = String(formData.get('pasted') ?? '')
 
   const back = (params: string) =>

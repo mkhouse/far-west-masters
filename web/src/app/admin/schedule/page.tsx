@@ -20,6 +20,7 @@ import { buildScheduleDiff, scheduleFingerprint } from '@/lib/schedule-import'
 import { archivedSeasons, fromArchive, fromLive, SCHEDULE_URL, type SourceKind } from '@/lib/schedule-source'
 import { formatRaceDate } from '@/lib/races'
 import { applySchedule, createSeason, existingRacesFor, setActiveSeason } from './actions'
+import { SubmitButton } from '../../submit-button'
 
 export default async function SchedulePage({
   searchParams,
@@ -51,7 +52,11 @@ export default async function SchedulePage({
   // Default to the newest archived season, which is the one being worked on — not
   // the active one, which is usually last winter at the point somebody comes here.
   const season = params.season ?? folders[0] ?? (activeSeason?.name as string) ?? ''
-  const sourceKind = (params.source as SourceKind) ?? 'archive'
+  // Live by default. farwestmasters.org/schedule is where the club maintains the
+  // schedule and always will be; the copy in this repository is a snapshot that can
+  // sit behind it. Defaulting to the snapshot meant the preview could quietly be of
+  // last week's page.
+  const sourceKind = (params.source as SourceKind) ?? 'live'
 
   const seasonRow = seasons.find((s) => s.name === season)
 
@@ -60,11 +65,27 @@ export default async function SchedulePage({
   let sourceLabel = ''
   let loadError: string | null = null
 
+  // Fell back to the repository copy because the live page could not be reached.
+  let fellBack = false
+
   try {
     if (sourceKind === 'live') {
-      const live = await fromLive()
-      html = live.html
-      sourceLabel = live.description
+      try {
+        const live = await fromLive()
+        html = live.html
+        sourceLabel = live.description
+      } catch (liveError) {
+        // The published page is the source of truth, but it being unreachable must
+        // not leave an officer with nothing. Fall back to the copy in the
+        // repository and SAY SO — a preview that silently came from somewhere else
+        // than the one named is the thing this screen cannot afford.
+        const archived = season ? await fromArchive(season) : null
+        if (!archived) throw liveError
+        html = archived.html
+        sourceLabel = archived.description
+        fellBack = true
+        loadError = `Could not reach farwestmasters.org (${(liveError as Error).message}). Showing the copy in the repository instead, which may be behind.`
+      }
     } else {
       const archived = season ? await fromArchive(season) : null
       if (archived) {
@@ -168,18 +189,25 @@ export default async function SchedulePage({
               defaultValue={sourceKind}
               className="mt-1 rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
             >
+              <option value="live">farwestmasters.org (where it is kept)</option>
               <option value="archive">The copy in the repository</option>
-              <option value="live">farwestmasters.org</option>
             </select>
           </label>
 
-          <button
-            type="submit"
-            className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-700"
+          <SubmitButton
+            pending="Loading…"
+            className="inline-block rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-700"
           >
             Load
-          </button>
+          </SubmitButton>
         </form>
+
+        {fellBack && (
+          <p className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+            Showing the repository copy &mdash; farwestmasters.org could not be
+            reached. Check it is current before applying.
+          </p>
+        )}
 
         {sourceLabel && (
           <p className="mt-3 text-sm text-neutral-600">
@@ -224,12 +252,12 @@ export default async function SchedulePage({
               <input type="checkbox" name="make_active" defaultChecked />
               Make it the active season
             </label>
-            <button
-              type="submit"
-              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+            <SubmitButton
+              pending={`Creating ${season}…`}
+              className="inline-block rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
             >
               Create {season}
-            </button>
+            </SubmitButton>
           </form>
         </section>
       )}
@@ -250,12 +278,12 @@ export default async function SchedulePage({
           </p>
           <form action={setActiveSeason} className="mt-3">
             <input type="hidden" name="season" value={season} />
-            <button
-              type="submit"
-              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+            <SubmitButton
+              pending="Switching season…"
+              className="inline-block rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
             >
               Make {season} active
-            </button>
+            </SubmitButton>
           </form>
         </section>
       )}
@@ -412,15 +440,15 @@ export default async function SchedulePage({
                 <form action={applySchedule} className="mt-8">
                   <input type="hidden" name="season" value={season} />
                   <input type="hidden" name="source" value={sourceKind} />
-                  <button
-                    type="submit"
+                  <SubmitButton
+                    pending="Applying — this writes races…"
                     disabled={diff.toAdd.length === 0 && diff.toChange.length === 0}
-                    className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
+                    className="inline-block rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
                   >
                     {diff.toAdd.length === 0 && diff.toChange.length === 0
                       ? 'Nothing to apply'
                       : `Apply — add ${diff.toAdd.length}, update ${diff.toChange.length}`}
-                  </button>
+                  </SubmitButton>
                 </form>
               )}
             </>

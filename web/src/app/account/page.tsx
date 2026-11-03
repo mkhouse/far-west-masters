@@ -16,6 +16,7 @@ import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { formatPhone } from '@/lib/format'
 import { clearContactPhone, setContactPhone } from './actions'
+import { SubmitButton, SubmitLink } from '../submit-button'
 
 export default async function AccountPage({
   searchParams,
@@ -136,22 +137,17 @@ export default async function AccountPage({
             </p>
           )}
 
-          <button
-            type="submit"
-            className="mt-4 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+          <SubmitButton
+            pending="Saving…"
+            className="mt-4 inline-block rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
           >
             Save
-          </button>
+          </SubmitButton>
         </form>
 
         {contactPhone && (
           <form action={clearContactPhone} className="mt-3">
-            <button
-              type="submit"
-              className="text-sm text-neutral-600 underline"
-            >
-              Remove it
-            </button>
+            <SubmitLink pending="Removing…">Remove it</SubmitLink>
           </form>
         )}
       </section>

@@ -27,6 +27,7 @@ import {
   findPlaceholders,
   unknownPlaceholders,
 } from '@/lib/templates'
+import { SubmitButton } from '../../submit-button'
 
 export function TemplateEditor({
   action,
@@ -185,13 +186,13 @@ export function TemplateEditor({
         </details>
       </div>
 
-      <button
-        type="submit"
+      <SubmitButton
+        pending="Saving…"
         disabled={!name.trim() || !body.trim() || unknown.length > 0}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
+        className="inline-block rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
       >
         {submitLabel}
-      </button>
+      </SubmitButton>
     </form>
   )
 }
