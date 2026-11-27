@@ -74,34 +74,149 @@ export default async function ComposePage({
 
   const db = supabaseAdmin()
 
-  // Officers with a phone number populate the reply-to picker. Sourced from the
-  // member records rather than a separate contacts list, so there is nothing extra
-  // to keep in step.
-  const { data: officerRows } = await db
-    .from('people')
-    .select('id, first_name, last_name, phone')
-    .eq('status', 'officer')
-    .not('phone', 'is', null)
-    .order('last_name')
+  // --- everything this screen needs, at once ---
+  //
+  // IN PARALLEL, BECAUSE NOTHING HERE IS ORDERED. These were thirteen awaits
+  // written top to bottom, each waiting on the last: measured at 1,659 ms of
+  // round trips against 417 ms for the same set in parallel. On the race-day
+  // path that delay is the whole experience — the screen stays on the previous
+  // page with no sign the tap registered, so people press the button again.
+  //
+  // Only `appUser` has to come first; the two queries below that use it are
+  // inside this list, not before it.
+
+  // What the URL is asking for. Read before the queries so the audience can be
+  // resolved alongside them rather than after.
+  const selectedKind = params.audience as AudienceKind | undefined
+  const raceIds = params.races?.split(',').filter(Boolean) ?? []
+
+  /* Arrived from the race-day block. The same choices that block offered are
+     rebuilt here so the audience can be confirmed, and changed, without going
+     back — see weekendOptions. */
+  const quick = params.quick === '1' && selectedKind === 'race'
+
+  // A filtered audience is not in the picker — it exists only for the send you
+  // arrived with, described by the filters that produced it.
+  const filter = selectedKind === 'filtered' ? filterFromParams(params) : undefined
+
+  const [
+    officerRows,
+    peopleRows,
+    templateRows,
+    upcoming,
+    meRow,
+    officerFirstName,
+    defaultRows,
+    audiences,
+    weekendRaces,
+    audience,
+    settings,
+    membership,
+  ] = await Promise.all([
+    // Officers with a phone number populate the reply-to picker. Sourced from
+    // the member records rather than a separate contacts list, so there is
+    // nothing extra to keep in step.
+    db
+      .from('people')
+      .select('id, first_name, last_name, phone')
+      .eq('status', 'officer')
+      .not('phone', 'is', null)
+      .order('last_name')
+      .then((r) => r.data),
+
+    // Everyone who can be picked as a single recipient: the whole list, not only
+    // people who can be texted, each carrying the reason if they cannot.
+    // Omitting them would make "why is Bob not in this list?" unanswerable from
+    // this screen; the consent gate still applies on the server, so listing
+    // somebody here cannot send them anything.
+    db
+      .from('people')
+      .select(
+        'id, first_name, last_name, phone, opt_in_at, intro_sent_at, opted_out_at, sms_never'
+      )
+      .order('last_name')
+      .then((r) => r.data),
+
+    // Live templates only. An archived one is kept for the record, not for sending.
+    db
+      .from('message_templates')
+      .select('id, name, category, body')
+      .is('archived_at', null)
+      .order('category')
+      .order('name')
+      .then((r) => r.data),
+
+    upcomingRaces(),
+
+    // The officer's own contact number, for {officer phone}.
+    //
+    // From `app_users`, NOT from their member record — see migration 0030.
+    // `people.phone` is where the club texts them and where member replies are
+    // forwarded; it has never been shown to a member, and quietly reusing it
+    // here would publish it to everyone a template is ever sent to.
+    db
+      .from('app_users')
+      .select('contact_phone')
+      .eq('user_id', appUser.userId)
+      .maybeSingle()
+      .then((r) => r.data),
+
+    appUser.personId
+      ? db
+          .from('people')
+          .select('first_name')
+          .eq('id', appUser.personId)
+          .maybeSingle()
+          .then((r) => (r.data?.first_name as string | null) ?? null)
+      : Promise.resolve(null),
+
+    db
+      .from('category_reply_defaults')
+      .select('category, person_id')
+      .then((r) => r.data),
+
+    listAudiences(),
+
+    quick ? loadWeekendRaces() : Promise.resolve([]),
+
+    // NOTHING IS SELECTED BY DEFAULT.
+    //
+    // This used to land on the first audience, which listAudiences puts a test
+    // group at, on the reasoning that a test group is the safe thing to default
+    // to. It is safe, and it is still a default — the screen arrives with a
+    // recipient already chosen, and a default that is usually right is exactly
+    // the kind a person stops reading. Requiring a choice costs one click and
+    // removes the case where somebody composes carefully and sends to whoever
+    // happened to be preselected.
+    selectedKind
+      ? resolveAudience(selectedKind, {
+          series: params.series,
+          raceIds,
+          groupId: params.group,
+          personIds: params.people?.split(',').filter(Boolean),
+          filter,
+        })
+      : Promise.resolve({
+          kind: '' as AudienceKind,
+          label: '',
+          recipientCount: 0,
+          consideredCount: 0,
+          excluded: [],
+          incompleteConsent: false,
+          unavailableReason: 'Choose who this message goes to.',
+        }),
+
+    loadSettings(),
+
+    // A stale membership list means an audience missing anyone who joined recently.
+    membershipContext(),
+  ])
 
   const officers: Officer[] = (officerRows ?? []).map((o) => ({
     id: o.id as string,
     name: `${o.first_name} ${o.last_name}`,
     phone: o.phone as string,
   }))
-
-  // --- everyone who can be picked as a single recipient ---
-  //
-  // The whole list, not only people who can be texted, each carrying the reason if
-  // they cannot. Omitting them would make "why is Bob not in this list?" unanswerable
-  // from this screen; the consent gate still applies on the server, so listing
-  // somebody here cannot send them anything.
-  const { data: peopleRows } = await db
-    .from('people')
-    .select(
-      'id, first_name, last_name, phone, opt_in_at, intro_sent_at, opted_out_at, sms_never'
-    )
-    .order('last_name')
 
   interface PersonRow {
     id: string
@@ -121,112 +236,31 @@ export default async function ComposePage({
         id: p.id,
         firstName: p.first_name,
         lastName: p.last_name,
-        // Same vocabulary as the members directory and the audience labels — one set
-        // of words for member state everywhere.
+        // Same vocabulary as the members directory and the audience labels — one
+        // set of words for member state everywhere.
         blockedReason: state === 'eligible' ? null : CONSENT_STATE_LABEL[state],
       }
     }
   )
 
-  // --- what the template picker needs ---
-  //
-  // Live templates only. An archived one is kept for the record, not for sending.
-  const { data: templateRows } = await db
-    .from('message_templates')
-    .select('id, name, category, body')
-    .is('archived_at', null)
-    .order('category')
-    .order('name')
-
   const templates = (templateRows ?? []) as unknown as MessageTemplate[]
 
-  const races: RaceOption[] = (await upcomingRaces()).map((r) => ({
+  const races: RaceOption[] = upcoming.map((r) => ({
     id: r.id,
     venue: r.venue,
     label: raceLabel(r),
   }))
 
-  // The officer's own details, for {officer name} and {officer phone}.
-  //
-  // The phone comes from `app_users`, NOT from their member record — see migration
-  // 0030. `people.phone` is where the club texts them and where member replies are
-  // forwarded; it has never been shown to a member, and quietly reusing it here would
-  // publish it to everyone this template is ever sent to.
-  const { data: meRow } = await db
-    .from('app_users')
-    .select('contact_phone')
-    .eq('user_id', appUser.userId)
-    .maybeSingle()
-
   const officerPhone = (meRow?.contact_phone as string | null) ?? null
-
-  let officerFirstName: string | null = null
-  if (appUser.personId) {
-    const { data: me } = await db
-      .from('people')
-      .select('first_name')
-      .eq('id', appUser.personId)
-      .maybeSingle()
-    officerFirstName = (me?.first_name as string | null) ?? null
-  }
-
-  const { data: defaultRows } = await db
-    .from('category_reply_defaults')
-    .select('category, person_id')
 
   const categoryDefaults = Object.fromEntries(
     (defaultRows ?? []).map((d) => [d.category as string, d.person_id as string])
   )
 
-  // The audience determines the recipient count, which in turn drives the cost
-  // estimate. Default to the test group: the safe choice if someone opens this
-  // screen and starts typing without thinking about who it reaches.
-  const audiences = await listAudiences()
-
-  // NOTHING IS SELECTED BY DEFAULT.
-  //
-  // This used to land on the first audience, which listAudiences puts a test group
-  // at, on the reasoning that a test group is the safe thing to default to. It is
-  // safe, and it is still a default — the screen arrives with a recipient already
-  // chosen, and a default that is usually right is exactly the kind a person stops
-  // reading. Requiring a choice costs one click and removes the case where somebody
-  // composes carefully and sends to whoever happened to be preselected.
-  const selectedKind = params.audience as AudienceKind | undefined
-
-  /* Arrived from the race-day block. The same choices that block offered are
-     rebuilt here so the audience can be confirmed, and changed, without going
-     back — see weekendOptions. */
-  const quick = params.quick === '1' && selectedKind === 'race'
-  const raceIds = params.races?.split(',').filter(Boolean) ?? []
-  const weekend = quick ? weekendContaining(await loadWeekendRaces(), raceIds) : null
+  const weekend = quick ? weekendContaining(weekendRaces, raceIds) : null
   const raceOptions = weekend ? weekendOptions(weekend) : []
 
-  // A filtered audience is not in the picker — it exists only for the send you
-  // arrived with, described by the filters that produced it.
-  const filter = selectedKind === 'filtered' ? filterFromParams(params) : undefined
-
-  const audience = selectedKind
-    ? await resolveAudience(selectedKind, {
-        series: params.series,
-        raceIds: params.races?.split(',').filter(Boolean),
-        groupId: params.group,
-        personIds: params.people?.split(',').filter(Boolean),
-        filter,
-      })
-    : {
-        kind: '' as AudienceKind,
-        label: '',
-        recipientCount: 0,
-        consideredCount: 0,
-        excluded: [],
-        incompleteConsent: false,
-        unavailableReason: 'Choose who this message goes to.',
-      }
-
-  const settings = await loadSettings()
-
-  // A stale membership list means an audience missing anyone who joined recently.
-  const { freshness } = await membershipContext()
+  const { freshness } = membership
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
