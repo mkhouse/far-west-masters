@@ -77,6 +77,7 @@ const CATEGORIES = [
 export interface AudienceOption {
   kind: string
   series?: string
+  raceId?: string
   groupId?: string
   label: string
 }
@@ -104,6 +105,7 @@ export function ComposeForm({
   officerName,
   officerPhone: initialOfficerPhone,
   selectedSeries: initialSeries,
+  selectedRaceId: initialRaceId,
   selectedGroupId: initialGroupId,
   filterParams,
   prefillBody,
@@ -128,6 +130,7 @@ export function ComposeForm({
   /** Their published contact number in E.164, or null. See migration 0030. */
   officerPhone: string | null
   selectedSeries?: string
+  selectedRaceId?: string
   selectedGroupId?: string
   /** Present when messaging a slice of the members directory. */
   filterParams?: Record<string, string>
@@ -149,6 +152,7 @@ export function ComposeForm({
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId)
   const [selectedPersonIds, setSelectedPersonIds] = useState(initialPersonIds ?? [])
   const [selectedSeries, setSelectedSeries] = useState(initialSeries)
+  const [selectedRaceId, setSelectedRaceId] = useState(initialRaceId)
   const [switching, startSwitching] = useTransition()
 
   const recipientCount = audience.recipientCount
@@ -183,10 +187,12 @@ export function ComposeForm({
     groupId?: string
     personIds?: string[]
     series?: string
+    raceId?: string
   }) {
     setSelectedGroupId(next.groupId)
     setSelectedPersonIds(next.personIds ?? [])
     setSelectedSeries(next.series)
+    setSelectedRaceId(next.raceId)
 
     // Keep the address bar honest without a navigation, so a refresh or a link
     // shared with another officer lands in the same place. replaceState rather than
@@ -197,6 +203,7 @@ export function ComposeForm({
     if (next.groupId) params.set('group', next.groupId)
     if (next.personIds?.length) params.set('people', next.personIds.join(','))
     if (next.series) params.set('series', next.series)
+    if (next.raceId) params.set('race', next.raceId)
     window.history.replaceState(null, '', `?${params.toString()}`)
 
     if (!next.kind) {
@@ -218,6 +225,7 @@ export function ComposeForm({
         groupId: next.groupId,
         personIds: next.personIds,
         series: next.series,
+        raceId: next.raceId,
         filterParams,
       })
       setAudience(resolved)
@@ -333,6 +341,7 @@ export function ComposeForm({
       <input type="hidden" name="audience_kind" value={audience.kind} />
       <input type="hidden" name="group_id" value={selectedGroupId ?? ''} />
       <input type="hidden" name="series" value={selectedSeries ?? ''} />
+      <input type="hidden" name="race_id" value={selectedRaceId ?? ''} />
       <input type="hidden" name="person_ids" value={selectedPersonIds.join(',')} />
       {/* The filter travels as parameters, not as a list of people. The server
           re-resolves it, so this cannot decide who receives anything. */}
@@ -355,6 +364,7 @@ export function ComposeForm({
         people={people}
         selectedPersonIds={selectedPersonIds}
         selectedSeries={selectedSeries}
+        selectedRaceId={selectedRaceId}
         selectedGroupId={selectedGroupId}
         switching={switching}
         onChange={changeAudience}
@@ -832,6 +842,7 @@ function AudiencePicker({
   people,
   selectedPersonIds,
   selectedSeries,
+  selectedRaceId,
   selectedGroupId,
   switching,
   onChange,
@@ -841,6 +852,7 @@ function AudiencePicker({
   people: PersonOption[]
   selectedPersonIds: string[]
   selectedSeries?: string
+  selectedRaceId?: string
   selectedGroupId?: string
   /** True while the server is resolving a newly chosen audience. */
   switching: boolean
@@ -849,6 +861,7 @@ function AudiencePicker({
     groupId?: string
     personIds?: string[]
     series?: string
+    raceId?: string
   }) => void
   /** Present when messaging a slice of the members directory. */
   filterParams?: Record<string, string>
@@ -860,7 +873,9 @@ function AudiencePicker({
   const value =
     audience.kind === 'group'
       ? `group|${selectedGroupId ?? ''}`
-      : audience.kind + (selectedSeries ? `|${selectedSeries}` : '')
+      : audience.kind === 'race'
+        ? `race|${selectedRaceId ?? ''}`
+        : audience.kind + (selectedSeries ? `|${selectedSeries}` : '')
 
   return (
     <section className="border-b border-neutral-200 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
@@ -873,7 +888,12 @@ function AudiencePicker({
             onChange({
               kind,
               groupId: kind === 'group' ? arg : undefined,
-              series: kind !== 'group' && kind !== 'people' ? arg : undefined,
+              raceId: kind === 'race' ? arg : undefined,
+              // Everything else that carries an argument carries a series.
+              series:
+                kind !== 'group' && kind !== 'race' && kind !== 'people'
+                  ? arg
+                  : undefined,
               // Switching to "select people" starts with nobody chosen; the picker
               // below appears and asks.
               personIds: undefined,
@@ -900,11 +920,13 @@ function AudiencePicker({
 
           {audiences.map((a) => (
             <option
-              key={a.kind + (a.groupId ?? a.series ?? '')}
+              key={a.kind + (a.groupId ?? a.raceId ?? a.series ?? '')}
               value={
                 a.kind === 'group'
                   ? `group|${a.groupId}`
-                  : a.kind + (a.series ? `|${a.series}` : '')
+                  : a.kind === 'race'
+                    ? `race|${a.raceId}`
+                    : a.kind + (a.series ? `|${a.series}` : '')
               }
             >
               {a.label}

@@ -98,6 +98,11 @@ const GROUPS: Group[] = [
           'Import the season\u2019s races. Nothing is written until you apply.',
       },
       {
+        href: '/admin/entries',
+        title: 'Race entries',
+        description: 'Who entered, so a text can go to just them.',
+      },
+      {
         title: 'Season setup',
         description: 'Scoring rules: best-N, points scale, age groups.',
       },

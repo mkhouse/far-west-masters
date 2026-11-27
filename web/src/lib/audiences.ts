@@ -28,6 +28,7 @@ export type AudienceKind =
   | 'group' // a named group an admin maintains: test groups, officials, board
   | 'all_eligible' // everyone past the consent gate
   | 'series' // people entered in a race weekend
+  | 'race' // people entered in one specific race
   | 'intro_pending' // opted in, but not yet sent the intro text that completes it
   | 'always' // members who asked to hear about races regardless of entry
   | 'filtered' // a slice of the members directory, described by its filters
@@ -37,6 +38,8 @@ export interface AudienceOption {
   kind: AudienceKind
   /** Series name, when the audience is scoped to one */
   series?: string
+  /** Race id, when the audience is scoped to a single race */
+  raceId?: string
   /** Group id, when kind is 'group' */
   groupId?: string
   /** Person ids, when kind is 'people' */
@@ -170,6 +173,27 @@ export async function listAudiences(): Promise<AudienceOption[]> {
     options.push({ kind: 'series', series, label: series })
   }
 
+  // A race is offerable once it has entries.
+  //
+  // NOT A DUPLICATE OF THE SERIES AUDIENCE. Most races have no series at all —
+  // the two Mammoth Season Opener GS days have `series` null — so without this
+  // the commonest case, "everybody racing on Saturday", could not be addressed
+  // at all. Series stays for the weekends that have one.
+  const { data: withEntries } = await db
+    .from('races')
+    .select('id, name, date, race_entries(count)')
+    .order('date', { ascending: true })
+
+  for (const r of withEntries ?? []) {
+    const entries = (r.race_entries as unknown as Array<{ count: number }>) ?? []
+    if (!(entries[0]?.count > 0)) continue
+    options.push({
+      kind: 'race',
+      raceId: r.id as string,
+      label: r.name as string,
+    })
+  }
+
   return options
 }
 
@@ -178,13 +202,14 @@ export async function resolveAudience(
   kind: AudienceKind,
   opts: {
     series?: string
+    raceId?: string
     groupId?: string
     personIds?: string[]
     filter?: MemberFilter
   } = {}
 ): Promise<AudienceResult> {
   const db = supabaseAdmin()
-  const { series, groupId, personIds, filter } = opts
+  const { series, raceId, groupId, personIds, filter } = opts
 
   switch (kind) {
     /**
@@ -426,6 +451,56 @@ export async function resolveAudience(
         incompleteConsent: true,
         unavailableReason:
           people.length === 0 ? 'Everyone who has opted in has had their intro text' : undefined,
+      }
+    }
+
+    case 'race': {
+      if (!raceId) {
+        return {
+          kind,
+          label: 'Race',
+          recipientCount: 0,
+          consideredCount: 0,
+          excluded: [],
+          incompleteConsent: false,
+          unavailableReason: 'No race selected',
+        }
+      }
+
+      const { data: race } = await db
+        .from('races')
+        .select('name')
+        .eq('id', raceId)
+        .maybeSingle()
+
+      const { data: entries } = await db
+        .from('race_entries')
+        .select(`person_id, people!inner(${GATE_COLUMNS})`)
+        .eq('race_id', raceId)
+
+      // No de-duplication needed the way `series` needs it — race_entries is
+      // UNIQUE (race_id, person_id), so one race cannot list a person twice.
+      type GatePerson = Parameters<typeof explainExclusions>[0][number]
+      const people: GatePerson[] = []
+      for (const e of (entries ?? []) as Array<{
+        person_id: string | null
+        people: GatePerson | GatePerson[]
+      }>) {
+        if (!e.person_id) continue
+        const person = Array.isArray(e.people) ? e.people[0] : e.people
+        if (person) people.push(person)
+      }
+
+      const { eligible, excluded } = explainExclusions(people)
+      return {
+        kind,
+        label: (race?.name as string) ?? 'Race',
+        recipientCount: eligible,
+        consideredCount: people.length,
+        excluded,
+        incompleteConsent: false,
+        unavailableReason:
+          people.length === 0 ? 'Nobody is entered in that race yet' : undefined,
       }
     }
 

@@ -58,6 +58,7 @@ async function recipientsFor(
   kind: AudienceKind,
   opts: {
     series?: string
+    raceId?: string
     groupId?: string
     personIds?: string[]
     filter?: MemberFilter
@@ -156,6 +157,28 @@ async function recipientsFor(
       return { people, incompleteConsent: true }
     }
 
+    case 'race': {
+      if (!opts.raceId) return { people: [], incompleteConsent: false }
+      const { data: entries } = await db
+        .from('race_entries')
+        .select(`person_id, people!inner(${GATE})`)
+        .eq('race_id', opts.raceId)
+
+      // UNIQUE (race_id, person_id) means no de-duplication is needed here, as
+      // it is for a series spanning several days of one weekend.
+      const all: GatePerson[] = []
+      for (const e of (entries ?? []) as Array<{
+        person_id: string | null
+        people: GatePerson | GatePerson[]
+      }>) {
+        if (!e.person_id) continue
+        const p = Array.isArray(e.people) ? e.people[0] : e.people
+        if (p) all.push(p)
+      }
+
+      return { people: all.filter(passesGate), incompleteConsent: false }
+    }
+
     case 'series': {
       if (!opts.series) return { people: [], incompleteConsent: false }
       const { data: entries } = await db
@@ -187,6 +210,7 @@ export async function sendMessage(formData: FormData) {
   const kind = String(formData.get('audience_kind') ?? '') as AudienceKind
   const groupId = String(formData.get('group_id') ?? '') || undefined
   const series = String(formData.get('series') ?? '') || undefined
+  const raceId = String(formData.get('race_id') ?? '') || undefined
   // Comma-separated, because a hand-picked audience can be one person or several.
   // Sorted so that the same set chosen in a different order is recognised as the
   // same audience by the duplicate guard below.
@@ -249,6 +273,7 @@ export async function sendMessage(formData: FormData) {
   // Re-resolve on the server. Never trust a recipient list from the browser.
   const { people, incompleteConsent } = await recipientsFor(kind, {
     series,
+    raceId,
     groupId,
     personIds,
     filter,
@@ -349,7 +374,13 @@ export async function sendMessage(formData: FormData) {
     )
   }
 
-  const audience = await resolveAudience(kind, { series, groupId, personIds, filter })
+  const audience = await resolveAudience(kind, {
+    series,
+    raceId,
+    groupId,
+    personIds,
+    filter,
+  })
 
   // Who is sending, in a form a person can read months from now. Stored on the
   // message rather than looked up later: `created_by` points into the auth schema,

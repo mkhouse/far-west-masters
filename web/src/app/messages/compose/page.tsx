@@ -46,6 +46,7 @@ export default async function ComposePage({
   searchParams: Promise<{
     audience?: string
     series?: string
+    race?: string
     group?: string
     people?: string
     // Carried through from the members directory when messaging a filtered set.
@@ -196,6 +197,7 @@ export default async function ComposePage({
   const audience = selectedKind
     ? await resolveAudience(selectedKind, {
         series: params.series,
+        raceId: params.race,
         groupId: params.group,
         personIds: params.people?.split(',').filter(Boolean),
         filter,
@@ -241,6 +243,7 @@ export default async function ComposePage({
           prefillBody={audience.kind === 'intro_pending' ? settings.introText : ''}
           prefillPurpose={audience.kind === 'intro_pending' ? 'Intro text' : ''}
           selectedSeries={params.series}
+          selectedRaceId={params.race}
           selectedGroupId={params.group}
           filterParams={filter ? filterToParams(filter) : undefined}
         />

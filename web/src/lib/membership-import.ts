@@ -47,8 +47,15 @@ export interface MemberRow {
   eventId: string
 }
 
-/** Strip the letter prefix and any punctuation; return digits as a number. */
-function usssaNumber(raw: string): number | null {
+/**
+ * Strip the letter prefix and any punctuation; return digits as a number.
+ *
+ * Exported because the race roster needs the identical reading — it spells the
+ * column "USSSA#" with three S and the membership export spells it "USSA#", but
+ * the number inside is the same number, and two readings of it would eventually
+ * disagree about who somebody is.
+ */
+export function usssaNumber(raw: string): number | null {
   const digits = raw.replace(/[\s-]/g, '').replace(/^[A-Za-z]+/, '')
   return /^\d+$/.test(digits) ? Number(digits) : null
 }
