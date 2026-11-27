@@ -70,6 +70,24 @@ export function pacificDate(now: Date = new Date()): string {
   }).format(now)
 }
 
+/**
+ * A `?preview=` date, or nothing.
+ *
+ * Validated rather than trusted. Every date comparison in this module is a
+ * STRING comparison, so a half-formed value would not throw — '2026-1-5' sorts
+ * before '2026-02-01' and would quietly select the wrong weekend. A value that
+ * is not exactly a real YYYY-MM-DD is ignored, and the caller falls back to the
+ * real day.
+ */
+export function validPreviewDate(raw: string | undefined | null): string | null {
+  if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null
+  const [y, m, d] = raw.split('-').map(Number)
+  const date = new Date(Date.UTC(y, m - 1, d))
+  // Catches 2026-02-31 and 2026-13-01, which match the pattern and then roll
+  // over into the following month.
+  return date.toISOString().slice(0, 10) === raw ? raw : null
+}
+
 function addDays(iso: string, n: number): string {
   const [y, m, d] = iso.split('-').map(Number)
   const t = Date.UTC(y, m - 1, d) + n * 86_400_000

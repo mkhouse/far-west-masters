@@ -13,6 +13,7 @@ import {
   racesOnDays,
   reachOf,
   shortDay,
+  validPreviewDate,
   visibleWeekend,
   weekendLabel,
   type WeekendRace,
@@ -192,5 +193,25 @@ describe('labels', () => {
         groupIntoWeekends([race('2027-01-31', 'A'), race('2027-02-01', 'A')])[0]
       )
     ).toBe('31 January – 1 February')
+  })
+})
+
+describe('validPreviewDate — the testing flag', () => {
+  it('accepts a real date', () => {
+    expect(validPreviewDate('2026-11-30')).toBe('2026-11-30')
+    expect(validPreviewDate('2026-12-05')).toBe('2026-12-05')
+  })
+
+  it('ignores anything that is not exactly YYYY-MM-DD', () => {
+    for (const bad of [undefined, '', '2026-1-5', '12/05/2026', 'today']) {
+      expect(validPreviewDate(bad)).toBeNull()
+    }
+  })
+
+  it('ignores a date that matches the pattern but does not exist', () => {
+    // Dangerous rather than merely wrong: every comparison here is a string
+    // comparison, so a rolled-over date would select a weekend rather than error.
+    expect(validPreviewDate('2026-02-31')).toBeNull()
+    expect(validPreviewDate('2026-13-01')).toBeNull()
   })
 })

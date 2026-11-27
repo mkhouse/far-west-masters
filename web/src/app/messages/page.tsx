@@ -12,7 +12,12 @@
 import Link from 'next/link'
 import { getAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { pacificDate, visibleWeekend, type WeekendRace } from '@/lib/race-weekends'
+import {
+  pacificDate,
+  validPreviewDate,
+  visibleWeekend,
+  type WeekendRace,
+} from '@/lib/race-weekends'
 import { RaceDayBlock } from './race-day-block'
 
 /** How many sends to show. FWM sends a few dozen a season; this is years of them. */
@@ -45,10 +50,12 @@ const FAILED_STATES = new Set(['failed', 'undelivered'])
 export default async function MessagesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; preview?: string }>
 }) {
   const appUser = await getAppUser()
-  const query = ((await searchParams).q ?? '').trim()
+  const params = await searchParams
+  const query = (params.q ?? '').trim()
+  const previewDate = validPreviewDate(params.preview)
 
   // The proxy guarantees a signed-in user, but not an authorized one — a valid
   // Supabase login without an `app_users` row lands here.
@@ -134,7 +141,11 @@ export default async function MessagesPage({
     tallies.set(r.message_id, t)
   }
 
-  const today = pacificDate()
+  // `?preview=YYYY-MM-DD` moves the clock for the block only, so the race-day
+  // block can be looked at before the Monday it would normally appear. Display
+  // only: it never reaches the send path, which re-derives its recipients from
+  // race ids on the server.
+  const today = previewDate ?? pacificDate()
   const weekend = await loadWeekend(today)
 
   return (
@@ -142,7 +153,28 @@ export default async function MessagesPage({
       {/* ABOVE THE HEADING, DELIBERATELY. `/` redirects here, so this is the
           first thing on screen after signing in — and on a race weekend it is
           the only thing most people need. See race-day-block.tsx. */}
+      {/* LOUD, BECAUSE THE BUTTONS BELOW ARE REAL. The audience a preview
+          builds is a genuine one, so from a March preview somebody could
+          compose and send to people about a race months away. Burgundy, which
+          here means a thing could go wrong rather than has. */}
+      {previewDate && (
+        <p className="mb-6 rounded-md border border-fwm-burgundy/40 bg-fwm-burgundy/5 px-4 py-3 text-sm text-fwm-burgundy">
+          <strong>Previewing as {previewDate}. This is not today.</strong> The
+          buttons below still text real people.{' '}
+          <Link href="/messages" className="underline">
+            Back to today
+          </Link>
+          .
+        </p>
+      )}
+
       {weekend && <RaceDayBlock weekend={weekend} today={today} />}
+
+      {previewDate && !weekend && (
+        <p className="mb-6 text-sm text-neutral-600">
+          No race weekend would show on {previewDate}.
+        </p>
+      )}
 
       <div className="flex items-baseline justify-between">
         <div>
@@ -467,3 +499,4 @@ async function loadWeekend(today: string) {
 
   return visibleWeekend(races, today)
 }
+
