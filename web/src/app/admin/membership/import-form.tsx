@@ -13,7 +13,7 @@
  * so what lands is what the file says.
  */
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import {
   applyImport,
   previewImport,
@@ -39,10 +39,9 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
   /**
    * Which reported differences to accept, as personId:field.
    *
-   * Empty to start: not overwriting is the safe default, because what we hold is
-   * often the member's own answer from the opt-in form. But many of these are a work
-   * address being replaced by a personal one, which is exactly the case where ASR is
-   * fresher — so the choice is per row rather than a rule.
+   * Seeded from `defaultAccepted` on every preview — the club's rule, applied —
+   * and then whatever the officer changes. Not empty to start: see that function
+   * for why a blank slate was the wrong default.
    */
   const [accepted, setAccepted] = useState<Set<string>>(new Set())
   /**
@@ -50,6 +49,43 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
    * enough, because the input holds its own copy of the chosen file.
    */
   const [resetKey, setResetKey] = useState(0)
+
+  /**
+   * Work out what the file would do, as soon as there is a file.
+   *
+   * THIS USED TO BE A BUTTON. "See what this would change" asked a question the
+   * officer had already answered by choosing the file, and the preview writes
+   * nothing — so there was nothing to consent to. Picking the wrong export (Race
+   * File, not Race Roster) now shows its refusal straight away rather than after
+   * a click you had to know to make.
+   *
+   * Keyed on the season as well as the file, which the button never handled: it
+   * previewed against whatever the season box said at the moment you pressed it,
+   * and editing the box afterwards left the preview quietly stale.
+   *
+   * Debounced because the season is a free-text box — without it, typing
+   * "2026-2027" is nine server round-trips. The cancelled flag matters more: the
+   * requests are concurrent, and a slow early one must not land on top of a fast
+   * later one and leave the screen describing a season nobody asked about.
+   */
+  useEffect(() => {
+    if (!csv) return
+
+    let cancelled = false
+    const timer = setTimeout(() => {
+      startTransition(async () => {
+        const result = await previewImport(csv, season)
+        if (cancelled) return
+        setPreview(result)
+        setAccepted(result.diff ? defaultAccepted(result.diff) : new Set())
+      })
+    }, 300)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [csv, season])
 
   /**
    * Back to the empty form.
@@ -158,37 +194,37 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
           </span>
         </div>
 
-        {/* Two ways out, because the screen is long. This one is where somebody
-            realises they picked the wrong export; the one by the Import button
-            is where they decide not to go ahead. Same `cancel`, named for what
-            it means in each place. */}
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            disabled={!csv || pending}
-            onClick={() =>
-              startTransition(async () => {
-                const result = await previewImport(csv!, season)
-                setPreview(result)
-                // The club's rule, applied the moment there is something to
-                // apply it to. See defaultAccepted.
-                setAccepted(result.diff ? defaultAccepted(result.diff) : new Set())
-              })
-            }
-            className="rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
-          >
-            {pending && !preview ? 'Reading…' : 'See what this would change'}
-          </button>
-          {csv && (
+        {/* What used to be the "See what this would change" button. The preview
+            now runs on its own (see the effect above), so what is left here is
+            the state of that work and the way back out.
+
+            Two ways out, because the screen is long: this one is where somebody
+            realises they picked the wrong export, and the one by the Import
+            button is where they decide not to go ahead. Same `cancel`. */}
+        {/* Keyed on the NAME, not the parsed text. `file.text()` resolves a tick
+            after the pick, so between the two `csv` is still null while a file
+            is plainly chosen — and this row would blink out of existence in the
+            gap. */}
+        {fileName && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+            <span
+              className="text-neutral-600"
+              role="status"
+              aria-live="polite"
+            >
+              {pending
+                ? 'Working out what this would change…'
+                : 'Below: what this file would do.'}
+            </span>
             <button
               type="button"
               onClick={cancel}
-              className="text-sm text-neutral-600 underline"
+              className="text-neutral-600 underline"
             >
               Choose a different file
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {preview && !preview.ok && (
