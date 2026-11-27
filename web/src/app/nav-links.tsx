@@ -54,8 +54,25 @@ export function NavLinks({ badges = {} }: { badges?: Record<string, number> }) {
             {s.label}
             {/* Keyed by href rather than named per section, so the nav does not
                 need to know what any particular count means. */}
+            {/* Inverted on the section you are already on. Filled navy, the badge
+                sat beside navy label text and a navy underline — three navies in an
+                inch, and the count was the one least able to be picked out of them.
+                A cream pill with a navy number separates by figure and ground
+                instead of by hue.
+
+                Both states ride --fwm-navy and --background, which invert together
+                in dark mode, so neither needs a dark: variant. The exception is the
+                white number on the filled pill: in the dark the navy is lifted to
+                #7ea8d4, where white falls to 2.5:1 and fails for 12px text, so it
+                flips to near-black there instead. */}
             {badges[s.href] ? (
-              <span className="ml-1.5 rounded-full bg-fwm-navy px-1.5 py-0.5 text-xs font-medium text-white">
+              <span
+                className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-medium ${
+                  active
+                    ? 'bg-background text-fwm-navy ring-1 ring-fwm-navy'
+                    : 'bg-fwm-navy text-white dark:text-neutral-950'
+                }`}
+              >
                 {badges[s.href]}
                 {/* The number alone reads as "Admin 2". Screen readers get the
                     sentence a sighted reader infers from the context.
