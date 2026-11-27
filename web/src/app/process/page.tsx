@@ -11,7 +11,8 @@ export default async function ProcessPage() {
     <main className="mx-auto max-w-2xl px-6 py-16">
       <h1 className="text-xl font-semibold">Process results</h1>
       <p className="mt-1 text-sm text-neutral-600">
-        Signed in as {appUser.email} ({appUser.role})
+        Signed in as {appUser.name ? `${appUser.name} · ` : ''}
+            {appUser.email} ({appUser.role})
       </p>
       <p className="mt-6 text-sm text-neutral-600 dark:text-neutral-400">
         Import from live-timing, review the preliminary-to-official diff, publish.

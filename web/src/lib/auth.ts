@@ -22,6 +22,16 @@ export interface AppUser {
   email: string | null
   role: AppRole
   personId: string | null
+  /**
+   * Their name, when the grant is linked to a member record.
+   *
+   * Null for an officer account with no `person_id` — an address with a grant
+   * and nobody behind it — so every caller has to cope with having only the
+   * email. Embedded in the `app_users` lookup rather than fetched separately:
+   * that query runs on every protected page, and a second round trip for a
+   * line of chrome would be felt on all of them.
+   */
+  name: string | null
 }
 
 /**
@@ -42,7 +52,7 @@ export async function getAppUser(): Promise<AppUser | null> {
   // so the user's own client cannot look up its own role.
   const { data, error } = await supabaseAdmin()
     .from('app_users')
-    .select('user_id, role, person_id')
+    .select('user_id, role, person_id, people(first_name, last_name)')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -58,7 +68,26 @@ export async function getAppUser(): Promise<AppUser | null> {
     email: user.email ?? null,
     role: data.role as AppRole,
     personId: (data.person_id as string | null) ?? null,
+    name: personName(data.people),
   }
+}
+
+/**
+ * The embedded member record's name.
+ *
+ * PostgREST returns an embedded row as an object or, depending on how it reads
+ * the relationship, a single-element array — both shapes appear elsewhere in
+ * this codebase, so both are handled rather than assumed.
+ */
+function personName(embedded: unknown): string | null {
+  const row = Array.isArray(embedded) ? embedded[0] : embedded
+  if (!row || typeof row !== 'object') return null
+  const { first_name: first, last_name: last } = row as {
+    first_name?: string | null
+    last_name?: string | null
+  }
+  const name = [first, last].filter(Boolean).join(' ').trim()
+  return name || null
 }
 
 /**
@@ -124,7 +153,10 @@ async function claimInvitation(userId: string, email: string | null): Promise<Ap
     .eq('email', lowered)
     .is('claimed_at', null)
 
-  return { userId, email, role, personId }
+  // No name on this path: the invitation carries an email and a role, and the
+  // member record it points at has not been read. The next request goes through
+  // getAppUser, which embeds it.
+  return { userId, email, role, personId, name: null }
 }
 
 /**

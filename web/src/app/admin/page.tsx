@@ -103,8 +103,9 @@ const GROUPS: Group[] = [
         description: 'Who entered, so a text can go to just them.',
       },
       {
+        href: '/admin/season',
         title: 'Season setup',
-        description: 'Scoring rules: best-N, points scale, age groups.',
+        description: 'Scoring rules. Nothing scores until they are set.',
       },
       {
         title: 'Live-timing ids',
@@ -222,7 +223,10 @@ export default async function AdminPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="text-xl font-semibold">Admin</h1>
-      <p className="mt-1 text-sm text-neutral-600">Signed in as {appUser.email}</p>
+      <p className="mt-1 text-sm text-neutral-600">
+        Signed in as {appUser.name ? `${appUser.name} · ` : ''}
+        {appUser.email}
+      </p>
 
       {/* --- anything waiting, first and on its own ---
           Only rendered when somebody is actually waiting. A permanent entry here

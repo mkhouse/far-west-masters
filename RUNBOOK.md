@@ -81,6 +81,26 @@ signed in. Prefer the invitation.
 3. **Set the season's scoring rules** (best-N, points scale, age groups). The import
    deliberately does not do this. Nothing scores correctly until it is done, and the
    schedule screen says so while `best_n` is 0.
+
+   There is no screen for it yet; it is a migration against `seasons`. The club
+   publishes the rules each year at
+   `resources.farwestmasters.org/faq/<year>/Season-Scoring-and-Open-Class.pdf` —
+   see migration 0033 for 2026-2027, which records where every figure came from.
+
+   **best-N is `ceil(0.75 x races)`, counting only races where
+   `counts_toward_standings` is true.** For 2026-2027 that is 17 of the 21 in the
+   schedule — the four FIS Masters World Cup Finals races at Big Sky are not Far
+   West division races — giving a best-13. Taking 21 would give 16 and quietly
+   wrong standings, so check the flag rather than the row count.
+
+   **Do not copy the points scale out of the PDF**, which elides the middle of
+   the list. Use `WC_POINTS_SCALE` in `results-engine/src/types.ts`, measured
+   from FWM's own published standings.
+
+   Two things the rules allow that this system does not model: the
+   minimum-starts requirement may be waived for racers 70 and over, and the
+   awards committee may waive it individually for injury or illness. Both are
+   judgements, and neither is recorded anywhere here.
 4. For each race, add the **live-timing race id**. Links arrive by the Monday before
    a race at the latest, and the system can look the id up from the date and venue —
    confirm the suggestion rather than typing it. The schedule import never touches

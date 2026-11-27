@@ -267,7 +267,8 @@ export default async function ComposePage({
       <MembershipBanner freshness={freshness} />
       <h1 className="text-xl font-semibold">Compose message</h1>
       <p className="mt-1 text-sm text-neutral-600">
-        Signed in as {appUser.email} ({appUser.role})
+        Signed in as {appUser.name ? `${appUser.name} · ` : ''}
+            {appUser.email} ({appUser.role})
       </p>
 
       <div className="mt-8">

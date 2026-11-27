@@ -10,6 +10,7 @@
  * cookies" is not an instruction anyone should have to follow.
  */
 
+import { getAppUser } from '@/lib/auth'
 import { getUser } from '@/lib/supabase/server'
 import { countWaiting } from '@/lib/waiting'
 import { NavLinks } from './nav-links'
@@ -17,6 +18,13 @@ import { NavLinks } from './nav-links'
 export async function AppHeader() {
   const user = await getUser()
   if (!user) return null
+
+  // The grant, for the officer's name — and only for that. The bar's existence
+  // still turns on the SESSION, not on authorization: somebody signed in
+  // without an `app_users` row sees "Not authorized" pages, and they of all
+  // people need a Sign out button. Gating the header on the grant would leave
+  // them with "clear your cookies", which this file exists to avoid.
+  const appUser = await getAppUser()
 
   // EVERYONE waiting, not just the review queue.
   //
@@ -40,8 +48,21 @@ export async function AppHeader() {
         <div className="flex items-center gap-3 text-sm">
           {/* Which account, not just that you are signed in. On a shared machine
               those are different questions, and sending a text as the wrong
-              officer is not something you can take back. */}
-          <span className="hidden text-neutral-600 sm:inline">{user.email}</span>
+              officer is not something you can take back.
+
+              Name AND address: the name is what an officer recognises as
+              themselves, and the address is what actually identifies the
+              account — two officers can share a first name, and the club has
+              more than one address per household. Falls back to the address
+              alone when the grant is not linked to a member record. */}
+          <span className="hidden text-right leading-tight sm:block">
+            {appUser?.name && (
+              <span className="block text-neutral-900 dark:text-neutral-100">
+                {appUser.name}
+              </span>
+            )}
+            <span className="block text-neutral-600">{user.email}</span>
+          </span>
 
           {/* A form, not a link: sign-out is a POST so that nothing else can
               trigger it on the officer's behalf. See app/sign-out/route.ts */}

@@ -57,7 +57,8 @@ export default async function AccountPage({
     <main className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="text-xl font-semibold">Your account</h1>
       <p className="mt-1 text-sm text-neutral-600">
-        Signed in as {appUser.email} ({appUser.role})
+        Signed in as {appUser.name ? `${appUser.name} · ` : ''}
+            {appUser.email} ({appUser.role})
         {firstName && ` · templates will sign your messages “${firstName}”`}
       </p>
 
