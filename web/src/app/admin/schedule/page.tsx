@@ -332,7 +332,7 @@ export default async function SchedulePage({
                         </span>
                       )}
                       {r.status === 'canceled' && (
-                        <span className="text-fwm-burgundy">cancelled</span>
+                        <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-neutral-700">cancelled</span>
                       )}
                       <span className="text-neutral-600">
                         {r.runCount} {r.runCount === 1 ? 'run' : 'runs'}

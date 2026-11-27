@@ -112,7 +112,7 @@ export function SignInForm({ next, error }: { next: string; error?: string }) {
           this renders on a fresh page load rather than in place. `role="alert"`
           makes a screen reader announce it, which it otherwise would not. */}
       {error ? (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-fwm-burgundy" role="alert">
           {error}
         </p>
       ) : null}

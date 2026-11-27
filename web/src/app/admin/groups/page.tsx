@@ -159,7 +159,7 @@ export default async function GroupsPage({
                       <input type="hidden" name="person_id" value={m.person_id} />
                       <SubmitLink
                         pending="removing…"
-                        className="text-sm text-neutral-600 underline hover:text-red-700"
+                        className="text-sm text-neutral-600 underline hover:text-fwm-burgundy"
                       >
                         remove
                       </SubmitLink>

@@ -42,7 +42,7 @@ export function SubmissionList({ pending }: { pending: PendingSubmission[] }) {
               key={id}
               className={`rounded-lg border p-4 ${
                 result.ok
-                  ? 'border-fwm-navy/40 bg-fwm-navy/5'
+                  ? 'border-fwm-teal/50 bg-fwm-teal/10'
                   : 'border-fwm-burgundy/40 bg-fwm-burgundy/5'
               }`}
             >

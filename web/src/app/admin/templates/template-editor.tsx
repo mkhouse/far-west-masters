@@ -165,7 +165,7 @@ export function TemplateEditor({
         )}
 
         {unknown.length > 0 && (
-          <p className="mt-2 font-medium text-red-700 dark:text-red-300">
+          <p className="mt-2 font-medium text-fwm-burgundy">
             {unknown.map((u) => `{${u}}`).join(', ')} cannot be filled in and will not
             save. Use one of the placeholders below, or write the words out.
           </p>

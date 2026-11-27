@@ -38,7 +38,7 @@ export default async function OptInReviewPage() {
       </p>
 
       {w.total === 0 ? (
-        <p className="mt-8 rounded-lg border border-neutral-200 bg-surface p-4 text-sm text-neutral-600 dark:border-neutral-800">
+        <p className="mt-8 rounded-lg border border-fwm-teal/40 bg-fwm-teal/10 p-4 text-sm dark:border-fwm-teal/30">
           Nobody is waiting. Everyone who has opted in has had their intro text.
         </p>
       ) : null}

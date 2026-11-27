@@ -259,7 +259,7 @@ export default async function AdminPage() {
                           states read as the same control in two conditions rather
                           than as two unrelated things. */}
                       {item.chip && (
-                        <span className="shrink-0 rounded-full bg-neutral-200 px-2 py-0.5 text-sm font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                        <span className="shrink-0 rounded-full bg-fwm-teal/15 px-2 py-0.5 text-sm font-medium text-fwm-teal-text">
                           {item.chip}
                         </span>
                       )}

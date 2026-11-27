@@ -53,7 +53,7 @@ export function UsssaField({
           setEditing(true)
         }}
         title="Add a USSA number"
-        className="font-medium text-fwm-burgundy underline decoration-dotted underline-offset-4"
+        className="font-medium text-fwm-navy underline decoration-dotted underline-offset-4"
       >
         Missing
       </button>

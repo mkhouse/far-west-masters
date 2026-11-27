@@ -10,18 +10,56 @@ html {
   font-size: 17px;
 }
 
-:root {
-  /* A light grey page, so white cards read as raised panels rather than as areas
-     bounded by a hairline. Same pair as the Forerunner email templates. */
-  --background: #f4f4f5;
-  --surface: #ffffff;
-  --foreground: #171717;
+/* ---------------------------------------------------------------------------
+   Colour.
 
-  /* Far West Masters brand colours, the same pair used in the Forerunner emails
-     and the club site — see email-templates/examples/README.md. Reused here so the
-     app reads as part of the club rather than as a separate tool. */
+   The page used to be #f4f4f5 — a cold grey — and read as grey because the only
+   colour anywhere was navy on white. The neutrals below are warm, which is the
+   whole difference: the same layout on a cream ground stops looking like a form
+   and starts looking like something the club made.
+
+   WHAT CARRIES TEXT AND WHAT DOES NOT. Measured against the cream page:
+
+     #003366 navy      11.2:1   text, anything
+     #8b0000 burgundy   8.9:1   text, anything
+     #767374 grey       4.2:1   FAILS AA for body text
+     #50A1A9 teal       2.7:1   FAILS badly — fills and borders only
+     #C8C9C2 grey       1.5:1   borders and fills only
+
+   So the two mid tones sit where they work — #767374 at neutral-500, #C8C9C2 at
+   neutral-300 — and slightly darker siblings carry the text. That is not a
+   departure from the palette; it is the palette used at the right weights. It
+   matters more here than most places: the root font size above is 17px because
+   these are club volunteers, most of them over fifty, often on a phone in
+   daylight, and grey-on-cream at 4.2:1 is exactly what that reader loses first.
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* Warm cream, with white cards raised off it. Same relationship as the old
+     grey-and-white pair, in a colour that does not read as absence. */
+  --background: #f6f1e9;
+  --surface: #ffffff;
+  --foreground: #211f1d;
+
+  /* Far West Masters brand colours, unchanged: the same pair used in the
+     Forerunner emails and the club site — see email-templates/examples/README.md.
+     Deliberately not restyled, so the app still reads as part of the club. */
   --fwm-navy: #003366;
+
+  /* Burgundy is now reserved for things that have genuinely gone wrong or cannot
+     be undone — a failed delivery, an opt-out, Reject, Delete. It used to carry
+     decoration and prompts too, which is how a colour stops meaning anything. */
   --fwm-burgundy: #8b0000;
+
+  /* The second register, and the reason anything can now be told apart by colour:
+     before this, every accent in the application was navy. Teal is for the good
+     and the merely informational — a send that worked, a queue that is empty.
+
+     Two values because one cannot do both jobs: #50A1A9 is the palette colour and
+     is for fills, borders and chips; --fwm-teal-text is the same hue taken down
+     until it passes contrast on cream. Never set text in --fwm-teal. */
+  --fwm-teal: #50a1a9;
+  --fwm-teal-text: #2f7880;
 }
 
 @theme inline {
@@ -30,23 +68,49 @@ html {
   --color-foreground: var(--foreground);
   --color-fwm-navy: var(--fwm-navy);
   --color-fwm-burgundy: var(--fwm-burgundy);
+  --color-fwm-teal: var(--fwm-teal);
+  --color-fwm-teal-text: var(--fwm-teal-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Tailwind's neutral ramp, rebuilt warm.
+
+     Overriding the scale rather than editing components is what makes this a
+     colour change and not a rewrite: `neutral-*` is used 642 times across the
+     application, and every one of them warms up from here.
+
+     500 and 300 are the palette's own greys. 600 — the one used for secondary
+     text, 217 times — is a shade darker than #767374 so it clears AA on cream. */
+  --color-neutral-50:  #fbf8f3;
+  --color-neutral-100: #f1ece3;
+  --color-neutral-200: #e0dbd1;
+  --color-neutral-300: #c8c9c2;
+  --color-neutral-400: #a3a19c;
+  --color-neutral-500: #767374;
+  --color-neutral-600: #635f61;
+  --color-neutral-700: #514e4f;
+  --color-neutral-800: #3b3839;
+  --color-neutral-900: #272526;
+  --color-neutral-950: #191718;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    /* Cards sit slightly lighter than the page in dark mode, which is the same
-       relationship as white-on-grey, inverted. */
-    --surface: #171717;
-    --foreground: #ededed;
+    /* Warm in the dark too, or the cream reads as a daytime accident. */
+    --background: #1a1816;
+    --surface: #262321;
+    --foreground: #ede9e3;
 
     /* The print navy and burgundy are close to unreadable on a dark background.
        These are the same hues lifted in lightness until they pass contrast — the
        brand still reads, and the text can actually be read. */
     --fwm-navy: #7ea8d4;
     --fwm-burgundy: #e39393;
+
+    /* Teal lifts the same way, and on a dark ground the lifted value has enough
+       contrast to carry text — so both tokens point at it. */
+    --fwm-teal: #6fc0c7;
+    --fwm-teal-text: #86cdd3;
   }
 }
 

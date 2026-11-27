@@ -737,7 +737,7 @@ function CostSummary({
   const hasAudience = recipientCount > 0
 
   const tone = blocked
-    ? 'border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40'
+    ? 'border-fwm-burgundy/40 bg-fwm-burgundy/5'
     : warn
       ? 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40'
       : 'border-neutral-200 bg-surface dark:border-neutral-800'
@@ -798,7 +798,7 @@ function CostSummary({
       {reason && (
         <p
           className={`mt-2 font-medium ${
-            blocked ? 'text-red-700 dark:text-red-300' : 'text-amber-800 dark:text-amber-200'
+            blocked ? 'text-fwm-burgundy' : 'text-amber-800 dark:text-amber-200'
           }`}
         >
           {reason}

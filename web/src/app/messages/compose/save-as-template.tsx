@@ -157,7 +157,7 @@ export function SaveAsTemplate({
       </p>
 
       {error && (
-        <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-300" role="alert">
+        <p className="mt-2 text-sm font-medium text-fwm-burgundy" role="alert">
           {error}
         </p>
       )}

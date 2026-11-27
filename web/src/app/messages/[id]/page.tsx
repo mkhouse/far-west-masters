@@ -60,6 +60,7 @@ const AUDIENCE_KIND_LABEL: Record<string, string> = {
  */
 function statusClass(state: string | null): string {
   if (state === 'delivered') return 'text-fwm-navy font-medium'
+  if (state === 'delivered') return 'text-fwm-teal-text font-medium'
   if (isPermanentFailure(state)) return 'text-fwm-burgundy font-medium'
   return 'text-neutral-600'
 }

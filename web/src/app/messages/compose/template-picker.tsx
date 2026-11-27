@@ -241,7 +241,7 @@ export function TemplatePicker({
           </div>
 
           {phoneError && (
-            <p className="mt-2 font-medium text-red-700 dark:text-red-300" role="alert">
+            <p className="mt-2 font-medium text-fwm-burgundy" role="alert">
               {phoneError}
             </p>
           )}
@@ -329,7 +329,7 @@ export function TemplatePicker({
 
       {/* --- a placeholder nothing knows how to fill --- */}
       {unknown.length > 0 && (
-        <p className="mt-3 rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+        <p className="mt-3 rounded border border-fwm-burgundy/40 bg-fwm-burgundy/5 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
           {unknown.map((u) => `{${u}}`).join(', ')}{' '}
           {unknown.length === 1 ? 'is not something' : 'are not things'} the system can
           fill in. Type over{' '}
