@@ -261,36 +261,28 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
               address replacing a work one. So it asks. */}
           {entriesWithDifferences(diff).length > 0 && (
             <Section
-              title={`${entriesWithDifferences(diff).length} people where AdminSkiRacing holds something different`}
+              title={`${differenceCount(diff)} differences — choose which to take from AdminSkiRacing`}
             >
-              {/* THE DEFAULT, FIRST AND ON ITS OWN. This used to arrive halfway
-                  through a sentence that opened on opting in. Doing nothing is
-                  what happens to a box nobody touches, so it is the thing the
-                  first line has to say — and it has to say what ticking does
-                  too, because a tick here overwrites a value the club holds. */}
-              <p className="mt-1 text-neutral-600">
-                <strong className="text-foreground">
-                  Do nothing and nothing changes
-                </strong>{' '}
-                — the club keeps every value below. Tick a row to replace the
-                club&rsquo;s value with AdminSkiRacing&rsquo;s.
-              </p>
+              {/* THE TITLE ASKS A QUESTION NOW. It used to read "6 people where
+                  AdminSkiRacing holds something different", which states a fact
+                  and never lets on that anything is being asked of the reader. */}
 
-              {/* ONE CASE PER LINE. These two ran together in a single paragraph,
-                  which is the worst shape for scanning: the second label sits
-                  mid-sentence, where the eye does not look for it. Each line now
-                  ends in what to do, so it decides rather than describes. */}
+              {/* ONE CASE PER LINE, AND SHORT. These two ran together in a single
+                  paragraph, which is the worst shape for scanning — the second
+                  label sits mid-sentence, where the eye does not look for it.
+                  They are also kept tight on purpose: every line here pushes the
+                  checkboxes further down the screen, and the rule that governs
+                  them has to stay within sight of them. */}
               <ul className="mt-2 space-y-1 text-neutral-600">
                 <li>
-                  <strong className="text-foreground">Opted in</strong> — the
-                  address we hold is the one they gave on the opt-in form, so ours
-                  is their own answer. <em>Usually keep ours.</em>
+                  <strong className="text-foreground">Opted in</strong> — they
+                  typed ours into the opt-in form themselves.{' '}
+                  <em>Usually keep ours.</em>
                 </li>
                 <li>
                   <strong className="text-foreground">Never opted in</strong> —
-                  ours came from a historic import rather than from them, and
-                  AdminSkiRacing&rsquo;s is usually fresher, often a personal
-                  address replacing a work one. <em>Usually take theirs.</em>
+                  ours came from an old import; theirs is usually fresher.{' '}
+                  <em>Usually take theirs.</em>
                 </li>
               </ul>
 
@@ -298,7 +290,47 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                   of AdminSkiRacing's" sounds like it does the taking — when all
                   three only tick boxes. "Keep all of ours" was the loudest: it is
                   the state the box already starts in, offered as a thing to do. */}
-              <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+              {/* THE RULE, TOUCHING THE COLUMN IT GOVERNS.
+                  This was stated in a paragraph at the top of the box, three
+                  paragraphs and about seventy words above the first checkbox —
+                  far enough that by the time the eye reached the boxes the rule
+                  was behind it, and the reader was left inferring what a tick
+                  meant from the rows themselves.
+
+                  The two states are drawn with real checkboxes rather than
+                  described, so the legend is the same shape as the thing it
+                  explains. They are disabled and hidden from screen readers:
+                  decoration for the sighted, and the list below already says it
+                  properly in its labels. The bulk links live in the same bar
+                  because they are the same subject — what the ticks are. */}
+              <div className="mt-3 rounded-md bg-neutral-100 px-3 py-2 text-sm dark:bg-neutral-900">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+                  <span className="font-medium">What the boxes do:</span>
+                  <span className="flex items-center gap-1.5 text-neutral-600">
+                    <input
+                      type="checkbox"
+                      checked={false}
+                      readOnly
+                      aria-hidden
+                      tabIndex={-1}
+                      className="pointer-events-none"
+                    />
+                    keep the club&rsquo;s value
+                  </span>
+                  <span className="flex items-center gap-1.5 text-neutral-600">
+                    <input
+                      type="checkbox"
+                      checked
+                      readOnly
+                      aria-hidden
+                      tabIndex={-1}
+                      className="pointer-events-none"
+                    />
+                    take AdminSkiRacing&rsquo;s
+                  </span>
+                </div>
+
+                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span className="text-neutral-600">Tick:</span>
                 <button
                   type="button"
@@ -341,6 +373,7 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                 >
                   none
                 </button>
+                </div>
               </div>
 
               <ul className="mt-2 space-y-1">
@@ -392,9 +425,16 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                                 <strong>{c.to}</strong>
                               </span>
                             ) : (
+                              /* BOTH SIDES NAMED. This read "email: VALUE ·
+                                 AdminSkiRacing has VALUE" — which labels one of
+                                 the two and leaves the other to be worked out
+                                 from word order. Parallel labels mean the row
+                                 does not depend on having read anything above
+                                 it. */
                               <span className="text-neutral-600">
-                                {' '}· {c.field}: <strong>{c.from ?? '—'}</strong>{' '}
-                                · AdminSkiRacing has {c.to}
+                                {' '}· {c.field} · club:{' '}
+                                <strong>{c.from ?? '—'}</strong> · AdminSkiRacing:{' '}
+                                {c.to}
                               </span>
                             )}
                           </span>
