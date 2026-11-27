@@ -12,6 +12,8 @@ import {
   buildDiff,
   contactChanges,
   contactDifferences,
+  defaultAccepted,
+  differenceKey,
   matchPerson,
   parseAsrDate,
   changeCount,
@@ -207,11 +209,13 @@ describe('contactChanges — fill blanks, never overwrite', () => {
 describe('contactDifferences — reported, never applied', () => {
   it('reports an email ASR disagrees with', () => {
     const p = person({ email: 'ours@example.com' })
-    expect(contactDifferences(member(), p)).toContainEqual({
-      field: 'email',
-      from: 'ours@example.com',
-      to: 'ada@example.com',
-    })
+    expect(contactDifferences(member(), p)).toContainEqual(
+      expect.objectContaining({
+        field: 'email',
+        from: 'ours@example.com',
+        to: 'ada@example.com',
+      })
+    )
   })
 
   it('reports a differing phone number and USSA number', () => {
@@ -407,5 +411,98 @@ describe('differenceCount', () => {
     const diff = buildDiff([member()], [blank], new Set())
     expect(changeCount(diff)).toBe(2)
     expect(differenceCount(diff)).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Whose value is it — the rule the preview now applies by default
+// ---------------------------------------------------------------------------
+
+describe('oursEdited — has a human already chosen the value we hold', () => {
+  // asr_phone / asr_email hold what ASR said at the LAST import. Equal means
+  // nobody has touched ours since; different means somebody chose it.
+  it('is false when ours is still exactly what ASR last gave', () => {
+    const p = person({ phone: '+15305559999', asr_phone: '+15305559999' })
+    const d = contactDifferences(member(), p).find((c) => c.field === 'phone')
+    expect(d?.oursEdited).toBe(false)
+  })
+
+  it('is true when somebody has moved ours away from ASR', () => {
+    // The real shape of this: a work address replaced by a personal one.
+    const p = person({ email: 'jim@gmail.com', asr_email: 'jim@geoconinc.com' })
+    const d = contactDifferences(member(), p).find((c) => c.field === 'email')
+    expect(d?.oursEdited).toBe(true)
+  })
+
+  it('does not treat a change of case as an edit', () => {
+    // ASR shouts some addresses. LIZBARNDT@COX.NET is not a correction of
+    // lizbarndt@cox.net, and flagging it would protect a row nobody touched.
+    const p = person({ email: 'ours@example.com', asr_email: 'OURS@EXAMPLE.COM' })
+    const d = contactDifferences(member(), p).find((c) => c.field === 'email')
+    expect(d?.oursEdited).toBe(false)
+  })
+
+  it('is true when ASR has never told us anything', () => {
+    const p = person({ phone: '+15305559999', asr_phone: null })
+    const d = contactDifferences(member(), p).find((c) => c.field === 'phone')
+    expect(d?.oursEdited).toBe(true)
+  })
+
+  it('is always true for a USSA number, which has no asr_ column', () => {
+    const p = person({ usssa: 111 })
+    const d = contactDifferences(member(), p).find((c) => c.field === 'usssa')
+    expect(d?.oursEdited).toBe(true)
+  })
+})
+
+describe('defaultAccepted — take theirs only where no human has touched ours', () => {
+  const untouched = person({
+    id: 'untouched',
+    opt_in_at: null,
+    email: 'ours@example.com',
+    asr_email: 'ours@example.com',
+  })
+  const optedIn = person({
+    id: 'opted-in',
+    opt_in_at: '2026-01-01T00:00:00Z',
+    email: 'ours@example.com',
+    asr_email: 'ours@example.com',
+  })
+  const corrected = person({
+    id: 'corrected',
+    opt_in_at: null,
+    email: 'jim@gmail.com',
+    asr_email: 'jim@geoconinc.com',
+  })
+
+  it('ticks a difference nobody has touched, on somebody who never opted in', () => {
+    const diff = buildDiff([member()], [untouched], new Set(['untouched']))
+    expect(defaultAccepted(diff)).toEqual(
+      new Set([differenceKey('untouched', 'email')])
+    )
+  })
+
+  it('leaves the member\'s own answer alone', () => {
+    const diff = buildDiff([member()], [optedIn], new Set(['opted-in']))
+    expect(defaultAccepted(diff)).toEqual(new Set())
+  })
+
+  it('leaves a correction alone even though they never opted in', () => {
+    // The whole reason the flag exists: this row looks exactly like one to take
+    // theirs for, and taking theirs would put the work address back.
+    const diff = buildDiff([member()], [corrected], new Set(['corrected']))
+    expect(defaultAccepted(diff)).toEqual(new Set())
+  })
+
+  it('picks out only the takeable one from all three', () => {
+    const diff = buildDiff(
+      [member(), member(), member()],
+      [untouched, optedIn, corrected],
+      new Set(['untouched', 'opted-in', 'corrected'])
+    )
+    expect(differenceCount(diff)).toBeGreaterThan(1)
+    expect(defaultAccepted(diff)).toEqual(
+      new Set([differenceKey('untouched', 'email')])
+    )
   })
 })

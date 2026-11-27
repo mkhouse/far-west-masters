@@ -136,6 +136,24 @@ export interface FieldChange {
   field: string
   from: string | null
   to: string | null
+  /**
+   * Only on differences: a human has already moved our value away from what
+   * AdminSkiRacing gave us.
+   *
+   * `asr_phone` / `asr_email` hold what ASR said at the LAST import, rewritten
+   * every time whether or not the officer accepted anything. So when our working
+   * value no longer equals it, somebody chose the value we hold — and handing it
+   * back to ASR would undo their correction.
+   *
+   * Measured on the 2026-11 data: of 201 members who never opted in, 200 of 201
+   * phone numbers and 198 of 201 email addresses still match ASR exactly. The
+   * three that do not are all a work address replaced by a personal one. This
+   * flag exists for those three.
+   *
+   * It cannot tell an officer's edit from the Airtable migration's — it only
+   * knows ours is not ASR's. Both deserve the same protection.
+   */
+  oursEdited?: boolean
 }
 
 export interface DiffEntry {
@@ -268,23 +286,71 @@ export function contactDifferences(
   const differences: FieldChange[] = []
 
   if (member.phone && person.phone && member.phone !== person.phone) {
-    differences.push({ field: 'phone', from: person.phone, to: member.phone })
+    differences.push({
+      field: 'phone',
+      from: person.phone,
+      to: member.phone,
+      oursEdited: person.phone !== (person.asr_phone ?? null),
+    })
   }
 
   const email = member.email.trim()
   if (email && person.email && email.toLowerCase() !== person.email.toLowerCase()) {
-    differences.push({ field: 'email', from: person.email, to: email })
+    differences.push({
+      field: 'email',
+      from: person.email,
+      to: email,
+      // Case-insensitively, as everywhere else an address is compared here:
+      // ASR shouts some of them (LIZBARNDT@COX.NET) and a change of case is
+      // not somebody having corrected anything.
+      oursEdited:
+        person.email.toLowerCase() !== (person.asr_email ?? '').toLowerCase(),
+    })
   }
 
   if (member.usssa != null && person.usssa != null && member.usssa !== person.usssa) {
+    // No asr_usssa column, so there is no way to tell a corrected number from an
+    // untouched one. Marked edited, which keeps it out of the default selection:
+    // changing a USSA number can detach somebody from their own race history, and
+    // member admin refuses to do it casually for exactly that reason.
     differences.push({
       field: 'usssa',
       from: String(person.usssa),
       to: String(member.usssa),
+      oursEdited: true,
     })
   }
 
   return differences
+}
+
+/**
+ * The club's rule, as a selection: take AdminSkiRacing's only where no human has
+ * touched ours.
+ *
+ * Melissa, 2026-11-27: "I will usually want to keep what people entered in the
+ * opt-in form, and only add ASR info if it was never entered by the member."
+ *
+ * Two ways a human has already chosen the value we hold, and both are left alone:
+ * the member typed it into the opt-in form, or somebody corrected it here. The
+ * screen used to start with nothing ticked and three shortcuts to build this from,
+ * which made the officer reconstruct a stable rule on every import.
+ *
+ * Still only a default. Every row is on screen with its tick showing, the summary
+ * counts them, and the button names the number before anything is written.
+ */
+export function defaultAccepted(diff: ImportDiff): Set<string> {
+  const keys = new Set<string>()
+
+  for (const entry of entriesWithDifferences(diff)) {
+    if (entry.optedIn || !entry.personId) continue
+    for (const d of entry.differences) {
+      if (d.oursEdited) continue
+      keys.add(differenceKey(entry.personId, d.field))
+    }
+  }
+
+  return keys
 }
 
 /**

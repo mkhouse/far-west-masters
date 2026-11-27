@@ -22,6 +22,7 @@ import {
 } from './actions'
 import {
   changeCount,
+  defaultAccepted,
   differenceCount,
   differenceKey,
   entriesWithChanges,
@@ -166,7 +167,13 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
             type="button"
             disabled={!csv || pending}
             onClick={() =>
-              startTransition(async () => setPreview(await previewImport(csv!, season)))
+              startTransition(async () => {
+                const result = await previewImport(csv!, season)
+                setPreview(result)
+                // The club's rule, applied the moment there is something to
+                // apply it to. See defaultAccepted.
+                setAccepted(result.diff ? defaultAccepted(result.diff) : new Set())
+              })
             }
             className="rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
           >
@@ -263,75 +270,32 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
             <Section
               title={`${differenceCount(diff)} differences — choose which to take from AdminSkiRacing`}
             >
-              {/* THE TITLE ASKS A QUESTION NOW. It used to read "6 people where
-                  AdminSkiRacing holds something different", which states a fact
-                  and never lets on that anything is being asked of the reader. */}
+              {/* THE RULE, APPLIED — NOT A BLANK SLATE AND THREE SHORTCUTS.
+                  This screen used to start with nothing ticked and ask the
+                  officer to build their rule out of three links, every import.
+                  The rule does not change between imports, so the software now
+                  knows it. See defaultAccepted.
 
-              {/* ONE CASE PER LINE, AND SHORT. These two ran together in a single
-                  paragraph, which is the worst shape for scanning — the second
-                  label sits mid-sentence, where the eye does not look for it.
-                  They are also kept tight on purpose: every line here pushes the
-                  checkboxes further down the screen, and the rule that governs
-                  them has to stay within sight of them. */}
-              <ul className="mt-2 space-y-1 text-neutral-600">
-                <li>
-                  <strong className="text-foreground">Opted in</strong> — they
-                  typed ours into the opt-in form themselves.{' '}
-                  <em>Usually keep ours.</em>
-                </li>
-                <li>
-                  <strong className="text-foreground">Never opted in</strong> —
-                  ours came from an old import; theirs is usually fresher.{' '}
-                  <em>Usually take theirs.</em>
-                </li>
-              </ul>
+                  What was here before — a legend drawn out of disabled
+                  checkboxes sitting one line above the real ones — was worse
+                  than nothing: two rows of things that looked clickable, one of
+                  which was a decoy, directly above a column of things that were.
+                  The ticks explain themselves once they are visible in the rows;
+                  this says why they are where they are. */}
+              <p className="mt-1 text-neutral-600">
+                <strong className="text-foreground">
+                  Already ticked, by the club&rsquo;s rule.
+                </strong>{' '}
+                We keep whatever a human has chosen — what the member typed into
+                the opt-in form, and anything corrected here since the last
+                import. AdminSkiRacing&rsquo;s is taken only where neither has
+                happened. Change any row you disagree with.
+              </p>
 
-              {/* SELECTION, NOT ACTION. These read as commit buttons — "Take all
-                  of AdminSkiRacing's" sounds like it does the taking — when all
-                  three only tick boxes. "Keep all of ours" was the loudest: it is
-                  the state the box already starts in, offered as a thing to do. */}
-              {/* THE RULE, TOUCHING THE COLUMN IT GOVERNS.
-                  This was stated in a paragraph at the top of the box, three
-                  paragraphs and about seventy words above the first checkbox —
-                  far enough that by the time the eye reached the boxes the rule
-                  was behind it, and the reader was left inferring what a tick
-                  meant from the rows themselves.
-
-                  The two states are drawn with real checkboxes rather than
-                  described, so the legend is the same shape as the thing it
-                  explains. They are disabled and hidden from screen readers:
-                  decoration for the sighted, and the list below already says it
-                  properly in its labels. The bulk links live in the same bar
-                  because they are the same subject — what the ticks are. */}
-              <div className="mt-3 rounded-md bg-neutral-100 px-3 py-2 text-sm dark:bg-neutral-900">
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-                  <span className="font-medium">What the boxes do:</span>
-                  <span className="flex items-center gap-1.5 text-neutral-600">
-                    <input
-                      type="checkbox"
-                      checked={false}
-                      readOnly
-                      aria-hidden
-                      tabIndex={-1}
-                      className="pointer-events-none"
-                    />
-                    keep the club&rsquo;s value
-                  </span>
-                  <span className="flex items-center gap-1.5 text-neutral-600">
-                    <input
-                      type="checkbox"
-                      checked
-                      readOnly
-                      aria-hidden
-                      tabIndex={-1}
-                      className="pointer-events-none"
-                    />
-                    take AdminSkiRacing&rsquo;s
-                  </span>
-                </div>
-
-                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="text-neutral-600">Tick:</span>
+              {/* Two escape hatches, not three choices. The third used to be
+                  "only those who never opted in", which is the default now. */}
+              <p className="mt-2 text-sm text-neutral-600">
+                Or{' '}
                 <button
                   type="button"
                   className="text-fwm-navy underline"
@@ -345,36 +309,17 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                     )
                   }
                 >
-                  all of them
-                </button>
-                {/* The rule stated as one click. Still every row on screen, still
-                    every tick reversible — this only saves the clicks. */}
-                <button
-                  type="button"
-                  className="text-fwm-navy underline"
-                  onClick={() =>
-                    setAccepted(
-                      new Set(
-                        entriesWithDifferences(diff)
-                          .filter((e) => !e.optedIn)
-                          .flatMap((e) =>
-                            e.differences.map((d) => differenceKey(e.personId!, d.field))
-                          )
-                      )
-                    )
-                  }
-                >
-                  only those who never opted in
-                </button>
+                  take all {differenceCount(diff)}
+                </button>{' '}
+                &middot;{' '}
                 <button
                   type="button"
                   className="text-fwm-navy underline"
                   onClick={() => setAccepted(new Set())}
                 >
-                  none
+                  keep all of ours
                 </button>
-                </div>
-              </div>
+              </p>
 
               <ul className="mt-2 space-y-1">
                 {[...entriesWithDifferences(diff)]
@@ -411,6 +356,22 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                             >
                               {u.optedIn ? 'opted in' : 'never opted in'}
                             </span>
+                            {/* WHY THIS ROW IS NOT TICKED WHEN IT LOOKS LIKE IT
+                                SHOULD BE. "Never opted in" normally means take
+                                theirs — so a never-opted-in row sitting unticked
+                                reads as a bug unless it says what stopped it.
+                                Three members are in this state today, all of
+                                them a work address somebody replaced with a
+                                personal one. */}
+                            {c.oursEdited && !u.optedIn && c.field !== 'usssa' ? (
+                              /* Teal, not amber. Amber means something is
+                                 waiting for you; this is the opposite — a value
+                                 a human has already settled, which is why the
+                                 import is leaving it alone. Nothing is owed. */
+                              <span className="ml-1.5 rounded-full bg-fwm-teal/15 px-1.5 py-0.5 text-xs text-fwm-teal-text">
+                                corrected here
+                              </span>
+                            ) : null}
                             {/* THE ROW SHOWS ITS OWN STATE. Every row used to
                                 render `struck-out → bold` whether ticked or not
                                 — the same notation the "gaps filled" box above
