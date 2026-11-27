@@ -29,10 +29,15 @@ The four registers, so they don't drift back into each other:
 **Do not introduce a colour outside this list.** If a job seems to need one, say
 so and explain why none of the six will do, rather than adding one.
 
-Amber callouts use a **3px left rule** (`border-l-[3px] border-fwm-amber
+Amber **callouts** use a **3px left rule** (`border-l-[3px] border-fwm-amber
 bg-fwm-amber/10`), not a full border — so the waiting register differs from the
 burgundy failure register in shape as well as hue, which survives being
 colour-blind.
+
+The one amber thing that is **not** a callout is the Quick compose card on
+`/messages`: a full rounded card on the amber wash, because it is the tool
+rather than a notice about something waiting. Shape carries that difference —
+left rule means "look at this", a card means "use this".
 
 Three things that are easy to get wrong:
 

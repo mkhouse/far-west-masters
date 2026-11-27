@@ -57,8 +57,10 @@ export function RaceDayBlock({
   const pickedReach = reachOf(pickedRaces)
   const pickedEntered = entrantsOf(pickedRaces)
 
+  // `quick=1` asks the compose screen for the simple form: a message box, the
+  // audience, and nothing else. See compose-form.tsx.
   const href = (ids: string[]) =>
-    `/messages/compose?audience=race&races=${ids.join(',')}`
+    `/messages/compose?audience=race&races=${ids.join(',')}&quick=1`
 
   const anyDayHasTwoRaces = weekend.days.some((d) => d.races.length > 1)
   const withEntries = allRaces.filter((r) => r.entrantPersonIds.length > 0)
@@ -71,16 +73,21 @@ export function RaceDayBlock({
   }
 
   return (
-    <section className="mb-8 rounded-r-lg border-l-[3px] border-fwm-amber bg-fwm-amber/10 px-4 py-4 sm:px-5">
-      <p className="text-sm font-medium text-fwm-amber-text">
-        {weekend.days.some((d) => d.date === today)
-          ? 'Racing today'
-          : 'Racing this weekend'}
-        <span className="font-normal text-neutral-700 dark:text-neutral-300">
-          {' '}
-          &middot; {weekendLabel(weekend)}
-          {weekend.venues.length > 0 ? ` · ${weekend.venues.join(', ')}` : ''}
+    /* A CARD, NOT A CALLOUT. Amber's left rule means "something is waiting for
+       you" (see CLAUDE.md) and this is not that — it is the tool, and on a race
+       weekend it is the main thing on the page. So it takes the amber as a card
+       in its own right, with a title, rather than borrowing the caution shape. */
+    <section className="mb-8 rounded-lg border border-fwm-amber/30 bg-fwm-amber/10 px-4 py-4 sm:px-5">
+      <h2 className="text-base font-semibold text-fwm-amber-text">Quick compose</h2>
+      <p className="mt-0.5 text-sm text-neutral-700 dark:text-neutral-300">
+        <span className="font-medium">
+          {weekend.days.some((d) => d.date === today)
+            ? 'Racing today'
+            : 'Racing this weekend'}
         </span>
+        {' · '}
+        {weekendLabel(weekend)}
+        {weekend.venues.length > 0 ? ` · ${weekend.venues.join(', ')}` : ''}
       </p>
 
       {/* THE ONE TAP. Big, first, and needing no decision — sized for a gloved

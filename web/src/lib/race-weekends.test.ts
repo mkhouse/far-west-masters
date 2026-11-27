@@ -15,6 +15,8 @@ import {
   shortDay,
   validPreviewDate,
   visibleWeekend,
+  weekendContaining,
+  weekendOptions,
   weekendLabel,
   type WeekendRace,
 } from './race-weekends'
@@ -213,5 +215,54 @@ describe('validPreviewDate — the testing flag', () => {
     // comparison, so a rolled-over date would select a weekend rather than error.
     expect(validPreviewDate('2026-02-31')).toBeNull()
     expect(validPreviewDate('2026-13-01')).toBeNull()
+  })
+})
+
+describe('weekendOptions — the choices the block offered, offered again', () => {
+  const sat = race('2027-03-06', 'Palisades Tahoe', ['a', 'b', 'c'], ['a', 'b', 'c', 'd'])
+  const sun = race('2027-03-07', 'Palisades Tahoe', ['b', 'c'], ['b', 'c', 'e'])
+
+  it('offers the weekend and each day, with people-counts not row-counts', () => {
+    const [w] = groupIntoWeekends([sat, sun])
+    const opts = weekendOptions(w)
+    expect(opts.map((o) => o.label)).toEqual([
+      'Everyone racing this weekend',
+      'Sat 6',
+      'Sun 7',
+    ])
+    // 3 + 2 reachable rows, 3 people; 4 + 3 entered rows, 5 people.
+    expect(opts[0]).toMatchObject({ reach: 3, entered: 5 })
+  })
+
+  it('offers single races only where a day has more than one', () => {
+    const [w] = groupIntoWeekends([
+      race('2027-03-05', 'Alpine', ['a']),
+      race('2027-03-05', 'Alpine', ['b']),
+      sat,
+    ])
+    const labels = weekendOptions(w).map((o) => o.label)
+    expect(labels.filter((l) => l.includes('·'))).toHaveLength(2)
+    expect(labels.some((l) => l.startsWith('Sat 6 ·'))).toBe(false)
+  })
+
+  it('leaves out a race nobody can be texted for', () => {
+    const [w] = groupIntoWeekends([sat, race('2027-03-07', 'P', [], ['x'])])
+    expect(weekendOptions(w).map((o) => o.label)).not.toContain('Sun 7')
+  })
+
+  it('does not offer "the whole weekend" when it is one day', () => {
+    const [w] = groupIntoWeekends([sat])
+    expect(weekendOptions(w).map((o) => o.label)).toEqual(['Sat 6'])
+  })
+})
+
+describe('weekendContaining', () => {
+  it('finds the weekend a selection belongs to', () => {
+    const w = weekendContaining(SEASON, [SEASON[7].id])
+    expect(w?.firstDate).toBe('2027-03-05')
+  })
+
+  it('is null for a race id that is not in the season', () => {
+    expect(weekendContaining(SEASON, ['nope'])).toBeNull()
   })
 })

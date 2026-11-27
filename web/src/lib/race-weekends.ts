@@ -239,3 +239,80 @@ export function weekendLabel(weekend: RaceWeekend): string {
   }
   return `${day(weekend.firstDate)} ${month(weekend.firstDate)} – ${day(weekend.lastDate)} ${month(weekend.lastDate)}`
 }
+
+/** One choice on the compose screen's race picker. */
+export interface WeekendOption {
+  label: string
+  raceIds: string[]
+  /** How many would receive a text. */
+  reach: number
+  /** How many are entered, reachable or not. */
+  entered: number
+}
+
+/**
+ * The same choices the race-day block offered, rebuilt on the compose screen.
+ *
+ * Melissa, 2026-11-27: the audience stays visible "so they can confirm who they
+ * selected on the previous screen", and should be "the selections that were
+ * available on the previous screen". So this is not the full audience list —
+ * it is the weekend, its days, and its individual races where a day has more
+ * than one, which is exactly what the block showed.
+ *
+ * Races nobody can be texted for are left out: an option that reaches zero
+ * people is not a choice, and the block says separately when a roster is
+ * missing.
+ */
+export function weekendOptions(weekend: RaceWeekend): WeekendOption[] {
+  const all = weekend.days.flatMap((d) => d.races).filter((r) => r.eligiblePersonIds.length > 0)
+  if (all.length === 0) return []
+
+  const options: WeekendOption[] = []
+
+  // Only worth offering "the whole weekend" when it differs from a single day.
+  if (weekend.days.length > 1) {
+    options.push({
+      label: 'Everyone racing this weekend',
+      raceIds: all.map((r) => r.id),
+      reach: reachOf(all),
+      entered: entrantsOf(all),
+    })
+  }
+
+  for (const day of weekend.days) {
+    const races = day.races.filter((r) => r.eligiblePersonIds.length > 0)
+    if (races.length === 0) continue
+    options.push({
+      label: shortDay(day.date),
+      raceIds: races.map((r) => r.id),
+      reach: reachOf(races),
+      entered: entrantsOf(races),
+    })
+    // A day with two races: the second run can be the one that is late.
+    if (races.length > 1) {
+      for (const race of races) {
+        options.push({
+          label: `${shortDay(day.date)} · ${race.name}`,
+          raceIds: [race.id],
+          reach: reachOf([race]),
+          entered: entrantsOf([race]),
+        })
+      }
+    }
+  }
+
+  return options
+}
+
+/** The weekend a set of race ids belongs to, or null if they are not in one. */
+export function weekendContaining(
+  races: WeekendRace[],
+  raceIds: string[]
+): RaceWeekend | null {
+  const wanted = new Set(raceIds)
+  return (
+    groupIntoWeekends(races).find((w) =>
+      w.days.some((d) => d.races.some((r) => wanted.has(r.id)))
+    ) ?? null
+  )
+}

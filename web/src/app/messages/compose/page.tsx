@@ -12,6 +12,8 @@ import { listAudiences, resolveAudience, type AudienceKind } from '@/lib/audienc
 import { filterFromParams, filterToParams } from '@/lib/member-filters'
 import { membershipContext } from '@/lib/membership'
 import { raceLabel, upcomingRaces } from '@/lib/races'
+import { loadWeekendRaces } from '@/lib/race-weekend-data'
+import { weekendContaining, weekendOptions } from '@/lib/race-weekends'
 import { CONSENT_STATE_LABEL, consentState } from '@/lib/members'
 import type { MessageTemplate } from '@/lib/templates'
 import { MembershipBanner } from '../../membership-banner'
@@ -47,6 +49,7 @@ export default async function ComposePage({
     audience?: string
     series?: string
     races?: string
+    quick?: string
     group?: string
     people?: string
     // Carried through from the members directory when messaging a filtered set.
@@ -190,6 +193,14 @@ export default async function ComposePage({
   // composes carefully and sends to whoever happened to be preselected.
   const selectedKind = params.audience as AudienceKind | undefined
 
+  /* Arrived from the race-day block. The same choices that block offered are
+     rebuilt here so the audience can be confirmed, and changed, without going
+     back — see weekendOptions. */
+  const quick = params.quick === '1' && selectedKind === 'race'
+  const raceIds = params.races?.split(',').filter(Boolean) ?? []
+  const weekend = quick ? weekendContaining(await loadWeekendRaces(), raceIds) : null
+  const raceOptions = weekend ? weekendOptions(weekend) : []
+
   // A filtered audience is not in the picker — it exists only for the send you
   // arrived with, described by the filters that produced it.
   const filter = selectedKind === 'filtered' ? filterFromParams(params) : undefined
@@ -244,6 +255,8 @@ export default async function ComposePage({
           prefillPurpose={audience.kind === 'intro_pending' ? 'Intro text' : ''}
           selectedSeries={params.series}
           selectedRaceIds={params.races}
+          raceOptions={raceOptions}
+          initialQuick={quick}
           selectedGroupId={params.group}
           filterParams={filter ? filterToParams(filter) : undefined}
         />

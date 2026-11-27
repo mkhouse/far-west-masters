@@ -31,6 +31,7 @@ import { TemplatePicker, type RaceOption } from './template-picker'
 import { PersonPicker, type PersonOption } from './person-picker'
 import { SaveAsTemplate } from './save-as-template'
 import { resolveAudienceAction } from './audience'
+import type { WeekendOption } from '@/lib/race-weekends'
 
 export interface Officer {
   id: string
@@ -106,6 +107,8 @@ export function ComposeForm({
   officerPhone: initialOfficerPhone,
   selectedSeries: initialSeries,
   selectedRaceIds: initialRaceIds,
+  raceOptions = [],
+  initialQuick = false,
   selectedGroupId: initialGroupId,
   filterParams,
   prefillBody,
@@ -138,6 +141,10 @@ export function ComposeForm({
   prefillBody?: string
   /** Matching label for the log. */
   prefillPurpose?: string
+  /** The same choices the race-day block offered, for the simple form. */
+  raceOptions?: WeekendOption[]
+  /** Arrived from the race-day block: start with everything but the message hidden. */
+  initialQuick?: boolean
 }) {
   // --- the audience, changed in place ---
   //
@@ -156,11 +163,11 @@ export function ComposeForm({
   const [switching, startSwitching] = useTransition()
 
   const recipientCount = audience.recipientCount
-  const [category, setCategory] = useState<string>('general')
+  const [category, setCategory] = useState<string>(initialQuick ? 'race' : 'general')
   // Starts from the audience's standard wording when there is one — the intro
   // text. Editable afterwards: it is a starting point, not a locked template.
   const [body, setBody] = useState(prefillBody ?? '')
-  const [repliesMonitored, setRepliesMonitored] = useState(true)
+  const [repliesMonitored, setRepliesMonitored] = useState(!initialQuick)
   const [replyNotice, setReplyNotice] = useState(settings.defaultReplyNotice)
   const [replyTo, setReplyTo] = useState<string>(categoryDefaults.general ?? '')
   const [autoFixed, setAutoFixed] = useState<string[]>([])
@@ -170,7 +177,28 @@ export function ComposeForm({
   // Controlled, so choosing a template can fill it with the template's name. Left as
   // an uncontrolled input it would keep whatever was typed first and silently ignore
   // the template — the field would look like it simply did not work.
-  const [purpose, setPurpose] = useState(prefillPurpose ?? '')
+  /* "Race announcement — Mammoth Mountain GS, 5 December". The purpose is what
+     makes the send log readable months later, and the simple form does not ask
+     for it — so it is written from the audience rather than left blank. */
+  const [purpose, setPurpose] = useState(
+    prefillPurpose ?? (initialQuick ? `Race announcement — ${audience.label}` : '')
+  )
+
+  /**
+   * The simple form, for a message sent from the race-day block.
+   *
+   * Melissa, 2026-11-27, on what an officer on a hill in snow needs: a message
+   * box and nothing else. Category, reply handling and purpose all have one
+   * right answer for a race announcement, so they are decided here and posted
+   * as hidden fields rather than asked about.
+   *
+   * A TOGGLE RATHER THAN A SEPARATE SCREEN, and state rather than the URL: the
+   * full form is one tap away and comes back with whatever has been typed
+   * still in it. A second route would have meant a second copy of the sending,
+   * the cost limits, the duplicate check and the consent gate, and those are
+   * the parts that must never diverge.
+   */
+  const [quick, setQuick] = useState(initialQuick)
 
   const bodyRef = useRef<HTMLTextAreaElement>(null)
 
@@ -357,7 +385,47 @@ export function ComposeForm({
           directory: the compose screen is one task, not five loose controls
           scattered on the page background. */}
       <div className="overflow-hidden rounded-lg border border-neutral-200 bg-surface dark:border-neutral-800">
-      {/* --- who this goes to; first, because it changes everything below --- */}
+      {/* --- who this goes to; first, because it changes everything below ---
+
+          In the simple form this is the race-day block's own choices rather
+          than every audience the club has. Melissa, 2026-11-27: it stays
+          visible "so they can confirm who they selected on the previous
+          screen", and should be "the selections that were available on the
+          previous screen" — so changing your mind between the weekend and one
+          day does not mean going back. */}
+      {quick && raceOptions.length > 0 ? (
+        <section className="border-b border-neutral-200 bg-neutral-50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+          <p className="text-sm font-medium text-fwm-navy">Sending to</p>
+          <ul className="mt-2 space-y-1">
+            {raceOptions.map((o) => {
+              const value = o.raceIds.join(',')
+              const on = value === (selectedRaceIds ?? '')
+              return (
+                <li key={value}>
+                  <button
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => changeAudience({ kind: 'race', raceIds: value })}
+                    className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2.5 text-left text-sm ${
+                      on
+                        ? 'bg-fwm-navy font-medium text-white dark:text-neutral-950'
+                        : 'border border-neutral-300 bg-surface dark:border-neutral-700'
+                    }`}
+                  >
+                    <span>{o.label}</span>
+                    <span className={on ? '' : 'text-neutral-600'}>
+                      {o.reach} of {o.entered}
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+          <p className="mt-2 text-sm text-neutral-600">
+            Only racers who have opted in for texts are included.
+          </p>
+        </section>
+      ) : (
       <AudiencePicker
         audiences={audiences}
         audience={audience}
@@ -369,11 +437,13 @@ export function ComposeForm({
         switching={switching}
         onChange={changeAudience}
       />
+      )}
 
       {/* Placed after the audience and before everything else: which message you are
           sending decides the category, the reply contact and the wording, so choosing
           it first means the rest of the form is answering a question you have already
           asked. */}
+      {!quick && (
       <TemplatePicker
         templates={templates}
         races={races}
@@ -393,7 +463,23 @@ export function ComposeForm({
         onPurposeChange={setPurpose}
         recipientCount={recipientCount}
       />
+      )}
 
+      {/* Hidden in the simple form, still posted. A race announcement has one
+          right category and nobody waiting on replies, so those are decided
+          rather than asked — but they are the same values the full form would
+          have sent, carried in the same fields. */}
+      {quick && (
+        <>
+          <input type="hidden" name="category" value={category} />
+          <input type="hidden" name="reply_person_id" value="" />
+          <input type="hidden" name="replies_monitored" value={repliesMonitored ? 'on' : ''} />
+          <input type="hidden" name="reply_notice" value={replyNotice} />
+          <input type="hidden" name="purpose" value={purpose} />
+        </>
+      )}
+
+      {!quick && (
       <section className="grid gap-4 border-b border-neutral-200 px-5 py-4 sm:grid-cols-2 dark:border-neutral-800">
         <label className="block">
           <span className="text-sm font-medium">Category</span>
@@ -428,8 +514,10 @@ export function ComposeForm({
           </select>
         </label>
       </section>
+      )}
 
       {/* --- reply handling --- */}
+      {!quick && (
       <section className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
         <label className="flex items-start gap-3">
           <input
@@ -468,9 +556,11 @@ export function ComposeForm({
           </label>
         )}
       </section>
+      )}
 
       {/* Short label stored with the message. Cheap to type, and it is what makes
           the log readable months later. */}
+      {!quick && (
       <label className="block border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
         <span className="text-sm font-medium">
           Purpose <span className="font-normal text-neutral-600">(for the log)</span>
@@ -483,6 +573,7 @@ export function ComposeForm({
           className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
         />
       </label>
+      )}
 
       {/* --- message --- */}
       <section className="px-5 py-4">
@@ -499,7 +590,21 @@ export function ComposeForm({
           />
         </label>
 
-        <InsertBlank onInsert={insertAtCursor} />
+        {!quick && <InsertBlank onInsert={insertAtCursor} />}
+
+        {/* The way in and out of the simple form. A toggle rather than a link,
+            so nothing typed is lost either way — and so the simple form is
+            never a trap when a message turns out to need a template or a
+            different category. */}
+        <p className="mt-3">
+          <button
+            type="button"
+            onClick={() => setQuick((v) => !v)}
+            className="text-sm text-neutral-600 underline"
+          >
+            {quick ? 'Show all options' : 'Hide extra options'}
+          </button>
+        </p>
 
         {autoFixed.length > 0 && (
           <p className="mt-2 text-sm text-neutral-600">
