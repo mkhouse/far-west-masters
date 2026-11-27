@@ -200,7 +200,7 @@ export function TemplatePicker({
 
       {/* --- a template that addresses one person, aimed at many --- */}
       {perMemberOnBulk && (
-        <p className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <p className="mt-3 rounded border border-fwm-burgundy/35 bg-fwm-burgundy/5 px-3 py-2 text-sm">
           This message addresses someone by name, and this audience has{' '}
           {recipientCount} people in it. One message goes to everybody, so there is no
           per-person name to fill in — these templates are for contacting one member at
@@ -210,11 +210,11 @@ export function TemplatePicker({
 
       {/* --- the officer's own number, set here rather than elsewhere --- */}
       {needsPhone && (
-        <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-3 text-sm dark:border-amber-900 dark:bg-amber-950/40">
-          <p className="font-medium text-amber-900 dark:text-amber-200">
+        <div className="mt-3 rounded-lg border border-fwm-burgundy/35 bg-fwm-burgundy/5 px-3 py-3 text-sm">
+          <p className="font-medium">
             This template gives the member a number to call, and you have not set one.
           </p>
-          <p className="mt-1 text-amber-900/80 dark:text-amber-200/80">
+          <p className="mt-1 text-neutral-600 dark:text-neutral-400">
             It is not taken from your member record on purpose — that is where the club
             texts you, and it has never been given to members. Set the number you are
             happy for members to call. It is saved to your account, so this is a

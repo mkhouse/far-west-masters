@@ -48,7 +48,7 @@ export default async function OptInReviewPage() {
         <h2 className="font-medium">
           Waiting for a decision
           {w.pendingReview > 0 && (
-            <span className="ml-2 font-normal text-neutral-600">
+            <span className="ml-2 rounded-full bg-fwm-amber/15 px-1.5 py-0.5 font-normal text-fwm-amber-text">
               {w.pendingReview}
             </span>
           )}
@@ -66,7 +66,7 @@ export default async function OptInReviewPage() {
         <section className="mt-10">
           <h2 className="font-medium">
             Waiting for their intro text
-            <span className="ml-2 font-normal text-neutral-600">
+            <span className="ml-2 rounded-full bg-fwm-amber/15 px-1.5 py-0.5 font-normal text-fwm-amber-text">
               {w.awaitingIntro.length}
             </span>
           </h2>
@@ -135,7 +135,7 @@ export default async function OptInReviewPage() {
             get a working mobile.
           </p>
 
-          <ul className="mt-3 divide-y divide-neutral-200 rounded-lg border border-amber-300 dark:divide-neutral-800 dark:border-amber-900">
+          <ul className="mt-3 divide-y divide-neutral-200 rounded-lg border border-fwm-burgundy/35 dark:divide-neutral-800">
             {w.introFailed.map((p) => (
               <li key={p.id} className="px-4 py-2.5 text-sm">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4">

@@ -506,7 +506,7 @@ export function ComposeForm({
             control that does not exist. */}
         {unresolved.length > 0 && (
           <p
-            className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+            className="mt-2 rounded border border-fwm-burgundy/35 bg-fwm-burgundy/5 px-3 py-2 text-sm"
             role="alert"
           >
             {describePlaceholders(unresolved.map((u) => `{${u}}`))}{' '}
@@ -736,10 +736,15 @@ function CostSummary({
   const total = totalMessages * costPerSegmentUsd
   const hasAudience = recipientCount > 0
 
+  /* THREE STATES, ONE HUE, TWO WEIGHTS. This is the only place in the app where
+     "cannot send" and "this will cost you" are the same component in different
+     states, so the gap between them has to survive without a second colour.
+     Burgundy carries both, stepped: the blocked box is twice the wash and a
+     heavier edge, and only the blocked box puts burgundy on the words. */
   const tone = blocked
-    ? 'border-fwm-burgundy/40 bg-fwm-burgundy/5'
+    ? 'border-fwm-burgundy/50 bg-fwm-burgundy/10'
     : warn
-      ? 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40'
+      ? 'border-fwm-burgundy/30 bg-fwm-burgundy/5'
       : 'border-neutral-200 bg-surface dark:border-neutral-800'
 
   return (
@@ -797,9 +802,10 @@ function CostSummary({
 
       {reason && (
         <p
-          className={`mt-2 font-medium ${
-            blocked ? 'text-fwm-burgundy' : 'text-amber-800 dark:text-amber-200'
-          }`}
+          /* Burgundy words only when it is actually blocked — that is the whole
+             difference between the two states. A warning reads in the ordinary
+             foreground; the box around it is already doing the signalling. */
+          className={`mt-2 font-medium ${blocked ? 'text-fwm-burgundy' : ''}`}
         >
           {reason}
         </p>
@@ -926,7 +932,7 @@ function AudiencePicker({
             Working out who that reaches&hellip;
           </p>
         ) : audience.unavailableReason ? (
-          <p className="text-amber-700 dark:text-amber-300">
+          <p className="text-fwm-burgundy">
             {audience.unavailableReason}
           </p>
         ) : (
@@ -960,7 +966,7 @@ function AudiencePicker({
             here is an officer assuming it reaches people who have not asked to
             hear from the club. It does not. */}
         {audience.incompleteConsent && (
-          <p className="mt-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          <p className="mt-2 rounded border border-fwm-burgundy/35 bg-fwm-burgundy/5 px-2 py-1 text-sm">
             Everyone here opted in on the form but has not had their intro text yet.
             Sending it completes their consent, and they move into the regular
             audiences afterwards.

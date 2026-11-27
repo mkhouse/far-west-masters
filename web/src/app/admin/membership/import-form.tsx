@@ -22,6 +22,7 @@ import {
 } from './actions'
 import {
   changeCount,
+  differenceCount,
   differenceKey,
   entriesWithChanges,
   entriesWithDifferences,
@@ -43,6 +44,29 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
    * fresher — so the choice is per row rather than a rule.
    */
   const [accepted, setAccepted] = useState<Set<string>>(new Set())
+  /**
+   * Bumped to remount the file input. See `cancel` — clearing React state is not
+   * enough, because the input holds its own copy of the chosen file.
+   */
+  const [resetKey, setResetKey] = useState(0)
+
+  /**
+   * Back to the empty form.
+   *
+   * THERE WAS NO WAY OUT. Once a file was chosen the only exit was reloading the
+   * page — on a screen whose whole purpose is deciding whether to go ahead, and
+   * where the wrong file (Race File, not Race Roster) is a routine mistake. The
+   * key bump matters: the file input keeps its own copy of the selection, so
+   * clearing state alone left the browser still naming a file that was gone.
+   */
+  function cancel() {
+    setCsv(null)
+    setFileName(null)
+    setPreview(null)
+    setApplied(null)
+    setAccepted(new Set())
+    setResetKey((k) => k + 1)
+  }
 
   function onFile(file: File | undefined) {
     setPreview(null)
@@ -65,6 +89,15 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
         <p className="mt-3 text-sm text-neutral-600">
           The members directory now reflects this. Reload it to see the change.
         </p>
+        {/* Also a dead end until now. Importing two files in a row is ordinary —
+            a season and a camp, or the same season re-exported after a fix. */}
+        <button
+          type="button"
+          onClick={cancel}
+          className="mt-3 rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium dark:border-neutral-700"
+        >
+          Import another file
+        </button>
       </div>
     )
   }
@@ -112,6 +145,7 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
             restyled, with the chosen file named beside it. */}
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <input
+            key={resetKey}
             id="file"
             type="file"
             accept=".csv,text/csv"
@@ -123,16 +157,31 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
           </span>
         </div>
 
-        <button
-          type="button"
-          disabled={!csv || pending}
-          onClick={() =>
-            startTransition(async () => setPreview(await previewImport(csv!, season)))
-          }
-          className="mt-4 rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
-        >
-          {pending && !preview ? 'Reading…' : 'See what this would change'}
-        </button>
+        {/* Two ways out, because the screen is long. This one is where somebody
+            realises they picked the wrong export; the one by the Import button
+            is where they decide not to go ahead. Same `cancel`, named for what
+            it means in each place. */}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            disabled={!csv || pending}
+            onClick={() =>
+              startTransition(async () => setPreview(await previewImport(csv!, season)))
+            }
+            className="rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
+          >
+            {pending && !preview ? 'Reading…' : 'See what this would change'}
+          </button>
+          {csv && (
+            <button
+              type="button"
+              onClick={cancel}
+              className="text-sm text-neutral-600 underline"
+            >
+              Choose a different file
+            </button>
+          )}
+        </div>
       </div>
 
       {preview && !preview.ok && (
@@ -214,19 +263,43 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
             <Section
               title={`${entriesWithDifferences(diff).length} people where AdminSkiRacing holds something different`}
             >
+              {/* THE DEFAULT, FIRST AND ON ITS OWN. This used to arrive halfway
+                  through a sentence that opened on opting in. Doing nothing is
+                  what happens to a box nobody touches, so it is the thing the
+                  first line has to say — and it has to say what ticking does
+                  too, because a tick here overwrites a value the club holds. */}
               <p className="mt-1 text-neutral-600">
-                Nothing here is changed unless you tick it, and whether the member
-                opted in is usually what decides.
-              </p>
-              <p className="mt-1 text-neutral-600">
-                <strong>Opted in</strong> — the address we hold is the one they gave
-                on the opt-in form, so ours is their own answer.{' '}
-                <strong>Never opted in</strong> — ours came from a historic import
-                rather than from them, and AdminSkiRacing&rsquo;s is usually fresher,
-                often a personal address replacing a work one.
+                <strong className="text-foreground">
+                  Do nothing and nothing changes
+                </strong>{' '}
+                — the club keeps every value below. Tick a row to replace the
+                club&rsquo;s value with AdminSkiRacing&rsquo;s.
               </p>
 
-              <div className="mt-2 flex gap-3 text-sm">
+              {/* ONE CASE PER LINE. These two ran together in a single paragraph,
+                  which is the worst shape for scanning: the second label sits
+                  mid-sentence, where the eye does not look for it. Each line now
+                  ends in what to do, so it decides rather than describes. */}
+              <ul className="mt-2 space-y-1 text-neutral-600">
+                <li>
+                  <strong className="text-foreground">Opted in</strong> — the
+                  address we hold is the one they gave on the opt-in form, so ours
+                  is their own answer. <em>Usually keep ours.</em>
+                </li>
+                <li>
+                  <strong className="text-foreground">Never opted in</strong> —
+                  ours came from a historic import rather than from them, and
+                  AdminSkiRacing&rsquo;s is usually fresher, often a personal
+                  address replacing a work one. <em>Usually take theirs.</em>
+                </li>
+              </ul>
+
+              {/* SELECTION, NOT ACTION. These read as commit buttons — "Take all
+                  of AdminSkiRacing's" sounds like it does the taking — when all
+                  three only tick boxes. "Keep all of ours" was the loudest: it is
+                  the state the box already starts in, offered as a thing to do. */}
+              <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+                <span className="text-neutral-600">Tick:</span>
                 <button
                   type="button"
                   className="text-fwm-navy underline"
@@ -240,7 +313,7 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                     )
                   }
                 >
-                  Take all of AdminSkiRacing&rsquo;s
+                  all of them
                 </button>
                 {/* The rule stated as one click. Still every row on screen, still
                     every tick reversible — this only saves the clicks. */}
@@ -259,14 +332,14 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                     )
                   }
                 >
-                  Take theirs only where the member never opted in
+                  only those who never opted in
                 </button>
                 <button
                   type="button"
-                  className="text-neutral-600 underline"
+                  className="text-fwm-navy underline"
                   onClick={() => setAccepted(new Set())}
                 >
-                  Keep all of ours
+                  none
                 </button>
               </div>
 
@@ -276,13 +349,14 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                   .map((u) =>
                   u.differences.map((c) => {
                     const key = differenceKey(u.personId!, c.field)
+                    const ticked = accepted.has(key)
                     return (
                       <li key={key}>
                         <label className="flex cursor-pointer items-start gap-2">
                           <input
                             type="checkbox"
                             className="mt-1"
-                            checked={accepted.has(key)}
+                            checked={ticked}
                             onChange={() =>
                               setAccepted((prev) => {
                                 const next = new Set(prev)
@@ -304,10 +378,25 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
                             >
                               {u.optedIn ? 'opted in' : 'never opted in'}
                             </span>
-                            <span className="text-neutral-600">
-                              {' '}· {c.field}: <s>{c.from ?? '—'}</s> &rarr;{' '}
-                              <strong>{c.to}</strong>
-                            </span>
+                            {/* THE ROW SHOWS ITS OWN STATE. Every row used to
+                                render `struck-out → bold` whether ticked or not
+                                — the same notation the "gaps filled" box above
+                                uses for changes that WILL be applied. The box
+                                was drawing a completed change and then denying
+                                it in prose, and prose loses that argument. The
+                                strikethrough now appears only once the tick
+                                makes it true. */}
+                            {ticked ? (
+                              <span className="text-neutral-600">
+                                {' '}· {c.field}: <s>{c.from ?? '—'}</s> &rarr;{' '}
+                                <strong>{c.to}</strong>
+                              </span>
+                            ) : (
+                              <span className="text-neutral-600">
+                                {' '}· {c.field}: <strong>{c.from ?? '—'}</strong>{' '}
+                                · AdminSkiRacing has {c.to}
+                              </span>
+                            )}
                           </span>
                         </label>
                       </li>
@@ -338,25 +427,76 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
             </Section>
           )}
 
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() =>
-              startTransition(async () =>
-              setApplied(await applyImport(csv!, season, [...accepted]))
-            )
-            }
-            className="mt-4 rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
-          >
-            {pending
-              ? 'Importing…'
-              : accepted.size > 0
-                ? `Import ${season}, taking ${accepted.size} correction${accepted.size === 1 ? '' : 's'}`
-                : `Import ${season}`}
-          </button>
+          {entriesWithDifferences(diff).length > 0 && (
+            <WhatWillHappen total={differenceCount(diff)} ticked={accepted.size} />
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () =>
+                  setApplied(await applyImport(csv!, season, [...accepted]))
+                )
+              }
+              className="rounded-md border border-fwm-navy/40 bg-fwm-navy/5 px-3 py-1.5 text-sm font-medium disabled:opacity-40"
+            >
+              {pending
+                ? 'Importing…'
+                : accepted.size > 0
+                  ? `Import ${season}, taking ${accepted.size} correction${accepted.size === 1 ? '' : 's'}`
+                  : `Import ${season}`}
+            </button>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={cancel}
+              className="text-sm text-neutral-600 underline disabled:opacity-40"
+            >
+              Cancel this import
+            </button>
+          </div>
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * What pressing Import will actually do, in a sentence that changes as you tick.
+ *
+ * Every control on the screen can be labelled correctly and somebody can still be
+ * unsure which state they have put it in: six rows, three bulk links, and a scroll
+ * between the last tick and the button. This is the running total, sitting next to
+ * that button, so "what happens if I press this" is answered where it is asked.
+ */
+function WhatWillHappen({ total, ticked }: { total: number; ticked: number }) {
+  if (ticked === 0) {
+    return (
+      <p className="mt-4 text-sm text-neutral-600">
+        <strong className="text-foreground">Nothing ticked.</strong> All {total}{' '}
+        {total === 1 ? 'disagreement' : 'disagreements'} above stay exactly as the
+        club has {total === 1 ? 'it' : 'them'}.
+      </p>
+    )
+  }
+
+  const keeping = total - ticked
+  return (
+    <p className="mt-4 text-sm text-neutral-600">
+      <strong className="text-foreground">
+        {ticked} of {total} ticked.
+      </strong>{' '}
+      {ticked === 1 ? 'That one' : `Those ${ticked}`} will be replaced by
+      AdminSkiRacing&rsquo;s
+      {keeping === 0
+        ? ''
+        : keeping === 1
+          ? ', and the other one stays as it is'
+          : `, and the other ${keeping} stay as they are`}
+      .
+    </p>
   )
 }
 
@@ -380,10 +520,10 @@ function Section({
 }) {
   return (
     <section
-      className={`mt-4 rounded-md border px-3 py-2 text-sm ${
+      className={`mt-4 px-3 py-2 text-sm ${
         tone === 'warn'
-          ? 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30'
-          : 'border-neutral-200 dark:border-neutral-800'
+          ? 'rounded-r-md border-l-[3px] border-fwm-amber bg-fwm-amber/10'
+          : 'rounded-md border border-neutral-200 dark:border-neutral-800'
       }`}
     >
       <h3 className="font-medium">{title}</h3>

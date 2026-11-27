@@ -23,7 +23,11 @@ export function MembershipBanner({ freshness }: { freshness: ImportFreshness }) 
   if (!freshness.stale) return null
 
   return (
-    <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-800 dark:bg-amber-950/30">
+    <div className="mb-6 rounded-r-lg border-l-[3px] border-fwm-amber bg-fwm-amber/10 px-4 py-3 text-sm">
+      {/* Plain, not amber. This banner is the one an officer sees most — it fires
+          whenever the list is over a fortnight old, which is most of the season —
+          and a coloured heading on a routine notice is how a signal wears out.
+          The left rule does the signalling; the words just say the thing. */}
       <p className="font-medium">
         {freshness.isFallback
           ? `No memberships imported for ${freshness.currentSeason} yet`

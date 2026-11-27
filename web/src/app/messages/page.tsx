@@ -258,8 +258,12 @@ export default async function MessagesPage({
                               typed — better a first line than an empty cell. */}
                           {m.purpose || m.body.split('\n')[0]}
                         </span>
+                        {/* Teal, not amber. This is a label for what the send was,
+                            on a send that worked — nothing is wrong and nothing is
+                            owed. Amber here spent the club's one attention colour
+                            on a fact. */}
                         {m.bypassed_consent_gate && (
-                          <span className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-sm text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+                          <span className="mt-1 inline-block rounded bg-fwm-teal/15 px-1.5 py-0.5 text-sm text-fwm-teal-text">
                             intro text
                           </span>
                         )}

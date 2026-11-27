@@ -151,7 +151,7 @@ export default async function GroupsPage({
                     <span>
                       {m.people?.first_name} {m.people?.last_name}
                       {!m.people?.phone && (
-                        <span className="ml-2 text-sm text-amber-700">no phone</span>
+                        <span className="ml-2 text-sm text-fwm-burgundy">no phone</span>
                       )}
                     </span>
                     <form action={removeMember}>

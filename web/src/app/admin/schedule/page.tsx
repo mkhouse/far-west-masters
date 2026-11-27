@@ -203,7 +203,7 @@ export default async function SchedulePage({
         </form>
 
         {fellBack && (
-          <p className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          <p className="mt-3 rounded border border-fwm-burgundy/35 bg-fwm-burgundy/5 px-3 py-2 text-sm">
             Showing the repository copy &mdash; farwestmasters.org could not be
             reached. Check it is current before applying.
           </p>
@@ -224,11 +224,11 @@ export default async function SchedulePage({
         )}
 
         {loadError && (
-          <p className="mt-3 text-sm text-amber-800 dark:text-amber-300">{loadError}</p>
+          <p className="mt-3 text-sm text-fwm-burgundy">{loadError}</p>
         )}
 
         {changedSinceImport && (
-          <p className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          <p className="mt-3 rounded border border-fwm-burgundy/35 bg-fwm-burgundy/5 px-3 py-2 text-sm">
             This page has changed since it was last imported.
           </p>
         )}
@@ -236,11 +236,11 @@ export default async function SchedulePage({
 
       {/* --- the season has to exist, and be active --- */}
       {season && !seasonRow && (
-        <section className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950/40">
-          <h2 className="font-medium text-amber-900 dark:text-amber-200">
+        <section className="mt-6 rounded-r-lg border-l-[3px] border-fwm-amber bg-fwm-amber/10 p-5">
+          <h2 className="font-medium text-fwm-amber-text">
             {season} does not exist yet
           </h2>
-          <p className="mt-1 text-sm text-amber-900/80 dark:text-amber-200/80">
+          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
             Races belong to a season, so it has to be created first. It is created
             <strong> without scoring rules</strong> &mdash; best-N and the points scale
             are set separately, and nothing is scored until they are. A rule guessed
@@ -248,7 +248,7 @@ export default async function SchedulePage({
           </p>
           <form action={createSeason} className="mt-3 flex flex-wrap items-center gap-3">
             <input type="hidden" name="season" value={season} />
-            <label className="flex items-center gap-2 text-sm text-amber-900 dark:text-amber-200">
+            <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="make_active" defaultChecked />
               Make it the active season
             </label>
@@ -263,11 +263,11 @@ export default async function SchedulePage({
       )}
 
       {seasonRow && !seasonRow.active && (
-        <section className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950/40">
-          <h2 className="font-medium text-amber-900 dark:text-amber-200">
+        <section className="mt-6 rounded-r-lg border-l-[3px] border-fwm-amber bg-fwm-amber/10 p-5">
+          <h2 className="font-medium text-fwm-amber-text">
             {season} is not the active season
           </h2>
-          <p className="mt-1 text-sm text-amber-900/80 dark:text-amber-200/80">
+          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
             {activeSeason
               ? `${activeSeason.name} still is.`
               : 'No season is active.'}{' '}
@@ -289,7 +289,7 @@ export default async function SchedulePage({
       )}
 
       {seasonRow && Number(seasonRow.best_n) === 0 && (
-        <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <p className="mt-4 rounded-r-lg border-l-[3px] border-fwm-amber bg-fwm-amber/10 px-4 py-3 text-sm">
           <strong>{season} has no scoring rules yet.</strong> Races can be imported and
           texted about, but nothing will score correctly until best-N and the points
           scale are set. See RUNBOOK.md.
@@ -365,7 +365,7 @@ export default async function SchedulePage({
               {/* Held back, not applied. */}
               {diff.conflicts.length > 0 && (
                 <>
-                  <h2 className="mt-8 font-medium text-amber-800 dark:text-amber-300">
+                  <h2 className="mt-8 font-medium text-fwm-amber-text">
                     {diff.conflicts.length} left alone &mdash; they already have results
                   </h2>
                   <p className="mt-1 text-sm text-neutral-600">
@@ -373,7 +373,7 @@ export default async function SchedulePage({
                     parity harness checks against every result since 2009. Change them
                     by hand if the page is right.
                   </p>
-                  <ul className="mt-3 divide-y divide-neutral-200 rounded-lg border border-amber-300 dark:divide-neutral-800 dark:border-amber-900">
+                  <ul className="mt-3 divide-y divide-neutral-200 rounded-lg border-l-[3px] border-fwm-amber dark:divide-neutral-800">
                     {diff.conflicts.map((e) => (
                       <li key={e.existing.id} className="px-4 py-2 text-sm">
                         <span className="font-medium">{e.existing.name}</span>
@@ -448,7 +448,7 @@ export default async function SchedulePage({
                         </span>
                         <span className="mt-0.5 block text-neutral-600">{w.message}</span>
                         {w.countsForStandings !== false && (
-                          <span className="mt-1 block text-amber-800 dark:text-amber-300">
+                          <span className="mt-1 block text-fwm-amber-text">
                             This one would count toward standings. If the club is
                             racing it, add it by hand &mdash; or ask for the schedule
                             page to name the days.

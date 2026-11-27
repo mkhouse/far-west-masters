@@ -91,7 +91,7 @@ export function PersonPicker({
               {/* The reason travels with the name, so a person who cannot be texted
                   is visibly in the list and visibly not going to receive anything. */}
               {p.blockedReason && (
-                <span className="text-amber-800 dark:text-amber-300">
+                <span className="text-fwm-burgundy">
                   {p.blockedReason}
                 </span>
               )}

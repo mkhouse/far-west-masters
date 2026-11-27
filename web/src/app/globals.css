@@ -18,11 +18,32 @@ html {
    whole difference: the same layout on a cream ground stops looking like a form
    and starts looking like something the club made.
 
+   THE PALETTE IS SIX COLOURS. Reach for one of these before anything else; the
+   rule and the one exception are written up in the repository's CLAUDE.md.
+
+     #F6F1E9 cream     the page
+     #C8C9C2 grey      borders and fills
+     #767374 grey      secondary text, at the right weight — see below
+     #183246 navy      structure, links, primary actions
+     #50A1A9 teal      the good and the merely informational
+     #B8691A amber     something is waiting for you, and nothing has gone wrong
+
+   Burgundy #8b0000 is allowed but is not one of the six: it is the club's print
+   second colour, and here it means a thing has gone wrong.
+
+   WHY AMBER EXISTS. The app wants to say four things — structure, confirmed
+   good, needs you, failed — and had three colours to say them in. "Needs you"
+   was the one with nowhere to go, so it borrowed burgundy, which put the
+   membership banner permanently in the failure colour for most of the season. A
+   signal that is always on is not a signal. Amber is warm, which no other
+   signal colour here is, so it carries without being read as alarm.
+
    WHAT CARRIES TEXT AND WHAT DOES NOT. Measured against the cream page:
 
-     #003366 navy      11.2:1   text, anything
+     #183246 navy      11.8:1   text, anything
      #8b0000 burgundy   8.9:1   text, anything
      #767374 grey       4.2:1   FAILS AA for body text
+     #B8691A amber      3.7:1   FAILS — borders, chips and fills only
      #50A1A9 teal       2.7:1   FAILS badly — fills and borders only
      #C8C9C2 grey       1.5:1   borders and fills only
 
@@ -41,14 +62,26 @@ html {
   --surface: #ffffff;
   --foreground: #211f1d;
 
-  /* Far West Masters brand colours, unchanged: the same pair used in the
-     Forerunner emails and the club site — see email-templates/examples/README.md.
-     Deliberately not restyled, so the app still reads as part of the club. */
-  --fwm-navy: #003366;
+  /* The app's navy, and NOT the print navy.
+     #003366 is what the Forerunner emails use; the app palette softens it to
+     #183246 — a shade desaturated and slightly cooler, which is what stops a
+     page of navy-on-cream looking like a form. Measured on the cream it is
+     11.8:1, marginally better than the #003366 it replaces, so nothing that
+     relied on navy for contrast gets worse. The emails keep #003366. */
+  --fwm-navy: #183246;
 
-  /* Burgundy is now reserved for things that have genuinely gone wrong or cannot
-     be undone — a failed delivery, an opt-out, Reject, Delete. It used to carry
-     decoration and prompts too, which is how a colour stops meaning anything. */
+  /* NOT one of the five. Burgundy is the club's print second colour, kept here
+     for the one register the palette cannot express: something has gone wrong,
+     or something needs you.
+
+     Two weights, and the distinction is load-bearing:
+       burgundy TEXT      — this failed, or cannot be undone. Delivery failed,
+                            opt-out, Reject, Delete.
+       burgundy BORDER    — act on this. The club's own emails already do this:
+       and faint wash,      a burgundy-edged callout is how a deadline or a late
+       ordinary text        fee is flagged in the Forerunner.
+     It used to carry decoration and prompts too, which is how a colour stops
+     meaning anything. */
   --fwm-burgundy: #8b0000;
 
   /* The second register, and the reason anything can now be told apart by colour:
@@ -60,6 +93,21 @@ html {
      until it passes contrast on cream. Never set text in --fwm-teal. */
   --fwm-teal: #50a1a9;
   --fwm-teal-text: #2f7880;
+
+  /* Amber: something is waiting for you, and nothing has gone wrong.
+     The stale membership list, a season with no scoring rules yet, people
+     waiting on a decision, the counts in the nav badges.
+
+     Two values for the same reason teal needs two — #B8691A is 3.7:1 on cream
+     and cannot carry text. NEVER set text in --fwm-amber.
+
+     --fwm-amber-text is measured against the WASH, not the page, because that
+     is what a callout heading actually sits on: 4.9:1 on a 10% wash over cream,
+     5.5:1 on bare cream, 6.2:1 on a white card. The more obvious #A25C17 clears
+     the page at 4.6:1 and then fails on its own wash at 4.1:1, which is the
+     trap this comment exists to record. */
+  --fwm-amber: #b8691a;
+  --fwm-amber-text: #8f5214;
 }
 
 @theme inline {
@@ -70,6 +118,8 @@ html {
   --color-fwm-burgundy: var(--fwm-burgundy);
   --color-fwm-teal: var(--fwm-teal);
   --color-fwm-teal-text: var(--fwm-teal-text);
+  --color-fwm-amber: var(--fwm-amber);
+  --color-fwm-amber-text: var(--fwm-amber-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
@@ -101,16 +151,28 @@ html {
     --surface: #262321;
     --foreground: #ede9e3;
 
-    /* The print navy and burgundy are close to unreadable on a dark background.
-       These are the same hues lifted in lightness until they pass contrast — the
-       brand still reads, and the text can actually be read. */
-    --fwm-navy: #7ea8d4;
+    /* The navy and burgundy are close to unreadable on a dark background. These
+       are the same hues lifted in lightness until they pass contrast — the brand
+       still reads, and the text can actually be read.
+
+       The navy lift is derived from #183246 rather than eyeballed: same hue
+       (206°), saturation down a third because a lifted colour reads oversaturated,
+       lightness to 0.67. That lands at 7.7:1 on the dark page. */
+    --fwm-navy: #8eafc8;
     --fwm-burgundy: #e39393;
 
     /* Teal lifts the same way, and on a dark ground the lifted value has enough
        contrast to carry text — so both tokens point at it. */
     --fwm-teal: #6fc0c7;
     --fwm-teal-text: #86cdd3;
+
+    /* Amber lifts too, and its text value is again measured against the wash
+       over a CARD (#262321), which is the darkest ground a callout heading
+       lands on. #B77A3C reads fine as a border there but only 3.5:1 as text,
+       so the text value goes lighter: 4.6:1 on wash-over-card, 5.2:1 on
+       wash-over-page, 6.0:1 on a bare card. */
+    --fwm-amber: #b77a3c;
+    --fwm-amber-text: #d09457;
   }
 }
 

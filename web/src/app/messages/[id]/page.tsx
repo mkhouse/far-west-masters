@@ -221,8 +221,11 @@ export default async function MessagePage({
         {/* Anything unusual about the send itself, only when it applies. */}
         {(message.bypassed_consent_gate || !message.replies_monitored) && (
           <div className="border-t border-neutral-200 px-5 py-3 text-sm text-neutral-600 dark:border-neutral-800">
+            {/* The same fact as the list's chip, and teal for the same reason:
+                completing somebody's consent is the system working, not a
+                warning. */}
             {message.bypassed_consent_gate && (
-              <p className="text-amber-700 dark:text-amber-400">
+              <p className="text-fwm-teal-text">
                 Intro text — recipients had opted in but not yet been introduced.
                 Sending this completed their consent.
               </p>

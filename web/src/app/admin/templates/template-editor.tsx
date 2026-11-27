@@ -135,7 +135,7 @@ export function TemplateEditor({
           person at a time, so length is your call — there is no limit here.
         </p>
         {info.forcedUcs2 && (
-          <p className="mt-1 text-amber-800 dark:text-amber-300">
+          <p className="mt-1 text-fwm-burgundy">
             {special.slice(0, 6).join(' ')} — these cut every segment from 160
             characters to 70.
           </p>
