@@ -101,10 +101,16 @@ signed in. Prefer the invitation.
    minimum-starts requirement may be waived for racers 70 and over, and the
    awards committee may waive it individually for injury or illness. Both are
    judgements, and neither is recorded anywhere here.
-4. For each race, add the **live-timing race id**. Links arrive by the Monday before
-   a race at the latest, and the system can look the id up from the date and venue —
-   confirm the suggestion rather than typing it. The schedule import never touches
-   these.
+4. For each race, add the **live-timing race id** at **/admin/live-timing**. The
+   screen looks it up from the date and venue and shows the race name and start
+   time it matched, so you confirm rather than transcribe. The schedule import
+   never touches these.
+
+   **There is no deadline to hold live-timing to.** A race may appear some days
+   ahead or only a day or two before, and the file for a date exists and is empty
+   long before it has anything in it. Melissa, 2026-11-27: "even if it's not
+   available Monday it might still be available Tuesday. I'd worry if it's not
+   there the day after registration closes." Missing before then is ordinary.
 
 ### Importing membership
 

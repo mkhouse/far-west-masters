@@ -108,8 +108,9 @@ const GROUPS: Group[] = [
         description: 'Scoring rules. Nothing scores until they are set.',
       },
       {
+        href: '/admin/live-timing',
         title: 'Live-timing ids',
-        description: 'Entered per race once the links arrive.',
+        description: 'Looked up from the date and venue. You confirm.',
       },
     ],
   },
@@ -311,6 +312,56 @@ export default async function AdminPage() {
         </section>
       ))}
 
+      {/* LAST, AND QUIET ON PURPOSE. Not a feature — a way to look at a screen
+          whose whole point is appearing only at the right moment, which makes
+          it the one screen nobody can check before they need it. */}
+      <section className="mt-12 border-t border-neutral-200 pt-6 dark:border-neutral-800">
+        <h2 className="text-sm font-medium text-neutral-600">
+          Previewing the Quick compose block
+        </h2>
+        <p className="mt-2 text-sm text-neutral-600">
+          Quick compose appears on{' '}
+          <Link href="/messages" className="underline">
+            Messages
+          </Link>{' '}
+          only from the Monday of a race week, and disappears once the weekend is
+          over. To see it on any other day, add a date:
+        </p>
+        <p className="mt-2 text-sm">
+          <code className="rounded bg-neutral-100 px-1.5 py-0.5 dark:bg-neutral-900">
+            /messages?preview=YYYY-MM-DD
+          </code>
+        </p>
+        <ul className="mt-2 space-y-1 text-sm text-neutral-600">
+          <li>
+            <Link href="/messages?preview=2026-11-30" className="text-fwm-navy underline">
+              preview=2026-11-30
+            </Link>{' '}
+            &mdash; the Monday before Mammoth, the first day it shows
+          </li>
+          <li>
+            <Link href="/messages?preview=2026-12-05" className="text-fwm-navy underline">
+              preview=2026-12-05
+            </Link>{' '}
+            &mdash; race day itself, when it reads &ldquo;Racing today&rdquo;
+          </li>
+          <li>
+            <Link href="/messages?preview=2026-11-29" className="text-fwm-navy underline">
+              preview=2026-11-29
+            </Link>{' '}
+            &mdash; the day before that, when nothing should appear
+          </li>
+        </ul>
+        {/* The hazard, said where the links are rather than only on the page
+            they lead to: the audience a preview builds is a real one. */}
+        <p className="mt-3 text-sm text-neutral-600">
+          It moves the clock for that block only, and is marked on screen while it
+          is in effect. <strong>The buttons still text real people</strong> — the
+          audience a preview builds is a genuine one, so a message composed from a
+          March preview would reach the people entered in those races. A date that
+          is not a real <code>YYYY-MM-DD</code> is ignored.
+        </p>
+      </section>
     </main>
   )
 }
