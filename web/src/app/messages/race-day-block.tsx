@@ -51,11 +51,28 @@ export function RaceDayBlock({
   const [showRaces, setShowRaces] = useState(false)
 
   const allRaces = weekend.days.flatMap((d) => d.races)
-  const everyone = reachOf(allRaces)
-  const everyoneEntered = entrantsOf(allRaces)
-  const pickedRaces = racesOnDays(weekend, picked)
-  const pickedReach = reachOf(pickedRaces)
-  const pickedEntered = entrantsOf(pickedRaces)
+
+  /**
+   * ONE BUTTON, WHICH CHANGES. Picking a day used to add a SECOND "Text …"
+   * button below the first, so the block offered two sends at once and the
+   * reader had to work out which was which. The chips narrow who the one
+   * button is for; they are not another way to send.
+   *
+   * With nothing picked it means the whole weekend — the common case, and the
+   * reason this block exists at all.
+   */
+  const sending = picked.length > 0 ? racesOnDays(weekend, picked) : allRaces
+  const sendable = sending.filter((r) => r.entrantPersonIds.length > 0)
+  const reach = reachOf(sending)
+  const entered = entrantsOf(sending)
+  const sendingLabel =
+    picked.length > 0
+      ? picked
+          .slice()
+          .sort()
+          .map((d) => shortDay(d))
+          .join(' + ')
+      : 'this weekend'
 
   // `quick=1` asks the compose screen for the simple form: a message box, the
   // audience, and nothing else. See compose-form.tsx.
@@ -92,20 +109,19 @@ export function RaceDayBlock({
 
       {/* THE ONE TAP. Big, first, and needing no decision — sized for a gloved
           thumb rather than a mouse. */}
-      {everyone > 0 ? (
-        /* NO BARE NUMBERS ANYWHERE. This button and the chips below both used
-           to carry a count on its own, and on a chip — "Sun 6  27" — it read as
-           part of the date. Every number now sits inside the sentence that says
-           what it counts, and both buttons are phrased the same way. */
+      {reach > 0 ? (
+        /* NO BARE NUMBERS ANYWHERE. This used to carry a count on its own, and
+           so did the chips — "Sun 6  27" read as part of the date. Every number
+           now sits inside the sentence that says what it counts. */
         <Link
-          href={href(withEntries.map((r) => r.id))}
+          href={href(sendable.map((r) => r.id))}
           className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-fwm-navy px-4 py-3.5 text-base font-medium text-white hover:bg-fwm-navy/90 dark:text-neutral-950"
         >
           {/* "the 28 racing" was untrue — 45 are racing and 28 have opted in.
               Both numbers, so the sentence is honest and the opt-in gap is
               visible on the screen where it actually costs the club something. */}
           <span>
-            Text {everyone} of the {everyoneEntered} racing this weekend
+            Text {reach} of the {entered} racing {sendingLabel}
           </span>
           <span className="shrink-0">&rarr;</span>
         </Link>
@@ -120,7 +136,7 @@ export function RaceDayBlock({
           some other screen. The club's whole posture is that consent is the
           gate, and the race-day block is the one place somebody might press a
           button without having read anything else. */}
-      {everyone > 0 && (
+      {reach > 0 && (
         <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
           Only racers who have opted in for texts are included.
         </p>
@@ -167,25 +183,6 @@ export function RaceDayBlock({
             })}
           </div>
 
-          {/* Appears only once something is picked, so the block is quiet until
-              it has something to say. The count is a union — somebody racing
-              Saturday and Sunday is one person and one text. */}
-          {picked.length > 0 && (
-            <Link
-              href={href(pickedRaces.map((r) => r.id))}
-              className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-fwm-navy/40 bg-surface px-4 py-3 text-sm font-medium"
-            >
-              <span>
-                Text {pickedReach} of the {pickedEntered} racing{' '}
-                {picked
-                  .slice()
-                  .sort()
-                  .map((d) => shortDay(d))
-                  .join(' + ')}
-              </span>
-              <span className="shrink-0">&rarr;</span>
-            </Link>
-          )}
         </>
       )}
 
