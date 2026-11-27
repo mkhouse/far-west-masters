@@ -17,7 +17,7 @@
 import Link from 'next/link'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { bestNDrifted, bestNFor } from '@/lib/season-rules'
+import { bestNDrifted, bestNFor, hasPointsScale } from '@/lib/season-rules'
 import { SeasonForm } from './season-form'
 
 export default async function SeasonSetupPage() {
@@ -71,18 +71,21 @@ export default async function SeasonSetupPage() {
 
   // The previous season's scale, shown so it is clear what carrying forward
   // actually means rather than it happening invisibly on save.
-  const { data: carried } = season.points_scale
-    ? { data: { points_scale: season.points_scale } }
-    : await db
-        .from('seasons')
-        .select('points_scale')
-        .not('points_scale', 'is', null)
-        .neq('id', season.id)
-        .order('year', { ascending: false })
-        .limit(1)
-        .maybeSingle()
+  let scale: number[] | null = hasPointsScale(season.points_scale)
+    ? season.points_scale
+    : null
 
-  const scale = (carried?.points_scale as number[] | null) ?? null
+  if (!scale) {
+    const { data: candidates } = await db
+      .from('seasons')
+      .select('points_scale')
+      .neq('id', season.id)
+      .order('year', { ascending: false })
+      .limit(20)
+    scale =
+      (candidates ?? []).map((c) => c.points_scale).find((s) => hasPointsScale(s)) ??
+      null
+  }
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">

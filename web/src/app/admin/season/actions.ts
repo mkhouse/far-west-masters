@@ -13,6 +13,7 @@
 import { revalidatePath } from 'next/cache'
 import { requireAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { hasPointsScale } from '@/lib/season-rules'
 
 export interface SaveResult {
   ok: boolean
@@ -89,24 +90,41 @@ export async function saveSeasonRules(
     rules_verified: true,
   }
 
-  if (!season?.points_scale) {
-    const { data: previous } = await db
+  // `hasPointsScale`, not a truthiness check: the column is `not null` and an
+  // unset season holds `[]`, which is truthy. Getting this wrong is what let a
+  // season be marked verified with nothing to score by.
+  let scale = season?.points_scale
+  if (!hasPointsScale(scale)) {
+    const { data: candidates } = await db
       .from('seasons')
       .select('points_scale')
-      .not('points_scale', 'is', null)
       .neq('id', seasonId)
       .order('year', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+      .limit(20)
 
-    if (!previous?.points_scale) {
+    // Filtered here rather than in the query, for the same reason: PostgREST
+    // can exclude nulls easily and empty arrays awkwardly, and there are no
+    // nulls to exclude.
+    scale = (candidates ?? [])
+      .map((c) => c.points_scale)
+      .find((s) => hasPointsScale(s))
+
+    if (!hasPointsScale(scale)) {
       return {
         ok: false,
         error:
           'No earlier season has a points scale to carry forward. This one needs setting in a migration.',
       }
     }
-    patch.points_scale = previous.points_scale
+    patch.points_scale = scale
+  }
+
+  // THE INVARIANT, ENFORCED RATHER THAN ASSUMED. `rules_verified` means a
+  // season can be scored; a season with no points scale cannot be, and every
+  // race in it would score zero while the screen said it was set up. The two
+  // must never be written apart, whatever route gets here.
+  if (!hasPointsScale(scale)) {
+    return { ok: false, error: 'Refusing to mark a season verified with no points scale.' }
   }
 
   const { error } = await db.from('seasons').update(patch).eq('id', seasonId)

@@ -43,3 +43,20 @@ export function bestNDrifted(storedBestN: number, countingRaces: number): boolea
   if (storedBestN <= 0 || countingRaces <= 0) return false
   return storedBestN !== bestNFor(countingRaces)
 }
+
+/**
+ * Whether a season actually has a points scale.
+ *
+ * AN EMPTY ARRAY IS "UNSET" HERE, NOT NULL. `seasons.points_scale` is
+ * `not null`, so the schedule import creates a season with `[]` — see
+ * admin/schedule/actions.ts, which does that deliberately so a new season
+ * cannot be scored before its rules are set.
+ *
+ * This function exists because `if (!scale)` is wrong against that convention
+ * and does not look wrong: `[]` is truthy, so the check passes, the carry-
+ * forward is skipped, and the season is marked verified with no scale at all.
+ * That shipped on 2026-11-27 and scored every race zero until it was caught.
+ */
+export function hasPointsScale(scale: unknown): scale is number[] {
+  return Array.isArray(scale) && scale.length > 0
+}

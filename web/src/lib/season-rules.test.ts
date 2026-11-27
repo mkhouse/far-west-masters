@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bestNDrifted, bestNFor } from './season-rules'
+import { bestNDrifted, bestNFor, hasPointsScale } from './season-rules'
 
 describe('bestNFor — 75% of the counting races, rounded up', () => {
   it('reproduces the two seasons the club has published', () => {
@@ -44,5 +44,23 @@ describe('bestNDrifted — races get added mid-season', () => {
   it('says nothing before the rules are set or the schedule imported', () => {
     expect(bestNDrifted(0, 17)).toBe(false)
     expect(bestNDrifted(13, 0)).toBe(false)
+  })
+})
+
+describe('hasPointsScale — an empty array means unset, not set-to-nothing', () => {
+  it('is false for the empty array the schedule import writes', () => {
+    // The whole bug: `[]` is truthy, so `if (!scale)` skipped the carry-forward
+    // and marked the season verified with nothing to score by.
+    expect(hasPointsScale([])).toBe(false)
+    expect(Boolean([])).toBe(true)
+  })
+
+  it('is false for null and undefined', () => {
+    expect(hasPointsScale(null)).toBe(false)
+    expect(hasPointsScale(undefined)).toBe(false)
+  })
+
+  it('is true for a real scale', () => {
+    expect(hasPointsScale([100, 80, 60])).toBe(true)
   })
 })
