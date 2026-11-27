@@ -29,6 +29,11 @@
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises'
 import { join, resolve, dirname } from 'node:path'
 import { parseAceResults } from '../src/parseAce.js'
+import {
+  normalizeName,
+  parseLiveTiming,
+  type PrelimRacer,
+} from '../src/parseLiveTiming.js'
 import { timeToSeconds } from '../src/time.js'
 
 const ARCHIVE =
@@ -50,93 +55,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // ---------------------------------------------------------------------------
 // live-timing race payload
 // ---------------------------------------------------------------------------
+//
+// The parser lives in ../src/parseLiveTiming.ts, not here. It was written for
+// this script and then promoted, so the importer and this comparison cannot
+// drift apart: a trap fixed in one copy and not the other would make the
+// parity report agree with code that no longer exists.
 
-interface PrelimRacer {
-  bib: string
-  name: string
-  ageClass: string
-  /** True when live-timing flags the racer as scoring in Open Class */
-  isOpenClass: boolean
-  usssa: string
-  run1: string
-  run2: string
-  total: string
-  isDns: boolean
-}
 
-/**
- * Parse the pipe-delimited race payload. Records begin at `|b=` (bib); each is a
- * flat list of `key=value` pairs. See migration/live-timing-format.md.
- */
-function parseLiveTiming(raw: string): { racers: PrelimRacer[]; twoRuns: boolean } {
-  const out: PrelimRacer[] = []
-
-  for (const rec of raw.split('|b=').slice(1)) {
-    const parts = rec.split('|')
-    const fields: Record<string, string> = { b: parts[0] ?? '' }
-    for (const kv of parts.slice(1)) {
-      const i = kv.indexOf('=')
-      if (i > 0) {
-        const k = kv.slice(0, i)
-        if (!(k in fields)) fields[k] = kv.slice(i + 1)
-      }
-    }
-
-    const name = (fields.m ?? '').trim()
-    if (!name) continue
-
-    // Run times arrive as `display=milliseconds`; only the display half is needed.
-    const run1 = (fields.r1 ?? '').split('=')[0] ?? ''
-    const run2 = (fields.r2 ?? '').split('=')[0] ?? ''
-
-    // `t` is the team/division field, and it is overloaded: in Far West races it
-    // carries 'OP' to mark an Open Class entry (the "Team (OP or blank)" column in
-    // the rendered table), while at national events it carries division codes like
-    // 'FW' or 'EA'. So Open Class is `t === 'OP'`, not a value of the class field.
-    //
-    // Missing this is easy and expensive: the age class in `s` stays populated for
-    // Open Class racers, so reading only `s` silently mis-classifies roughly a
-    // third of the field.
-    const team = (fields.t ?? '').trim().toUpperCase()
-
-    out.push({
-      bib: fields.b ?? '',
-      name,
-      ageClass: (fields.s ?? '').toUpperCase(),
-      isOpenClass: team === 'OP',
-      usssa: fields.un ?? '',
-      run1,
-      run2,
-      total: (fields.tt ?? '').trim(),
-      // Non-starters carry a sentinel rather than a time.
-      isDns: /^DNS/i.test(run1) && /^DNS/i.test(run2),
-    })
-  }
-
-  // Single-run races (super-G, downhill) still emit an `r2` field, filled with the
-  // DNS sentinel for every racer — it is a placeholder for a run that does not
-  // exist, not a non-finish. The only reliable way to tell the two apart is
-  // whether *anyone* posted a real second-run time.
-  const twoRuns = out.some((r) => r.run2 && !/^(DNF|DNS|DSQ|DQ)/i.test(r.run2))
-
-  return { racers: out, twoRuns }
-}
-
-/**
- * Names are matched after normalizing whitespace and case.
- *
- * This is deliberately forgiving: live-timing contains entries like
- * "Hlubucek , Mark" with a stray space before the comma, which is a formatting
- * artifact rather than a different person. Being strict here would report a
- * cosmetic difference as a roster change.
- */
-function normalizeName(n: string): string {
-  return n
-    .toLowerCase()
-    .replace(/\s*,\s*/g, ', ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
 
 async function exists(p: string) {
   try {
@@ -244,7 +169,7 @@ async function compareRace(
     const o = officialByName.get(key)
 
     if (!o) {
-      if (p.isDns) counts.dns_dropped++
+      if (p.didNotStart) counts.dns_dropped++
       else {
         counts.removed++
         details.push(`removed: ${p.name} [${p.ageClass}] present in preliminary, absent from official`)
@@ -278,7 +203,7 @@ async function compareRace(
     if (prelimFinished !== officialFinished) {
       counts.status_changed++
       details.push(
-        `status: ${p.name} preliminary=${prelimFinished ? 'finished' : p.total || 'no time'} ` +
+        `status: ${p.name} preliminary=${prelimFinished ? 'finished' : p.rawTotal || 'no time'} ` +
           `official=${officialFinished ? 'finished' : o.result}`
       )
       continue
@@ -309,7 +234,7 @@ async function compareRace(
       // are, because `tt` is sometimes only run 1.
       details.push(
         `time: ${p.name} preliminary=${pSecs.toFixed(2)} official=${o.totalSeconds.toFixed(2)} ` +
-          `(runs ${p.run1}${twoRuns ? ' + ' + p.run2 : ''}; tt=${p.total || '-'})`
+          `(runs ${p.run1}${twoRuns ? ' + ' + p.run2 : ''}; tt=${p.rawTotal || '-'})`
       )
       continue
     }
