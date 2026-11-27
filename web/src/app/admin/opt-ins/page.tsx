@@ -38,7 +38,15 @@ export default async function OptInReviewPage() {
       </p>
 
       {w.total === 0 ? (
-        <p className="mt-8 rounded-lg border border-fwm-teal/40 bg-fwm-teal/10 p-4 text-sm dark:border-fwm-teal/30">
+        /* PLAIN TEXT, DELIBERATELY. This was a teal panel — tinted fill, border,
+           at the top of the page — and it was the loudest thing on screen in the
+           one state where nothing is asked of anybody. Any colour in that
+           treatment pulls the eye; the fix is the treatment, not the hue.
+
+           It still has to say something, so a blank queue reads as empty rather
+           than broken. It just says it quietly, which leaves the amber counts
+           below as the loudest thing whenever there IS something waiting. */
+        <p className="mt-8 text-sm text-neutral-600">
           Nobody is waiting. Everyone who has opted in has had their intro text.
         </p>
       ) : null}
