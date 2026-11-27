@@ -32,7 +32,7 @@ export async function resolveAudienceAction(input: {
   groupId?: string
   personIds?: string[]
   series?: string
-  raceId?: string
+  raceIds?: string[]
   filterParams?: Record<string, string>
 }): Promise<AudienceResult> {
   // Still behind the same authorisation as the page. An unauthenticated caller
@@ -43,7 +43,7 @@ export async function resolveAudienceAction(input: {
     groupId: input.groupId || undefined,
     personIds: input.personIds?.filter(Boolean),
     series: input.series || undefined,
-    raceId: input.raceId || undefined,
+    raceIds: input.raceIds?.filter(Boolean),
     filter:
       input.kind === 'filtered' && input.filterParams
         ? filterFromParams(input.filterParams)

@@ -12,6 +12,8 @@
 import Link from 'next/link'
 import { getAppUser } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { pacificDate, visibleWeekend, type WeekendRace } from '@/lib/race-weekends'
+import { RaceDayBlock } from './race-day-block'
 
 /** How many sends to show. FWM sends a few dozen a season; this is years of them. */
 const HISTORY_LIMIT = 100
@@ -132,8 +134,16 @@ export default async function MessagesPage({
     tallies.set(r.message_id, t)
   }
 
+  const today = pacificDate()
+  const weekend = await loadWeekend(today)
+
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
+      {/* ABOVE THE HEADING, DELIBERATELY. `/` redirects here, so this is the
+          first thing on screen after signing in — and on a race weekend it is
+          the only thing most people need. See race-day-block.tsx. */}
+      {weekend && <RaceDayBlock weekend={weekend} today={today} />}
+
       <div className="flex items-baseline justify-between">
         <div>
           <h1 className="text-xl font-semibold">Messages</h1>
@@ -374,4 +384,86 @@ export default async function MessagesPage({
       </section>
     </main>
   )
+}
+
+/**
+ * The races to put in front of the officer, with who each one could reach.
+ *
+ * Person ids rather than counts, because the page lets days be combined and
+ * the combination has to be a union: somebody racing Saturday and Sunday is one
+ * person and one text.
+ *
+ * The consent gate is applied here, in the same terms as every audience — see
+ * `sms_eligible_people` and `explainExclusions`. A number on this block that
+ * disagreed with the one on the compose screen would be worse than no number.
+ */
+async function loadWeekend(today: string) {
+  const db = supabaseAdmin()
+
+  const { data: season } = await db
+    .from('seasons')
+    .select('id')
+    .eq('active', true)
+    .maybeSingle()
+  if (!season) return null
+
+  const { data: rows } = await db
+    .from('races')
+    .select(
+      'id, name, date, discipline, venue, race_entries(person_id, people!inner(phone, opted_out_at, sms_never, opt_in_at, intro_sent_at))'
+    )
+    .eq('season_id', season.id)
+    .neq('status', 'canceled')
+    .order('date', { ascending: true })
+
+  type EntryRow = {
+    person_id: string | null
+    people:
+      | {
+          phone: string | null
+          opted_out_at: string | null
+          sms_never: boolean
+          opt_in_at: string | null
+          intro_sent_at: string | null
+        }
+      | Array<Record<string, unknown>>
+  }
+
+  const races: WeekendRace[] = ((rows ?? []) as unknown as Array<{
+    id: string
+    name: string
+    date: string
+    discipline: string
+    venue: string | null
+    race_entries: EntryRow[]
+  }>).map((r) => {
+    const entries = r.race_entries ?? []
+    const eligible: string[] = []
+    const entrants: string[] = []
+    for (const e of entries) {
+      const p = (Array.isArray(e.people) ? e.people[0] : e.people) as {
+        phone: string | null
+        opted_out_at: string | null
+        sms_never: boolean
+        opt_in_at: string | null
+        intro_sent_at: string | null
+      } | null
+      if (!e.person_id || !p) continue
+      entrants.push(e.person_id)
+      if (p.phone && !p.opted_out_at && !p.sms_never && p.opt_in_at && p.intro_sent_at) {
+        eligible.push(e.person_id)
+      }
+    }
+    return {
+      id: r.id,
+      name: r.name,
+      date: r.date,
+      discipline: r.discipline,
+      venue: r.venue,
+      eligiblePersonIds: eligible,
+      entrantPersonIds: entrants,
+    }
+  })
+
+  return visibleWeekend(races, today)
 }

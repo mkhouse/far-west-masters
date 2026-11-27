@@ -58,7 +58,7 @@ async function recipientsFor(
   kind: AudienceKind,
   opts: {
     series?: string
-    raceId?: string
+    raceIds?: string[]
     groupId?: string
     personIds?: string[]
     filter?: MemberFilter
@@ -158,25 +158,26 @@ async function recipientsFor(
     }
 
     case 'race': {
-      if (!opts.raceId) return { people: [], incompleteConsent: false }
+      const ids = (opts.raceIds ?? []).filter(Boolean)
+      if (ids.length === 0) return { people: [], incompleteConsent: false }
       const { data: entries } = await db
         .from('race_entries')
         .select(`person_id, people!inner(${GATE})`)
-        .eq('race_id', opts.raceId)
+        .in('race_id', ids)
 
-      // UNIQUE (race_id, person_id) means no de-duplication is needed here, as
-      // it is for a series spanning several days of one weekend.
-      const all: GatePerson[] = []
+      // De-duplicated by person: a weekend selection lists somebody racing both
+      // days twice, and they are one person who gets one text.
+      const seen = new Map<string, GatePerson>()
       for (const e of (entries ?? []) as Array<{
         person_id: string | null
         people: GatePerson | GatePerson[]
       }>) {
-        if (!e.person_id) continue
+        if (!e.person_id || seen.has(e.person_id)) continue
         const p = Array.isArray(e.people) ? e.people[0] : e.people
-        if (p) all.push(p)
+        if (p) seen.set(e.person_id, p)
       }
 
-      return { people: all.filter(passesGate), incompleteConsent: false }
+      return { people: [...seen.values()].filter(passesGate), incompleteConsent: false }
     }
 
     case 'series': {
@@ -210,7 +211,10 @@ export async function sendMessage(formData: FormData) {
   const kind = String(formData.get('audience_kind') ?? '') as AudienceKind
   const groupId = String(formData.get('group_id') ?? '') || undefined
   const series = String(formData.get('series') ?? '') || undefined
-  const raceId = String(formData.get('race_id') ?? '') || undefined
+  // Comma-separated: a weekend selection is several races at once.
+  const raceIds = String(formData.get('race_ids') ?? '')
+    .split(',')
+    .filter(Boolean)
   // Comma-separated, because a hand-picked audience can be one person or several.
   // Sorted so that the same set chosen in a different order is recognised as the
   // same audience by the duplicate guard below.
@@ -273,7 +277,7 @@ export async function sendMessage(formData: FormData) {
   // Re-resolve on the server. Never trust a recipient list from the browser.
   const { people, incompleteConsent } = await recipientsFor(kind, {
     series,
-    raceId,
+    raceIds,
     groupId,
     personIds,
     filter,
@@ -376,7 +380,7 @@ export async function sendMessage(formData: FormData) {
 
   const audience = await resolveAudience(kind, {
     series,
-    raceId,
+    raceIds,
     groupId,
     personIds,
     filter,

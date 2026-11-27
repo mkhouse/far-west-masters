@@ -77,7 +77,7 @@ const CATEGORIES = [
 export interface AudienceOption {
   kind: string
   series?: string
-  raceId?: string
+  raceIds?: string[]
   groupId?: string
   label: string
 }
@@ -105,7 +105,7 @@ export function ComposeForm({
   officerName,
   officerPhone: initialOfficerPhone,
   selectedSeries: initialSeries,
-  selectedRaceId: initialRaceId,
+  selectedRaceIds: initialRaceIds,
   selectedGroupId: initialGroupId,
   filterParams,
   prefillBody,
@@ -130,7 +130,7 @@ export function ComposeForm({
   /** Their published contact number in E.164, or null. See migration 0030. */
   officerPhone: string | null
   selectedSeries?: string
-  selectedRaceId?: string
+  selectedRaceIds?: string
   selectedGroupId?: string
   /** Present when messaging a slice of the members directory. */
   filterParams?: Record<string, string>
@@ -152,7 +152,7 @@ export function ComposeForm({
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId)
   const [selectedPersonIds, setSelectedPersonIds] = useState(initialPersonIds ?? [])
   const [selectedSeries, setSelectedSeries] = useState(initialSeries)
-  const [selectedRaceId, setSelectedRaceId] = useState(initialRaceId)
+  const [selectedRaceIds, setSelectedRaceIds] = useState(initialRaceIds)
   const [switching, startSwitching] = useTransition()
 
   const recipientCount = audience.recipientCount
@@ -187,12 +187,12 @@ export function ComposeForm({
     groupId?: string
     personIds?: string[]
     series?: string
-    raceId?: string
+    raceIds?: string
   }) {
     setSelectedGroupId(next.groupId)
     setSelectedPersonIds(next.personIds ?? [])
     setSelectedSeries(next.series)
-    setSelectedRaceId(next.raceId)
+    setSelectedRaceIds(next.raceIds)
 
     // Keep the address bar honest without a navigation, so a refresh or a link
     // shared with another officer lands in the same place. replaceState rather than
@@ -203,7 +203,7 @@ export function ComposeForm({
     if (next.groupId) params.set('group', next.groupId)
     if (next.personIds?.length) params.set('people', next.personIds.join(','))
     if (next.series) params.set('series', next.series)
-    if (next.raceId) params.set('race', next.raceId)
+    if (next.raceIds) params.set('races', next.raceIds)
     window.history.replaceState(null, '', `?${params.toString()}`)
 
     if (!next.kind) {
@@ -225,7 +225,7 @@ export function ComposeForm({
         groupId: next.groupId,
         personIds: next.personIds,
         series: next.series,
-        raceId: next.raceId,
+        raceIds: next.raceIds?.split(',').filter(Boolean),
         filterParams,
       })
       setAudience(resolved)
@@ -341,7 +341,7 @@ export function ComposeForm({
       <input type="hidden" name="audience_kind" value={audience.kind} />
       <input type="hidden" name="group_id" value={selectedGroupId ?? ''} />
       <input type="hidden" name="series" value={selectedSeries ?? ''} />
-      <input type="hidden" name="race_id" value={selectedRaceId ?? ''} />
+      <input type="hidden" name="race_ids" value={selectedRaceIds ?? ''} />
       <input type="hidden" name="person_ids" value={selectedPersonIds.join(',')} />
       {/* The filter travels as parameters, not as a list of people. The server
           re-resolves it, so this cannot decide who receives anything. */}
@@ -364,7 +364,7 @@ export function ComposeForm({
         people={people}
         selectedPersonIds={selectedPersonIds}
         selectedSeries={selectedSeries}
-        selectedRaceId={selectedRaceId}
+        selectedRaceIds={selectedRaceIds}
         selectedGroupId={selectedGroupId}
         switching={switching}
         onChange={changeAudience}
@@ -842,7 +842,7 @@ function AudiencePicker({
   people,
   selectedPersonIds,
   selectedSeries,
-  selectedRaceId,
+  selectedRaceIds,
   selectedGroupId,
   switching,
   onChange,
@@ -852,7 +852,7 @@ function AudiencePicker({
   people: PersonOption[]
   selectedPersonIds: string[]
   selectedSeries?: string
-  selectedRaceId?: string
+  selectedRaceIds?: string
   selectedGroupId?: string
   /** True while the server is resolving a newly chosen audience. */
   switching: boolean
@@ -861,7 +861,7 @@ function AudiencePicker({
     groupId?: string
     personIds?: string[]
     series?: string
-    raceId?: string
+    raceIds?: string
   }) => void
   /** Present when messaging a slice of the members directory. */
   filterParams?: Record<string, string>
@@ -874,7 +874,7 @@ function AudiencePicker({
     audience.kind === 'group'
       ? `group|${selectedGroupId ?? ''}`
       : audience.kind === 'race'
-        ? `race|${selectedRaceId ?? ''}`
+        ? `race|${selectedRaceIds ?? ''}`
         : audience.kind + (selectedSeries ? `|${selectedSeries}` : '')
 
   return (
@@ -888,7 +888,7 @@ function AudiencePicker({
             onChange({
               kind,
               groupId: kind === 'group' ? arg : undefined,
-              raceId: kind === 'race' ? arg : undefined,
+              raceIds: kind === 'race' ? arg : undefined,
               // Everything else that carries an argument carries a series.
               series:
                 kind !== 'group' && kind !== 'race' && kind !== 'people'
@@ -914,18 +914,30 @@ function AudiencePicker({
             <option value="filtered">From members: {audience.label}</option>
           )}
 
+          {/* A weekend selection arriving from the race-day block on /messages.
+              The list below offers races one at a time; "Saturday and Sunday"
+              is assembled there, so like a filtered audience it exists only for
+              the send you arrived with and is listed as the current selection.
+              Without this the select would hold a value matching no option and
+              would show blank — on the screen whose whole job is being obvious
+              on a cold hillside. */}
+          {audience.kind === 'race' &&
+            (selectedRaceIds?.split(',').filter(Boolean).length ?? 0) > 1 && (
+              <option value={`race|${selectedRaceIds}`}>{audience.label}</option>
+            )}
+
           {/* The audience the message templates were written for. Listed first
               because a one-to-one message is the common case for them. */}
           <option value="people">Select people&hellip;</option>
 
           {audiences.map((a) => (
             <option
-              key={a.kind + (a.groupId ?? a.raceId ?? a.series ?? '')}
+              key={a.kind + (a.groupId ?? a.raceIds?.join(',') ?? a.series ?? '')}
               value={
                 a.kind === 'group'
                   ? `group|${a.groupId}`
                   : a.kind === 'race'
-                    ? `race|${a.raceId}`
+                    ? `race|${a.raceIds?.join(',')}`
                     : a.kind + (a.series ? `|${a.series}` : '')
               }
             >

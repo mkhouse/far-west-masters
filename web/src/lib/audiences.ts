@@ -28,7 +28,7 @@ export type AudienceKind =
   | 'group' // a named group an admin maintains: test groups, officials, board
   | 'all_eligible' // everyone past the consent gate
   | 'series' // people entered in a race weekend
-  | 'race' // people entered in one specific race
+  | 'race' // people entered in one or more specific races
   | 'intro_pending' // opted in, but not yet sent the intro text that completes it
   | 'always' // members who asked to hear about races regardless of entry
   | 'filtered' // a slice of the members directory, described by its filters
@@ -38,8 +38,8 @@ export interface AudienceOption {
   kind: AudienceKind
   /** Series name, when the audience is scoped to one */
   series?: string
-  /** Race id, when the audience is scoped to a single race */
-  raceId?: string
+  /** Race ids, when the audience is scoped to races. One, or a whole weekend. */
+  raceIds?: string[]
   /** Group id, when kind is 'group' */
   groupId?: string
   /** Person ids, when kind is 'people' */
@@ -189,7 +189,7 @@ export async function listAudiences(): Promise<AudienceOption[]> {
     if (!(entries[0]?.count > 0)) continue
     options.push({
       kind: 'race',
-      raceId: r.id as string,
+      raceIds: [r.id as string],
       label: r.name as string,
     })
   }
@@ -197,19 +197,36 @@ export async function listAudiences(): Promise<AudienceOption[]> {
   return options
 }
 
+/**
+ * Name a race selection for the screen and for the send log.
+ *
+ * One race keeps its own name. Several become a count and the days, because
+ * four race names concatenated is unreadable in a log months later — and the
+ * log is the thing that has to answer "who was this sent to".
+ */
+function describeRaces(races: Array<{ name: string; date: string }>): string {
+  if (races.length === 0) return 'Race'
+  if (races.length === 1) return races[0].name
+
+  const days = [...new Set(races.map((r) => r.date))].sort()
+  const span =
+    days.length === 1 ? days[0] : `${days[0]} to ${days[days.length - 1]}`
+  return `${races.length} races, ${span}`
+}
+
 /** Resolve an audience to a recipient count and an account of who was excluded. */
 export async function resolveAudience(
   kind: AudienceKind,
   opts: {
     series?: string
-    raceId?: string
+    raceIds?: string[]
     groupId?: string
     personIds?: string[]
     filter?: MemberFilter
   } = {}
 ): Promise<AudienceResult> {
   const db = supabaseAdmin()
-  const { series, raceId, groupId, personIds, filter } = opts
+  const { series, raceIds, groupId, personIds, filter } = opts
 
   switch (kind) {
     /**
@@ -455,7 +472,8 @@ export async function resolveAudience(
     }
 
     case 'race': {
-      if (!raceId) {
+      const ids = (raceIds ?? []).filter(Boolean)
+      if (ids.length === 0) {
         return {
           kind,
           label: 'Race',
@@ -467,40 +485,49 @@ export async function resolveAudience(
         }
       }
 
-      const { data: race } = await db
+      const { data: races } = await db
         .from('races')
-        .select('name')
-        .eq('id', raceId)
-        .maybeSingle()
+        .select('id, name, date')
+        .in('id', ids)
+        .order('date', { ascending: true })
 
       const { data: entries } = await db
         .from('race_entries')
         .select(`person_id, people!inner(${GATE_COLUMNS})`)
-        .eq('race_id', raceId)
+        .in('race_id', ids)
 
-      // No de-duplication needed the way `series` needs it — race_entries is
-      // UNIQUE (race_id, person_id), so one race cannot list a person twice.
+      // DE-DUPLICATED BY PERSON. race_entries is UNIQUE (race_id, person_id),
+      // so one race cannot list anybody twice — but a weekend can, and somebody
+      // racing Saturday and Sunday is one person and one text. Counting the
+      // rows would promise a message to more humans than exist.
       type GatePerson = Parameters<typeof explainExclusions>[0][number]
-      const people: GatePerson[] = []
+      const seen = new Map<string, GatePerson>()
       for (const e of (entries ?? []) as Array<{
         person_id: string | null
         people: GatePerson | GatePerson[]
       }>) {
-        if (!e.person_id) continue
+        if (!e.person_id || seen.has(e.person_id)) continue
         const person = Array.isArray(e.people) ? e.people[0] : e.people
-        if (person) people.push(person)
+        if (person) seen.set(e.person_id, person)
       }
+      const people = [...seen.values()]
 
       const { eligible, excluded } = explainExclusions(people)
       return {
         kind,
-        label: (race?.name as string) ?? 'Race',
+        label: describeRaces(
+          (races ?? []) as Array<{ name: string; date: string }>
+        ),
         recipientCount: eligible,
         consideredCount: people.length,
         excluded,
         incompleteConsent: false,
         unavailableReason:
-          people.length === 0 ? 'Nobody is entered in that race yet' : undefined,
+          people.length === 0
+            ? ids.length === 1
+              ? 'Nobody is entered in that race yet'
+              : 'Nobody is entered in those races yet'
+            : undefined,
       }
     }
 
