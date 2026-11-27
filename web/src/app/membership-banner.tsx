@@ -32,26 +32,42 @@ export function MembershipBanner({ freshness }: { freshness: ImportFreshness }) 
             : `The membership list is ${freshness.daysOld} days old`}
       </p>
 
+      {/* ONE SENTENCE, NOT A PARAGRAPH. This was three lines of prose explaining
+          why membership lapses annually, read past by somebody who already knows.
+          What they need is the consequence and the next action, in that order. The
+          reasoning lives on the import page, where somebody is deciding. */}
       <p className="mt-1 text-neutral-700 dark:text-neutral-300">
         {freshness.isFallback ? (
           <>
-            Showing <strong>{freshness.season}</strong> instead. Membership renews
-            every year, so nobody counts as current until the new season is imported —
-            anyone who has renewed is missing from the directory and from every
-            audience until then.
+            Showing <strong>{freshness.season}</strong>. Anyone who has renewed is
+            missing from the directory and from every audience.
+          </>
+        ) : freshness.daysOld === null ? (
+          /* Three states, three sentences. This branch used to share its wording
+             with the one below and said “anyone who joined since” — since when,
+             on a database nothing has ever been imported into. */
+          <>
+            Nobody counts as a current member, so the directory and every audience
+            are empty until the first import.
           </>
         ) : (
           <>
-            People join all season. Anyone who joined since the last import is missing
-            from the directory and from every audience, and nothing else will say so.
+            Anyone who joined since is missing from the directory and from every
+            audience, and nothing else will say so.
           </>
         )}
       </p>
 
-      <p className="mt-2">
-        <Link href="/admin/membership" className="text-fwm-navy underline">
-          Import the latest export
+      {/* The instruction, not just the link. Which of ASR's download buttons to
+          press is the step that actually goes wrong — “Race File” sits beside
+          “Race Roster” and has no contact details — so the banner names it rather
+          than leaving it to be rediscovered on the next screen. */}
+      <p className="mt-2 text-neutral-700 dark:text-neutral-300">
+        Download <strong>Race Roster</strong> from AdminSkiRacing, then{' '}
+        <Link href="/admin/membership" className="font-medium text-fwm-navy underline">
+          import it
         </Link>
+        .
       </p>
     </div>
   )

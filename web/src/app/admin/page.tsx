@@ -42,6 +42,19 @@ interface Group {
   items: Item[]
 }
 
+/**
+ * DESCRIPTIONS ARE ONE LINE EACH, deliberately.
+ *
+ * They used to be two or three sentences carrying the reasoning behind each screen
+ * — why membership is a lookup, why season setup refuses to guess. That reasoning
+ * is worth keeping, but not worth re-reading on every visit: after the first time,
+ * it is a wall between an officer and the link they came for. It now lives in the
+ * comments of the screens themselves and in RUNBOOK.md, where somebody who actually
+ * wants it will be.
+ *
+ * What stays is enough to tell two neighbouring cards apart. That is the whole job
+ * of this text, and it fits in a line.
+ */
 const GROUPS: Group[] = [
   {
     title: 'Members',
@@ -50,13 +63,13 @@ const GROUPS: Group[] = [
         href: '/members',
         title: 'Members',
         description:
-          'Look anyone up by name, phone or email. Shows whether they can be texted and why, which groups they are in, and everything the club has sent them.',
+          'Look anyone up, and see everything the club has sent them.',
       },
       {
         href: '/admin/membership',
         title: 'Membership import',
         description:
-          'Bring the season\u2019s membership across from AdminSkiRacing. Whether somebody is a member is a lookup against that, not something kept by hand here.',
+          'Bring the season\u2019s membership across from AdminSkiRacing.',
       },
     ],
   },
@@ -66,14 +79,12 @@ const GROUPS: Group[] = [
       {
         href: '/admin/templates',
         title: 'Message templates',
-        description:
-          'The wording the club sends over and over, held once so it stops drifting. Blanks \u2014 the member\u2019s name, your contact number, which race \u2014 are filled in when you use one.',
+        description: 'Wording the club reuses, with the blanks filled in on send.',
       },
       {
         href: '/admin/groups',
         title: 'Messaging groups',
-        description:
-          'Named audiences for the compose screen \u2014 test groups, officials, board members. Groups appear in the \u201cSend to\u201d list as soon as they have members.',
+        description: 'Named audiences for the compose screen.',
       },
     ],
   },
@@ -84,17 +95,15 @@ const GROUPS: Group[] = [
         href: '/admin/schedule',
         title: 'Race schedule',
         description:
-          'Import the season\u2019s races from the schedule the club publishes. Preview first \u2014 nothing is written until you apply, and nothing on file is ever deleted.',
+          'Import the season\u2019s races. Nothing is written until you apply.',
       },
       {
         title: 'Season setup',
-        description:
-          'Scoring rules: best-N, points scale, age groups. The schedule importer creates a season without these deliberately \u2014 a rule guessed from last season produces standings that look right and are not.',
+        description: 'Scoring rules: best-N, points scale, age groups.',
       },
       {
         title: 'Live-timing ids',
-        description:
-          'Entered per race once the links arrive. The schedule import never touches them.',
+        description: 'Entered per race once the links arrive.',
       },
     ],
   },
@@ -104,13 +113,11 @@ const GROUPS: Group[] = [
       {
         href: '/account',
         title: 'Your account',
-        description:
-          'The number you are willing to give to members, used by templates that ask them to call. Deliberately not the number the club texts you on.',
+        description: 'The contact number templates hand to members.',
       },
       {
         title: 'Officer accounts',
-        description:
-          'Invitations and roles. For now these are SQL scripts in supabase/ \u2014 see RUNBOOK.md.',
+        description: 'Invitations and roles \u2014 SQL scripts for now.',
       },
     ],
   },
@@ -121,7 +128,7 @@ const NEEDS_ACTION: Item = {
   href: '/admin/opt-ins',
   title: 'Opt-ins needing action',
   description:
-    'Everyone who consented and is waiting on the club \u2014 a submission to decide, an intro text to send, or a bad number that needs a phone call instead.',
+    'Consented and waiting on the club \u2014 a submission to decide, an intro text to send, or a number that needs a phone call instead.',
 }
 
 export default async function AdminPage() {
@@ -200,7 +207,7 @@ export default async function AdminPage() {
                     // missing elsewhere.
                     chip: 'Nothing waiting',
                     description:
-                      'Nothing needs action right now. Submissions to review, intro texts to send, and numbers a carrier rejected all appear here.',
+                      'Nothing needs action right now. Submissions, intro texts and rejected numbers appear here.',
                   },
                 ],
               }
@@ -240,18 +247,21 @@ export default async function AdminPage() {
           card, because this page exists so that nothing built is reachable only by
           somebody who happens to know the URL. Quiet, not gone. */}
       {groups.map((group) => (
-        <section key={group.title} className="mt-10">
+        <section key={group.title} className="mt-8">
           <h2 className="text-sm font-medium tracking-wide text-neutral-600 uppercase">
             {group.title}
           </h2>
 
-          <ul className="mt-3 space-y-3">
+          {/* TWO UP FROM 640px, one on a phone. A single column of nine tall
+              cards ran well past a phone screen, so the shape of the whole system
+              — which is what this page is for — could not be seen at once. */}
+          <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
             {group.items.map((item) =>
               item.href ? (
                 <li key={item.title}>
                   <Link
                     href={item.href}
-                    className="block rounded-lg border border-neutral-200 bg-surface p-4 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
+                    className="block h-full rounded-lg border border-neutral-200 bg-surface p-3 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
                   >
                     <span className="flex items-baseline justify-between gap-3">
                       <span className="font-medium">{item.title}</span>
@@ -264,7 +274,7 @@ export default async function AdminPage() {
                         </span>
                       )}
                     </span>
-                    <span className="mt-1 block text-sm text-neutral-600">
+                    <span className="mt-1 hidden text-sm text-neutral-600 sm:block">
                       {item.description}
                     </span>
                   </Link>
@@ -274,7 +284,7 @@ export default async function AdminPage() {
                 // the gap belongs beside the thing it is a gap in.
                 <li
                   key={item.title}
-                  className="rounded-lg border border-dashed border-neutral-300 p-4 dark:border-neutral-700"
+                  className="h-full rounded-lg border border-dashed border-neutral-300 p-3 dark:border-neutral-700"
                 >
                   <span className="flex items-baseline justify-between gap-3">
                     <span className="font-medium text-neutral-600">{item.title}</span>
@@ -282,7 +292,7 @@ export default async function AdminPage() {
                       not built yet
                     </span>
                   </span>
-                  <span className="mt-1 block text-sm text-neutral-600">
+                  <span className="mt-1 hidden text-sm text-neutral-600 sm:block">
                     {item.description}
                   </span>
                 </li>

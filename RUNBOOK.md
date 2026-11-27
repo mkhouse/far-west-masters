@@ -93,8 +93,15 @@ active by joining there, with its own fee — so this system imports the answer 
 than keeping one of its own. It had been keeping one, badly: measured against the
 2025-2026 export, 63 people carried the wrong status.
 
-**Download the Event Roster CSV from ASR, upload it, type the season, review, apply.**
+**Download the Race Roster from ASR, upload it, type the season, review, apply.**
 The preview writes nothing.
+
+**The button says Race Roster; the file saves as `EventRoster<id>.csv`.** Both names
+are right, which is why this used to say only one of them. **Not `Race File`**, the
+button immediately beside it — that export has no `Cell Phone` or `Email` column and
+the import refuses it with a message saying so. Checked against the 2026-2027 export
+on 27 November 2026: Race Roster carries all six required columns, 116 rows, every
+phone number parsing.
 
 **Import it again every few weeks through the season.** People join all winter, and
 each download is the whole list rather than just the new names, so re-importing is

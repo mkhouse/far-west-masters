@@ -92,8 +92,19 @@ export function ImportForm({ suggestedSeason }: { suggestedSeason: string }) {
           Membership export
         </label>
         <p className="mt-0.5 text-sm text-neutral-600">
-          The Event Roster CSV from AdminSkiRacing. Every download holds the whole
-          list, so importing the same file twice changes nothing.
+          The <strong>Race Roster</strong> download from AdminSkiRacing. It saves as{' '}
+          <code>EventRoster….csv</code> — the button and the filename disagree, and
+          both names are right. Every download holds the whole list, so importing the
+          same file twice changes nothing.
+        </p>
+        {/* THE ADJACENT BUTTON IS THE WRONG ONE. “Race File” sits beside “Race
+            Roster” on the same row in ASR and produces a file that looks correct:
+            same rows, same members, same event id. It has no Cell Phone or Email
+            column, so the import refuses it — see REQUIRED_COLUMNS. Naming it here
+            costs a line and saves a download, an upload and a rejection. */}
+        <p className="mt-1 text-sm text-neutral-600">
+          Not <strong>Race File</strong>, the button beside it: that export carries no
+          phone numbers or email addresses, and will be refused.
         </p>
         {/* The browser's own control reads "Choose File / no file selected", which
             is neither the club's language nor legible. The input itself is kept —
